@@ -1,0 +1,18 @@
+:root {
+  --pitch: #1b4332;
+  --turf: #2d6a4f;
+  --chalk: #f1faee;
+  --amber: #ffb703;
+  --clay: #e63946;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--chalk);
+  color: var(--pitch);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}

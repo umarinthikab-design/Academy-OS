@@ -1,0 +1,319 @@
+// Touchline database schema
+// Run `npx prisma migrate dev --name init` after setting DATABASE_URL in .env
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  HEAD_COACH
+  ASSISTANT_COACH
+  PARENT
+}
+
+enum Designation {
+  HEAD
+  ASSISTANT
+}
+
+enum DrillStatus {
+  PENDING
+  APPROVED
+}
+
+enum RequestType {
+  SKILL_UPDATE
+  DRILL_ADD
+  DRILL_EDIT
+  SESSION_SHARE
+  ATTENDANCE_CONFIRM
+  SCHEDULE_CREATE
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PlayerAttendanceStatus {
+  NO_RESPONSE
+  ATTENDING
+  NOT_ATTENDING
+  ATTENDED
+  ABSENT
+}
+
+enum CoachAttendanceStatus {
+  NOT_YET
+  CHECKED_IN
+  ABSENT
+}
+
+// ── People ───────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String // hashed - never store plain text
+  name      String
+  role      Role
+  createdAt DateTime @default(now())
+
+  coach  Coach?
+  parent Parent?
+
+  activityLogs ActivityLog[]
+}
+
+model Coach {
+  id          String      @id @default(cuid())
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designation Designation
+  dateJoined  DateTime    @default(now())
+
+  // Permission overrides - only meaningful for HEAD_COACH designation.
+  // Admin always has full access; assistant coaches always queue requests
+  // regardless of these flags.
+  canEditRoster       Boolean @default(false)
+  canEditDrills       Boolean @default(false)
+  canApproveRequests  Boolean @default(false)
+  canEditSchedule     Boolean @default(false)
+  canEditLocations    Boolean @default(false)
+  canEditAgeGroups    Boolean @default(false)
+
+  primaryFocus AgeGroup[] @relation("CoachPrimaryFocus")
+  mainBatches  Batch[]    @relation("BatchMainCoaches")
+
+  headSessions      ScheduledSession[] @relation("HeadCoachSessions")
+  assistantSessions ScheduledSession[] @relation("AssistantCoachSessions")
+
+  createdDrills   Drill[]         @relation("DrillCreatedBy")
+  drillFeedback   DrillFeedback[]
+  createdSessions Session[]       @relation("SessionCreatedBy")
+  notes           Note[]
+  coachAttendance CoachAttendance[]
+
+  requestsMade     ApprovalRequest[] @relation("RequestedBy")
+  requestsResolved ApprovalRequest[] @relation("ResolvedBy")
+}
+
+model Parent {
+  id      String   @id @default(cuid())
+  userId  String   @unique
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  players Player[] @relation("ParentPlayers")
+}
+
+// ── Structure (admin-managed rosters) ───────────────────
+
+model AgeGroup {
+  id        String @id @default(cuid())
+  name      String @unique // e.g. "U9"
+  sortOrder Int    @default(0)
+
+  coaches           Coach[]            @relation("CoachPrimaryFocus")
+  batches           Batch[]
+  drills            Drill[]            @relation("DrillAgeGroups")
+  scheduledSessions ScheduledSession[]
+}
+
+model Location {
+  id                String             @id @default(cuid())
+  name              String             @unique
+  address           String?
+  scheduledSessions ScheduledSession[]
+}
+
+model Batch {
+  id          String   @id @default(cuid())
+  name        String
+  ageGroupId  String
+  ageGroup    AgeGroup @relation(fields: [ageGroupId], references: [id])
+  mainCoaches Coach[]  @relation("BatchMainCoaches")
+  players     Player[] @relation("PlayerBatches")
+
+  scheduledSessions ScheduledSession[]
+}
+
+model Player {
+  id          String   @id @default(cuid())
+  name        String
+  dateOfBirth DateTime
+
+  batches Batch[]  @relation("PlayerBatches")
+  parents Parent[] @relation("ParentPlayers")
+
+  skills     PlayerSkill[]
+  attendance PlayerAttendance[]
+  notes      Note[]
+}
+
+model PlayerSkill {
+  id        String   @id @default(cuid())
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  skillName String
+  value     Int
+  updatedAt DateTime @updatedAt
+
+  @@unique([playerId, skillName])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  coachId   String
+  coach     Coach    @relation(fields: [coachId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+// ── Drills & Sessions ────────────────────────────────────
+
+model Drill {
+  id          String      @id @default(cuid())
+  name        String
+  category    String
+  duration    Int // minutes
+  playerRange String? // e.g. "4-12"
+  description String?
+  status      DrillStatus @default(APPROVED)
+
+  createdById String
+  createdBy   Coach  @relation("DrillCreatedBy", fields: [createdById], references: [id])
+
+  ageGroups AgeGroup[] @relation("DrillAgeGroups")
+
+  feedback      DrillFeedback[]
+  sessionDrills SessionDrill[]
+
+  createdAt DateTime @default(now())
+}
+
+// The back-and-forth revision thread on a pending drill suggestion.
+model DrillFeedback {
+  id        String   @id @default(cuid())
+  drillId   String
+  drill     Drill    @relation(fields: [drillId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    Coach    @relation(fields: [authorId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
+}
+
+// A drill plan - separate from the calendar slot (ScheduledSession).
+model Session {
+  id          String         @id @default(cuid())
+  name        String
+  createdById String
+  createdBy   Coach          @relation("SessionCreatedBy", fields: [createdById], references: [id])
+  isPrivate   Boolean        @default(true)
+  shareStatus RequestStatus?
+  createdAt   DateTime       @default(now())
+
+  drills            SessionDrill[]
+  scheduledSessions ScheduledSession[]
+}
+
+model SessionDrill {
+  id        String  @id @default(cuid())
+  sessionId String
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  drillId   String
+  drill     Drill   @relation(fields: [drillId], references: [id])
+  order     Int
+}
+
+// The calendar slot - date, time, location, coaches, recurrence.
+model ScheduledSession {
+  id              String   @id @default(cuid())
+  date            DateTime
+  startTime       String // "14:00"
+  durationMinutes Int
+
+  ageGroupId String
+  ageGroup   AgeGroup @relation(fields: [ageGroupId], references: [id])
+  batchId    String?
+  batch      Batch?   @relation(fields: [batchId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  headCoaches      Coach[] @relation("HeadCoachSessions")
+  assistantCoaches Coach[] @relation("AssistantCoachSessions")
+
+  sessionId String? // optional link to a drill plan
+  session   Session? @relation(fields: [sessionId], references: [id])
+
+  recurring         Boolean @default(false)
+  recurrenceGroupId String? // groups all instances generated from one recurring rule
+
+  status String @default("scheduled") // scheduled | completed | cancelled
+
+  playerAttendance PlayerAttendance[]
+  coachAttendance  CoachAttendance[]
+
+  createdAt DateTime @default(now())
+}
+
+model PlayerAttendance {
+  id                 String                  @id @default(cuid())
+  playerId           String
+  player             Player                  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  scheduledSessionId String
+  scheduledSession   ScheduledSession        @relation(fields: [scheduledSessionId], references: [id], onDelete: Cascade)
+  status             PlayerAttendanceStatus  @default(NO_RESPONSE)
+  deadline           DateTime // 6 hours before session start
+  confirmedAt        DateTime?
+
+  @@unique([playerId, scheduledSessionId])
+}
+
+model CoachAttendance {
+  id                 String                 @id @default(cuid())
+  coachId            String
+  coach              Coach                  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  scheduledSessionId String
+  scheduledSession   ScheduledSession       @relation(fields: [scheduledSessionId], references: [id], onDelete: Cascade)
+  status             CoachAttendanceStatus  @default(NOT_YET)
+  method             String? // "self" | "admin_override"
+  confirmedAt        DateTime?
+
+  @@unique([coachId, scheduledSessionId])
+}
+
+// ── Approvals & accountability ──────────────────────────
+
+model ApprovalRequest {
+  id            String        @id @default(cuid())
+  type          RequestType
+  payload       Json // flexible - shape depends on `type`
+  requestedById String
+  requestedBy   Coach         @relation("RequestedBy", fields: [requestedById], references: [id])
+  status        RequestStatus @default(PENDING)
+  resolvedById  String?
+  resolvedBy    Coach?        @relation("ResolvedBy", fields: [resolvedById], references: [id])
+  createdAt     DateTime      @default(now())
+  resolvedAt    DateTime?
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  action     String // e.g. "created_drill", "approved_request"
+  entityType String // e.g. "Drill", "ScheduledSession"
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+}
