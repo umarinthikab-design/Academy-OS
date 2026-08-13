@@ -1,5 +1,37 @@
 # Touchline — setup guide (Windows)
 
+## 🌐 Live app
+
+**https://touchline-app-exp.vercel.app**
+
+This is the real, public version of the app, backed by the same database as
+your local setup. Anyone with a coach or admin account can log in here from
+any device — no local setup needed on their end.
+
+## Deploying updates
+
+The live app is connected to your GitHub repository
+(`umarinthikab-design/touchline-app`) and Vercel's `main` branch. Whenever
+you want to push a code change live:
+
+```
+git add .
+git commit -m "describe what changed"
+git push
+```
+
+Vercel automatically detects the push and redeploys within a minute or two
+— no manual redeploy needed. You can watch it happen under the
+**Deployments** tab on your Vercel dashboard.
+
+If a deploy fails, check **Deployments → (the failed one) → Runtime Logs**
+for the real error — the site itself only shows a generic "Application
+error" message.
+
+---
+
+## Local development setup
+
 This gets the app running on your own computer for free. No paid tools needed.
 
 ## 1. Install Node.js
