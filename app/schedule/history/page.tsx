@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
+import { Icon } from "@/components/ui/Icon";
 
 function endTime(time: string, durationMinutes: number): string {
   const [h, m] = time.split(":").map(Number);
@@ -28,48 +32,55 @@ export default async function SessionHistoryPage() {
   });
 
   return (
-    <main style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 4px" }}>Session History</h1>
-      <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 20 }}>
-        All sessions in the last 12 months ({sessions.length}).
-      </p>
-
-      <a
-        href="/schedule/history/export"
-        style={{ display: "inline-block", marginBottom: 20, padding: "8px 14px", background: "var(--pitch)", color: "#fff", borderRadius: 6, fontWeight: 700, fontSize: 13, textDecoration: "none", cursor: "pointer" }}
-      >
-        Export CSV
-      </a>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {sessions.map((s) => (
-          <div
-            key={s.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              gap: 12,
-              padding: "8px 12px",
-              background: "#fff",
-              border: "1px solid #E5E7EB",
-              borderRadius: 8,
-              fontSize: 13,
-            }}
+    <>
+      <PageHeader
+        title="Session History"
+        subtitle={`All sessions in the last 12 months (${sessions.length}).`}
+        actions={
+          <a
+            href="/schedule/history/export"
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", background: "var(--primary)", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: "none" }}
           >
-            <div>
-              <strong>{s.date.toLocaleDateString()}</strong> · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.ageGroup.name} · {s.location.name}
-              <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>
-                Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}
-                {s.assistantCoaches.length > 0 && <> · Assistant: {s.assistantCoaches.map((c) => c.user.name).join(", ")}</>}
-                {s.session && <> · Plan: {s.session.name}</>}
-                {s.status !== "scheduled" && <> · <strong>{s.status}</strong></>}
+            <Icon name="export" size={15} /> Export CSV
+          </a>
+        }
+      />
+
+      {sessions.length === 0 ? (
+        <EmptyState
+          icon="calendar"
+          title="No sessions in the last 12 months"
+          message="Historical sessions will appear here once the season gets going."
+        />
+      ) : (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+          {sessions.map((s) => (
+            <div
+              key={s.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+                padding: "11px 16px",
+                fontSize: 13,
+                borderBottom: "1px solid var(--border)",
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <strong>{s.date.toLocaleDateString()}</strong> · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.ageGroup.name} · {s.location.name}
+                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                  Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}
+                  {s.assistantCoaches.length > 0 && <> · Assistant: {s.assistantCoaches.map((c) => c.user.name).join(", ")}</>}
+                  {s.session && <> · Plan: {s.session.name}</>}
+                </div>
               </div>
+              {s.status !== "scheduled" && <Badge tone={s.status === "cancelled" ? "error" : "muted"}>{s.status}</Badge>}
             </div>
-          </div>
-        ))}
-        {sessions.length === 0 && <p style={{ color: "#6B7280" }}>No sessions in the last 12 months.</p>}
-      </div>
-    </main>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

@@ -3,14 +3,12 @@ import { createScheduledSession, deleteScheduledSession, attachSessionPlan, deta
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
-
-function endTime(time: string, durationMinutes: number): string {
-  const [h, m] = time.split(":").map(Number);
-  const total = h * 60 + m + durationMinutes;
-  const eh = Math.floor(total / 60) % 24;
-  const em = total % 60;
-  return `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
-}
+import { PageHeader } from "@/components/ui/PageHeader";
+import { SessionCard } from "@/components/ui/SessionCard";
+import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { inputBase } from "@/components/ui/Form";
+import { Icon } from "@/components/ui/Icon";
 
 export default async function SchedulePage({
   searchParams,
@@ -70,38 +68,43 @@ export default async function SchedulePage({
     return new Date().getTime() <= end.getTime() + SIXTY_TWO_MS;
   };
 
-  return (
-    <main style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Schedule</h1>
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const smallBtn: React.CSSProperties = { padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" };
 
-      <a
-        href="/schedule/history"
-        style={{ display: "inline-block", marginBottom: 16, fontSize: 13, fontWeight: 700, color: "var(--turf)", textDecoration: "none" }}
-      >
-        Session history (12 months) →
-      </a>
+  return (
+    <>
+      <PageHeader
+        title="Schedule"
+        subtitle={
+          canEdit ? (
+            "Plan sessions, assign coaches, and attach session plans."
+          ) : (
+            "View only — you don't have edit access to the schedule."
+          )
+        }
+        actions={
+          <a href="/schedule/history" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+            Session history <span aria-hidden="true">→</span>
+          </a>
+        }
+      />
 
       <StatusBanner error={params.error} success={params.success} />
-
-      {!canEdit && (
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
-          View only — you don't have edit access to the schedule.
-        </p>
-      )}
 
       {canEdit && missingPrereqs && (
         <div
           style={{
-            background: "#FFF3CD",
-            border: "2px solid var(--amber)",
+            background: "var(--warning-bg)",
+            border: "1px solid #fde68a",
             borderRadius: 10,
             padding: 14,
             marginBottom: 20,
             fontSize: 13,
+            color: "#92400e",
           }}
         >
-          {locations.length === 0 && <p style={{ margin: "0 0 4px" }}>Add a <a href="/locations">location</a> first.</p>}
-          {headCoaches.length === 0 && <p style={{ margin: 0 }}>Add a <a href="/coaches">head coach</a> first — every session needs at least one.</p>}
+          {locations.length === 0 && <p style={{ margin: "0 0 4px" }}>Add a <a href="/locations" style={{ color: "inherit", fontWeight: 700 }}>location</a> first.</p>}
+          {headCoaches.length === 0 && <p style={{ margin: 0 }}>Add a <a href="/coaches" style={{ color: "inherit", fontWeight: 700 }}>head coach</a> first — every session needs at least one.</p>}
         </div>
       )}
 
@@ -109,158 +112,153 @@ export default async function SchedulePage({
         <form
           action={createScheduledSession}
           style={{
-            background: "#fff",
-            border: "2px solid var(--pitch)",
-            borderRadius: 12,
-            padding: 16,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            boxShadow: "var(--shadow-sm)",
+            padding: 18,
             marginBottom: 24,
           }}
         >
-          <div className="form-grid-2col" style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
+            <span style={{ fontSize: 14, fontWeight: 800 }}>Schedule a new session</span>
+          </div>
+          <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Date</label>
-              <input name="date" type="date" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Date</label>
+              <input name="date" type="date" required style={inputBase} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Start time</label>
-              <input name="time" type="time" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Start time</label>
+              <input name="time" type="time" required style={inputBase} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Duration (minutes)</label>
-              <input name="duration" type="number" defaultValue={60} required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Duration (minutes)</label>
+              <input name="duration" type="number" defaultValue={60} required style={inputBase} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Age group</label>
-              <select name="ageGroupId" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }}>
+              <label style={fieldLabel}>Age group</label>
+              <select name="ageGroupId" required style={inputBase}>
                 {ageGroups.map((ag) => (
                   <option key={ag.id} value={ag.id}>{ag.name}</option>
                 ))}
               </select>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Location</label>
-              <select name="locationId" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }}>
+              <label style={fieldLabel}>Location</label>
+              <select name="locationId" required style={inputBase}>
                 {locations.map((l) => (
                   <option key={l.id} value={l.id}>{l.name}</option>
                 ))}
               </select>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Head coach(es)</label>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <label style={fieldLabel}>Head coach(es)</label>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
                 {headCoaches.map((c) => (
-                  <label key={c.id} style={{ fontSize: 13 }}>
+                  <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <input type="checkbox" name="headCoaches" value={c.id} /> {c.user.name}
                   </label>
                 ))}
               </div>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Assistant coach(es)</label>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {assistantCoaches.length === 0 && <span style={{ fontSize: 12, color: "#9CA3AF" }}>None in the roster yet.</span>}
+              <label style={fieldLabel}>Assistant coach(es)</label>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                {assistantCoaches.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>None in the roster yet.</span>}
                 {assistantCoaches.map((c) => (
-                  <label key={c.id} style={{ fontSize: 13 }}>
+                  <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <input type="checkbox" name="assistantCoaches" value={c.id} /> {c.user.name}
                   </label>
                 ))}
               </div>
             </div>
-            <div style={{ gridColumn: "1 / -1", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-              <label style={{ fontSize: 13, fontWeight: 700 }}>
+            <div style={{ gridColumn: "1 / -1", display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
+              <label style={{ fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <input type="checkbox" name="recurring" /> Weekly recurring
               </label>
               <div>
-                <label style={{ fontSize: 11, color: "#6B7280", marginRight: 6 }}>
-                  Weeks (only used if recurring is checked):
-                </label>
-                <input name="weeks" type="number" defaultValue={8} min={1} max={26} style={{ width: 60, padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }} />
+                <label style={{ fontSize: 11, color: "var(--text-muted)", marginRight: 6 }}>Weeks (only if recurring):</label>
+                <input name="weeks" type="number" defaultValue={8} min={1} max={26} style={{ width: 64, padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6 }} />
               </div>
             </div>
           </div>
-          <button
-            type="submit"
-            style={{ padding: "8px 16px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer" }}
-          >
+          <button type="submit" style={{ ...smallBtn, marginTop: 14, padding: "9px 18px" }}>
             Schedule Session
           </button>
         </form>
       )}
 
-      <h3 style={{ fontSize: 16 }}>
-        {canEdit ? "Upcoming" : "This month"} ({sessions.length})
+      <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
+        {canEdit ? "Upcoming" : "This month"} <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({sessions.length})</span>
       </h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-        {sessions.map((s) => (
-          <div key={s.id} style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <strong>
-                  {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}
-                </strong>
-                {s.recurring && (
-                  <span style={{ fontSize: 10, fontWeight: 700, marginLeft: 8, padding: "2px 8px", borderRadius: 20, background: "var(--amber)", color: "var(--pitch)" }}>
-                    WEEKLY
-                  </span>
-                )}
-                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>
-                  {s.ageGroup.name} · {s.location.name} · Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}
-                  {s.assistantCoaches.length > 0 && <> · Assistant: {s.assistantCoaches.map((c) => c.user.name).join(", ")}</>}
-                </div>
-              </div>
-              {canEdit && (
-                <ConfirmDeleteButton
-                  action={deleteScheduledSession.bind(null, s.id)}
-                  confirmMessage="Remove this session? This can't be undone."
-                />
-              )}
-            </div>
 
-            {/* Attached session plan + attach control */}
-            <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #E5E7EB", fontSize: 12 }}>
-              {s.session ? (
-                <div>
-                  <strong style={{ color: "var(--turf)" }}>Plan: {s.session.name}</strong>{" "}
-                  <span style={{ color: "#6B7280" }}>· by {s.session.createdBy.user.name}</span>
-                  <div style={{ marginTop: 4, color: "#374151" }}>
-                    {s.session.drills.map((sd, i) => (
-                      <div key={sd.id} style={{ padding: "1px 0" }}>
-                        <span style={{ color: "#9CA3AF", marginRight: 4 }}>{i + 1}.</span> {sd.drill.name}
-                      </div>
-                    ))}
+      {sessions.length === 0 ? (
+        <EmptyState
+          icon="calendar"
+          title="Nothing scheduled yet"
+          message="Create your first session above and it will show up here."
+        />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+          {sessions.map((s) => (
+            <SessionCard
+              key={s.id}
+              date={s.date}
+              startTime={s.startTime}
+              durationMinutes={s.durationMinutes}
+              ageGroupName={s.ageGroup.name}
+              locationName={s.location.name}
+              headCoaches={s.headCoaches.map((c) => c.user.name)}
+              assistantCoaches={s.assistantCoaches.map((c) => c.user.name)}
+              badge={s.recurring ? <Badge tone="accent">Weekly</Badge> : undefined}
+              actions={canEdit ? <ConfirmDeleteButton action={deleteScheduledSession.bind(null, s.id)} confirmMessage="Remove this session? This can't be undone." /> : undefined}
+              footer={
+                s.session ? (
+                  <div>
+                    <strong style={{ color: "var(--secondary)" }}>
+                      <Icon name="plan" size={13} style={{ verticalAlign: "-2px", marginRight: 4 }} />
+                      Plan: {s.session.name}
+                    </strong>{" "}
+                    <span style={{ color: "var(--text-muted)" }}>· by {s.session.createdBy.user.name}</span>
+                    <div style={{ marginTop: 4, color: "var(--text)", fontSize: 12 }}>
+                      {s.session.drills.map((sd, i) => (
+                        <div key={sd.id} style={{ padding: "1px 0" }}>
+                          <span style={{ color: "var(--text-faint)", marginRight: 4 }}>{i + 1}.</span> {sd.drill.name}
+                        </div>
+                      ))}
+                    </div>
+                    {canEdit && inAttachWindow(s) && (
+                      <form action={detachSessionPlan.bind(null, s.id)} style={{ marginTop: 6 }}>
+                        <button type="submit" style={{ fontSize: 11, padding: "4px 10px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 6, cursor: "pointer", color: "var(--text-muted)" }}>
+                          Remove plan
+                        </button>
+                      </form>
+                    )}
                   </div>
-                  {canEdit && inAttachWindow(s) && (
-                    <form action={detachSessionPlan.bind(null, s.id)} style={{ marginTop: 6 }}>
-                      <button type="submit" style={{ fontSize: 11, padding: "4px 10px", border: "1px solid #d1d5db", background: "#fff", borderRadius: 6, cursor: "pointer", color: "#6B7280" }}>
-                        Remove plan
-                      </button>
-                    </form>
-                  )}
-                </div>
-              ) : canEdit && inAttachWindow(s) && (
-                <form action={attachSessionPlan.bind(null, s.id)}>
-                  <select name="sessionId" required style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 12 }}>
-                    <option value="">Attach a session plan…</option>
-                    {sessionPlans.map((sp) => (
-                      <option key={sp.id} value={sp.id}>{sp.name}</option>
-                    ))}
-                  </select>
-                  <button type="submit" style={{ marginLeft: 6, padding: "6px 12px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                    Attach
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        ))}
-        {sessions.length === 0 && <p style={{ color: "#6B7280" }}>Nothing scheduled yet.</p>}
-      </div>
+                ) : canEdit && inAttachWindow(s) ? (
+                  <form action={attachSessionPlan.bind(null, s.id)} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                    <select name="sessionId" required style={{ ...inputBase, width: "auto", minWidth: 220, fontSize: 12, padding: "6px 10px" }}>
+                      <option value="">Attach a session plan…</option>
+                      {sessionPlans.map((sp) => (
+                        <option key={sp.id} value={sp.id}>{sp.name}</option>
+                      ))}
+                    </select>
+                    <button type="submit" style={smallBtn}>Attach</button>
+                  </form>
+                ) : undefined
+              }
+            />
+          ))}
+        </div>
+      )}
 
       {!canEdit && (
-        <p style={{ fontSize: 12, color: "#9CA3AF" }}>
+        <p style={{ fontSize: 12, color: "var(--text-faint)" }}>
           Showing this calendar month only. Past sessions are available on the history page.
         </p>
       )}
-    </main>
+    </>
   );
 }

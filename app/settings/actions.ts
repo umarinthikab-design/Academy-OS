@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { createSessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 import { cookies } from "next/headers";
 import { logActivity } from "@/lib/logActivity";
+import { sanitizePhotoUrl } from "@/lib/photo";
 
 // Re-issue the session cookie after a change that alters what's baked into
 // the JWT (name, or sessionVersion after a password change). Without this,
@@ -34,17 +35,28 @@ export async function updateProfile(formData: FormData) {
   if (!session) redirect("/login");
 
   const name = formData.get("name") as string;
-  const photoUrl = formData.get("photoUrl") as string;
+  const photoUrl = sanitizePhotoUrl(formData.get("photoUrl") as string);
+
   if (!name?.trim()) redirect("/settings?error=missing_fields");
 
   const user = await prisma.user.update({
     where: { id: session.userId },
-    data: { name: name.trim(), photoUrl: photoUrl?.trim() || null },
+    data: { name: name.trim(), photoUrl },
   });
 
   await refreshSessionCookie(user);
   if (session.userId) await logActivity(session.userId, "updated_profile", "User", user.id, user.name);
   redirect("/settings?success=Profile updated.");
+}
+
+export async function setTheme(theme: string) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+  const normalized = theme === "dark" ? "dark" : "light";
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { theme: normalized },
+  });
 }
 
 export async function changePassword(formData: FormData) {

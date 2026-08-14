@@ -3,6 +3,11 @@ import { createDrill, addFeedback, approveDrill, rejectDrill } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { inputBase } from "@/components/ui/Form";
+import { Icon } from "@/components/ui/Icon";
 
 const CATEGORIES = ["Warm-up", "Passing", "Dribbling", "Shooting", "Defending", "Fun Game"];
 
@@ -27,132 +32,166 @@ export default async function DrillsPage({
   const approved = drills.filter((d) => d.status === "APPROVED");
   const pending = drills.filter((d) => d.status === "PENDING");
 
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+
   return (
-    <main style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Drill Library</h1>
+    <>
+      <PageHeader
+        title="Drill Library"
+        subtitle={canSuggest ? "Suggest drills for the team library." : "Only coaches can suggest drills. You can still view the library and pending queue below."}
+      />
 
       <StatusBanner error={params.error} success={params.success} />
-
-      {!canSuggest && (
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
-          Only coaches can suggest drills. You can still view the library and pending queue below.
-        </p>
-      )}
 
       {canSuggest && (
         <form
           action={createDrill}
-          style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 28 }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            boxShadow: "var(--shadow-sm)",
+            padding: 18,
+            marginBottom: 28,
+          }}
         >
-          <div className="form-grid-2col" style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
+            <span style={{ fontSize: 14, fontWeight: 800 }}>Suggest a drill</span>
+          </div>
+          <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Name</label>
-              <input name="name" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Name</label>
+              <input name="name" required style={inputBase} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Category</label>
-              <select name="category" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }}>
+              <label style={fieldLabel}>Category</label>
+              <select name="category" required style={inputBase}>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Duration (minutes)</label>
-              <input name="duration" type="number" defaultValue={10} required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Duration (minutes)</label>
+              <input name="duration" type="number" defaultValue={10} required style={inputBase} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Player range</label>
-              <input name="playerRange" placeholder="e.g. 4-12" style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Player range</label>
+              <input name="playerRange" placeholder="e.g. 4-12" style={inputBase} />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Description</label>
-              <textarea name="description" style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box", minHeight: 60 }} />
+              <label style={fieldLabel}>Description</label>
+              <textarea name="description" style={{ ...inputBase, minHeight: 70, resize: "vertical" }} />
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Age groups</label>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <label style={fieldLabel}>Age groups</label>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
                 {ageGroups.map((ag) => (
-                  <label key={ag.id} style={{ fontSize: 13 }}>
+                  <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <input type="checkbox" name="ageGroups" value={ag.id} /> {ag.name}
                   </label>
                 ))}
               </div>
             </div>
           </div>
-          <button type="submit" style={{ padding: "8px 16px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer" }}>
+          <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
             Suggest Drill
           </button>
-          <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 8 }}>
+          <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
             All new drills go to Pending Approval below — nothing joins the library automatically.
           </p>
         </form>
       )}
 
-      <h3 style={{ fontSize: 16 }}>Pending Approval ({pending.length})</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
-        {pending.map((d) => (
-          <div key={d.id} style={{ background: "#FFF3CD", border: "2px solid var(--amber)", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <strong>{d.name}</strong>
-                <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 8 }}>
-                  {d.category} · {d.duration}m · submitted by {d.createdBy.user.name}
-                </span>
-                {d.description && <p style={{ fontSize: 13, margin: "6px 0 0" }}>{d.description}</p>}
+      <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
+        Pending Approval <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({pending.length})</span>
+      </h3>
+
+      {pending.length === 0 ? (
+        <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 28 }}>Nothing waiting on review.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+          {pending.map((d) => (
+            <div key={d.id} style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: "var(--radius)", padding: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <strong style={{ fontSize: 14 }}>{d.name}</strong>
+                    <Badge tone="warning">Pending</Badge>
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                    {d.category} · {d.duration}m · submitted by {d.createdBy.user.name}
+                    {d.ageGroups.length > 0 && ` · ${d.ageGroups.map((a) => a.name).join(", ")}`}
+                  </div>
+                  {d.description && <p style={{ fontSize: 13, margin: "6px 0 0", color: "var(--text)" }}>{d.description}</p>}
+                </div>
+                {canApprove && (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <form action={approveDrill.bind(null, d.id)}>
+                      <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                        Approve
+                      </button>
+                    </form>
+                    <ConfirmDeleteButton
+                      action={rejectDrill.bind(null, d.id)}
+                      confirmMessage={`Reject "${d.name}"? This deletes the suggestion and its feedback thread permanently.`}
+                      label="Reject"
+                    />
+                  </div>
+                )}
               </div>
-              {canApprove && (
-                <div style={{ display: "flex", gap: 6 }}>
-                  <form action={approveDrill.bind(null, d.id)}>
-                    <button type="submit" style={{ padding: "5px 10px", background: "var(--turf)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                      Approve
-                    </button>
-                  </form>
-                  <ConfirmDeleteButton
-                    action={rejectDrill.bind(null, d.id)}
-                    confirmMessage={`Reject "${d.name}"? This deletes the suggestion and its feedback thread permanently.`}
-                    label="Reject"
-                    buttonStyle={{ padding: "5px 10px", background: "#fff", color: "#E63946", border: "2px solid #E63946", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-                  />
+
+              {d.feedback.length > 0 && (
+                <div style={{ marginTop: 10, background: "var(--surface)", borderRadius: 8, padding: 10 }}>
+                  {d.feedback.map((f) => (
+                    <div key={f.id} style={{ fontSize: 12, marginBottom: 4 }}>
+                      <strong>{f.author.user.name}:</strong> {f.message}
+                    </div>
+                  ))}
                 </div>
               )}
+
+              {canSuggest && (
+                <form action={addFeedback.bind(null, d.id)} style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                  <input name="message" placeholder="Add feedback..." required style={{ ...inputBase, flex: 1, fontSize: 12 }} />
+                  <button type="submit" style={{ padding: "7px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                    Send
+                  </button>
+                </form>
+              )}
             </div>
+          ))}
+        </div>
+      )}
 
-            {d.feedback.length > 0 && (
-              <div style={{ marginTop: 10, background: "#fff", borderRadius: 8, padding: 10 }}>
-                {d.feedback.map((f) => (
-                  <div key={f.id} style={{ fontSize: 12, marginBottom: 4 }}>
-                    <strong>{f.author.user.name}:</strong> {f.message}
-                  </div>
-                ))}
+      <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
+        Library <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({approved.length})</span>
+      </h3>
+
+      {approved.length === 0 ? (
+        <EmptyState
+          icon="drills"
+          title="No approved drills yet"
+          message="Approved suggestions will appear here and become available in session plans."
+        />
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
+          {approved.map((d) => (
+            <div key={d.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ width: 30, height: 30, borderRadius: 8, background: "var(--surface-muted)", color: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon name="drills" size={15} />
+                </span>
+                <strong style={{ fontSize: 13.5 }}>{d.name}</strong>
               </div>
-            )}
-
-            {canSuggest && (
-              <form action={addFeedback.bind(null, d.id)} style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                <input name="message" placeholder="Add feedback..." required style={{ flex: 1, padding: 6, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 12 }} />
-                <button type="submit" style={{ padding: "6px 12px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                  Send
-                </button>
-              </form>
-            )}
-          </div>
-        ))}
-        {pending.length === 0 && <p style={{ color: "#6B7280", fontSize: 13 }}>Nothing waiting on review.</p>}
-      </div>
-
-      <h3 style={{ fontSize: 16 }}>Library ({approved.length})</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {approved.map((d) => (
-          <div key={d.id} style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 10, padding: "10px 14px" }}>
-            <strong>{d.name}</strong>
-            <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 8 }}>
-              {d.category} · {d.duration}m · {d.ageGroups.map((a) => a.name).join(", ")}
-            </span>
-          </div>
-        ))}
-        {approved.length === 0 && <p style={{ color: "#6B7280", fontSize: 13 }}>No approved drills yet.</p>}
-      </div>
-    </main>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
+                {d.category} · {d.duration}m · {d.ageGroups.map((a) => a.name).join(", ")}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

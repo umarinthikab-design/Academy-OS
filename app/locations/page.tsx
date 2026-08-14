@@ -3,6 +3,10 @@ import { createLocation, deleteLocation } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { inputBase } from "@/components/ui/Form";
+import { Icon } from "@/components/ui/Icon";
 
 export default async function LocationsPage({
   searchParams,
@@ -15,78 +19,76 @@ export default async function LocationsPage({
   const locations = await prisma.location.findMany({ orderBy: { name: "asc" } });
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Locations</h1>
+    <>
+      <PageHeader
+        title="Locations"
+        subtitle={canEdit ? "Where your sessions and matches take place." : "View only — you don't have edit access to locations."}
+      />
 
       <StatusBanner error={params.error} success={params.success} />
-
-      {!canEdit && (
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
-          View only — you don't have edit access to locations.
-        </p>
-      )}
 
       {canEdit && (
         <form
           action={createLocation}
           style={{
-            background: "#fff",
-            border: "2px solid var(--pitch)",
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 24,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            boxShadow: "var(--shadow-sm)",
+            padding: 18,
+            marginBottom: 20,
             display: "flex",
             gap: 10,
+            alignItems: "flex-end",
           }}
         >
-          <input
-            name="name"
-            placeholder="e.g. CR7, Colombo 03"
-            required
-            style={{ flex: 1, padding: 8, border: "1px solid #d1d5db", borderRadius: 6 }}
-          />
-          <button
-            type="submit"
-            style={{
-              padding: "8px 16px",
-              background: "var(--pitch)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
+          <div style={{ flex: 1 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Name</label>
+            <input name="name" placeholder="e.g. CR7, Colombo 03" required style={inputBase} />
+          </div>
+          <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
             Add Location
           </button>
         </form>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {locations.map((l) => (
-          <div
-            key={l.id}
-            style={{
-              background: "#fff",
-              border: "2px solid var(--pitch)",
-              borderRadius: 10,
-              padding: "10px 14px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>{l.name}</span>
-            {canEdit && (
-              <ConfirmDeleteButton
-                action={deleteLocation.bind(null, l.id)}
-                confirmMessage={`Remove ${l.name}? This can't be undone.`}
-              />
-            )}
-          </div>
-        ))}
-        {locations.length === 0 && <p style={{ color: "#6B7280" }}>No locations yet — add your first one above.</p>}
-      </div>
-    </main>
+      {locations.length === 0 ? (
+        <EmptyState
+          icon="pin"
+          title="No locations yet"
+          message="Add your first training ground above to get started."
+        />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {locations.map((l) => (
+            <div
+              key={l.id}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                padding: "12px 16px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--surface-muted)", color: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Icon name="pin" size={16} />
+                </span>
+                <span style={{ fontWeight: 700, fontSize: 14 }}>{l.name}</span>
+              </div>
+              {canEdit && (
+                <ConfirmDeleteButton
+                  action={deleteLocation.bind(null, l.id)}
+                  confirmMessage={`Remove ${l.name}? This can't be undone.`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

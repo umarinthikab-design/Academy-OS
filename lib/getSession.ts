@@ -19,7 +19,7 @@ export async function getSession(): Promise<SessionPayload | null> {
   // time, so a mismatch means the session was revoked after the fact.
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    select: { sessionVersion: true },
+    select: { sessionVersion: true, name: true, role: true },
   });
   if (!user) return null;
   if (user.sessionVersion !== payload.sessionVersion) {
@@ -30,5 +30,7 @@ export async function getSession(): Promise<SessionPayload | null> {
     redirect("/auth/revoked");
   }
 
-  return payload;
+  // Always reflect the current DB name/role rather than the snapshot baked
+  // into the JWT at login time, so a profile rename shows up immediately.
+  return { ...payload, name: user.name, role: user.role };
 }

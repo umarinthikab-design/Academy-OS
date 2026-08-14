@@ -3,6 +3,11 @@ import { createBatch, deleteBatch } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
+import { inputBase } from "@/components/ui/Form";
+import { Icon } from "@/components/ui/Icon";
 
 export default async function BatchesPage({
   searchParams,
@@ -23,97 +28,117 @@ export default async function BatchesPage({
   ]);
 
   const missingPrereqs = ageGroups.length === 0;
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Batches</h1>
+    <>
+      <PageHeader
+        title="Batches"
+        subtitle={canEdit ? "Group players under a coach and age group." : "View only — you don't have edit access to batches."}
+      />
 
       <StatusBanner error={params.error} success={params.success} />
 
-      {!canEdit && (
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
-          View only — you don't have edit access to batches.
-        </p>
-      )}
-
       {missingPrereqs && canEdit && (
-        <div style={{ background: "#FFF3CD", border: "2px solid var(--amber)", borderRadius: 10, padding: 14, marginBottom: 20, fontSize: 13 }}>
-          Add an <a href="/age-groups">age group</a> first.
+        <div style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: 10, padding: 14, marginBottom: 20, fontSize: 13, color: "#92400e" }}>
+          Add an <a href="/age-groups" style={{ color: "inherit", fontWeight: 700 }}>age group</a> first.
         </div>
       )}
 
       {canEdit && !missingPrereqs && (
         <form
           action={createBatch}
-          style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 24 }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            boxShadow: "var(--shadow-sm)",
+            padding: 18,
+            marginBottom: 24,
+          }}
         >
-          <div className="form-grid-2col" style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
+            <span style={{ fontSize: 14, fontWeight: 800 }}>Create a batch</span>
+          </div>
+          <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Batch name</label>
-              <input name="name" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
+              <label style={fieldLabel}>Batch name</label>
+              <input name="name" required style={inputBase} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Age group</label>
-              <select name="ageGroupId" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }}>
+              <label style={fieldLabel}>Age group</label>
+              <select name="ageGroupId" required style={inputBase}>
                 {ageGroups.map((ag) => (
                   <option key={ag.id} value={ag.id}>{ag.name}</option>
                 ))}
               </select>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Main coaches</label>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {coaches.length === 0 && <span style={{ fontSize: 12, color: "#9CA3AF" }}>No coaches in the roster yet.</span>}
+              <label style={fieldLabel}>Main coaches</label>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
+                {coaches.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No coaches in the roster yet.</span>}
                 {coaches.map((c) => (
-                  <label key={c.id} style={{ fontSize: 13 }}>
+                  <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <input type="checkbox" name="mainCoaches" value={c.id} /> {c.user.name}
                   </label>
                 ))}
               </div>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Players</label>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", maxHeight: 140, overflowY: "auto" }}>
-                {players.length === 0 && <span style={{ fontSize: 12, color: "#9CA3AF" }}>No players in the squad yet.</span>}
+              <label style={fieldLabel}>Players</label>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxHeight: 150, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginTop: 4 }}>
+                {players.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No players in the squad yet.</span>}
                 {players.map((p) => (
-                  <label key={p.id} style={{ fontSize: 13 }}>
+                  <label key={p.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <input type="checkbox" name="players" value={p.id} /> {p.name}
                   </label>
                 ))}
               </div>
             </div>
           </div>
-          <button type="submit" style={{ padding: "8px 16px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer" }}>
+          <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
             Create Batch
           </button>
         </form>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {batches.map((b) => (
-          <div key={b.id} style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <strong>{b.name}</strong>
-                <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 8 }}>{b.ageGroup.name}</span>
-                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>
-                  Coaches: {b.mainCoaches.map((c) => c.user.name).join(", ") || "none assigned"}
+      {batches.length === 0 ? (
+        <EmptyState
+          icon="batches"
+          title="No batches yet"
+          message="Create your first batch above to group players and coaches."
+        />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {batches.map((b) => (
+            <div key={b.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <strong style={{ fontSize: 15 }}>{b.name}</strong>
+                    <Badge tone="blue">{b.ageGroup.name}</Badge>
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                    <Icon name="whistle" size={13} style={{ verticalAlign: "-2px", marginRight: 3 }} />
+                    Coaches: {b.mainCoaches.map((c) => c.user.name).join(", ") || "none assigned"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                    <Icon name="squad" size={13} style={{ verticalAlign: "-2px", marginRight: 3 }} />
+                    Players ({b.players.length}): {b.players.map((p) => p.name).join(", ") || "none yet"}
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>
-                  Players ({b.players.length}): {b.players.map((p) => p.name).join(", ") || "none yet"}
-                </div>
+                {canEdit && (
+                  <ConfirmDeleteButton
+                    action={deleteBatch.bind(null, b.id)}
+                    confirmMessage={`Remove ${b.name}? This can't be undone.`}
+                  />
+                )}
               </div>
-              {canEdit && (
-                <ConfirmDeleteButton
-                  action={deleteBatch.bind(null, b.id)}
-                  confirmMessage={`Remove ${b.name}? This can't be undone.`}
-                />
-              )}
             </div>
-          </div>
-        ))}
-        {batches.length === 0 && <p style={{ color: "#6B7280" }}>No batches yet.</p>}
-      </div>
-    </main>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

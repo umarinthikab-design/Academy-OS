@@ -5,6 +5,12 @@ import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
 import { calculateAge } from "@/lib/skills";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Avatar } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { inputBase } from "@/components/ui/Form";
+import { Icon } from "@/components/ui/Icon";
 import Link from "next/link";
 
 // Filtering is in-memory via URLSearchParams read from searchParams - the
@@ -46,65 +52,53 @@ export default async function SquadPage({
 
   const hasFilters = !!params.age || !!params.batch || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
 
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Squad</h1>
+    <>
+      <PageHeader
+        title="Squad"
+        subtitle={canEdit ? "Add players and rate their skills. Every player gets an age-matched rating sheet." : "View only — squad editing is limited to admins and head coaches for now."}
+        actions={
+          canEdit ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              <Icon name="squad" size={15} /> {filtered.length} {filtered.length === 1 ? "player" : "players"}
+            </span>
+          ) : undefined
+        }
+      />
 
       <StatusBanner error={params.error} success={params.success} />
-
-      {!canEdit && (
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
-          View only — squad editing is limited to admins and head coaches for now.
-        </p>
-      )}
 
       {canEdit && (
         <form
           action={createPlayer}
           style={{
-            background: "#fff",
-            border: "2px solid var(--pitch)",
-            borderRadius: 12,
-            padding: 16,
-            marginBottom: 24,
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-            alignItems: "flex-end",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            boxShadow: "var(--shadow-sm)",
+            padding: 18,
+            marginBottom: 20,
           }}
         >
-          <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
-              Name
-            </label>
-            <input
-              name="name"
-              required
-              style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6 }}
-            />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
+            <span style={{ fontSize: 14, fontWeight: 800 }}>Add a player</span>
           </div>
-          <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
-              Date of birth
-            </label>
-            <input
-              name="dateOfBirth"
-              type="date"
-              required
-              style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6 }}
-            />
+          <div className="form-grid-2col" style={{ gap: 12 }}>
+            <div>
+              <label style={fieldLabel}>Name</label>
+              <input name="name" required style={inputBase} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Date of birth</label>
+              <input name="dateOfBirth" type="date" required style={inputBase} />
+            </div>
           </div>
           <button
             type="submit"
-            style={{
-              padding: "8px 16px",
-              background: "var(--pitch)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
+            style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
           >
             Add Player
           </button>
@@ -118,20 +112,20 @@ export default async function SquadPage({
           gap: 10,
           flexWrap: "wrap",
           alignItems: "flex-end",
-          background: "#fff",
-          border: "2px solid var(--turf)",
-          borderRadius: 12,
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius)",
           padding: 14,
           marginBottom: 20,
         }}
       >
         <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Age</label>
-          <input name="age" type="number" min={1} defaultValue={params.age ?? ""} style={{ width: 70, padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }} />
+          <label style={fieldLabel}>Age</label>
+          <input name="age" type="number" min={1} defaultValue={params.age ?? ""} style={{ width: 70, padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Batch</label>
-          <select name="batch" defaultValue={params.batch ?? ""} style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }}>
+          <label style={fieldLabel}>Batch</label>
+          <select name="batch" defaultValue={params.batch ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }}>
             <option value="">All</option>
             {batches.map((b) => (
               <option key={b.id} value={b.id}>{b.name} ({b.ageGroup.name})</option>
@@ -139,79 +133,87 @@ export default async function SquadPage({
           </select>
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>DOB from</label>
-          <input name="dobFrom" type="date" defaultValue={params.dobFrom ?? ""} style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }} />
+          <label style={fieldLabel}>DOB from</label>
+          <input name="dobFrom" type="date" defaultValue={params.dobFrom ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>DOB to</label>
-          <input name="dobTo" type="date" defaultValue={params.dobTo ?? ""} style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }} />
+          <label style={fieldLabel}>DOB to</label>
+          <input name="dobTo" type="date" defaultValue={params.dobTo ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Joined from</label>
-          <input name="joinedFrom" type="date" defaultValue={params.joinedFrom ?? ""} style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }} />
+          <label style={fieldLabel}>Joined from</label>
+          <input name="joinedFrom" type="date" defaultValue={params.joinedFrom ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
         </div>
         <div>
-          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Joined to</label>
-          <input name="joinedTo" type="date" defaultValue={params.joinedTo ?? ""} style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6 }} />
+          <label style={fieldLabel}>Joined to</label>
+          <input name="joinedTo" type="date" defaultValue={params.joinedTo ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
         </div>
-        <button
-          type="submit"
-          style={{ padding: "6px 14px", border: "1px solid var(--turf)", background: "var(--turf)", color: "#fff", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 700 }}
-        >
+        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
           Filter
         </button>
         {hasFilters && (
-          <a href="/squad" style={{ fontSize: 12, color: "#6B7280", padding: "6px 0" }}>
+          <a href="/squad" style={{ fontSize: 12, color: "var(--text-muted)", padding: "6px 0", textDecoration: "none" }}>
             Clear
           </a>
         )}
       </form>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {filtered.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              background: "#fff",
-              border: "2px solid var(--pitch)",
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <Link href={`/squad/${p.id}`} style={{ fontSize: 16, fontWeight: 800, color: "var(--pitch)", textDecoration: "none" }}>
-                  {p.name}
-                </Link>
-                <span style={{ fontSize: 12, color: "#6B7280", marginLeft: 8 }}>
-                  Age {calculateAge(p.dateOfBirth)}
-                </span>
-                {p.batches.length > 0 && (
-                  <span style={{ fontSize: 12, color: "#6B7280", marginLeft: 8 }}>
-                    · {p.batches.map((b) => b.name).join(", ")}
-                  </span>
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon="squad"
+          title={hasFilters ? "No players match the current filters" : "No players yet"}
+          message={hasFilters ? "Try removing a filter to see more results." : "Add your first player above to start building the squad."}
+        />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {filtered.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                boxShadow: "var(--shadow-sm)",
+                padding: 16,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                  <Avatar name={p.name} size={42} />
+                  <div style={{ minWidth: 0 }}>
+                    <Link href={`/squad/${p.id}`} style={{ fontSize: 16, fontWeight: 800, color: "var(--primary)", textDecoration: "none" }}>
+                      {p.name}
+                    </Link>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
+                      <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
+                      {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
+                      {p.batches.map((b) => (
+                        <Badge key={b.id} tone="blue">{b.name}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {canEdit && (
+                  <ConfirmDeleteButton
+                    action={deletePlayer.bind(null, p.id)}
+                    confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
+                  />
                 )}
               </div>
-              {canEdit && (
-                <ConfirmDeleteButton
-                  action={deletePlayer.bind(null, p.id)}
-                  confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
-                />
-              )}
-            </div>
 
-            <PlayerRatingCard
-              playerId={p.id}
-              dateOfBirth={p.dateOfBirth.toISOString()}
-              position={p.position}
-              skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
-              canEdit={canEdit}
-            />
-          </div>
-        ))}
-        {filtered.length === 0 && <p style={{ color: "#6B7280" }}>No players match the current filters.</p>}
-        {!hasFilters && filtered.length === 0 && <p style={{ color: "#6B7280" }}>No players yet — add your first one above.</p>}
-      </div>
-    </main>
+              <div style={{ marginTop: 12 }}>
+                <PlayerRatingCard
+                  playerId={p.id}
+                  dateOfBirth={p.dateOfBirth.toISOString()}
+                  position={p.position}
+                  skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
+                  canEdit={canEdit}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

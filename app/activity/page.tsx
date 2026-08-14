@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function ActivityPage() {
   const perms = await getPermissions();
 
   if (perms.role === "PARENT") {
     return (
-      <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-        <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Activity</h1>
-        <p style={{ color: "#6B7280", fontSize: 13 }}>This page is for coaching staff.</p>
-      </main>
+      <PageHeader title="Activity" subtitle="This page is for coaching staff." />
     );
   }
 
@@ -28,43 +27,48 @@ export default async function ActivityPage() {
     action.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 4px" }}>Activity</h1>
-      <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 20 }}>
-        {perms.isAdmin ? "Everything, newest first." : "Your activity, newest first."}
-      </p>
+    <>
+      <PageHeader
+        title="Activity"
+        subtitle={perms.isAdmin ? "Everything, newest first." : "Your activity, newest first."}
+      />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {logs.map((l) => (
-          <div
-            key={l.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              gap: 12,
-              padding: "8px 12px",
-              background: "#fff",
-              border: "1px solid #E5E7EB",
-              borderRadius: 8,
-              fontSize: 13,
-            }}
-          >
-            <div>
-              <strong>{actionLabel(l.action)}</strong>{" "}
-              <span style={{ color: "#6B7280" }}>
-                · {l.entityType}
-                {l.details ? ` · ${l.details}` : ""}
-              </span>
+      {logs.length === 0 ? (
+        <EmptyState
+          icon="activity"
+          title="No activity logged yet"
+          message="Actions across the academy will show up here as they happen."
+        />
+      ) : (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+          {logs.map((l) => (
+            <div
+              key={l.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                gap: 12,
+                padding: "11px 16px",
+                fontSize: 13,
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              <div style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <strong>{actionLabel(l.action)}</strong>{" "}
+                <span style={{ color: "var(--text-muted)" }}>
+                  · {l.entityType}
+                  {l.details ? ` · ${l.details}` : ""}
+                </span>
+              </div>
+              <div style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)", whiteSpace: "nowrap" }}>
+                <div>{l.user.name}</div>
+                <div>{l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+              </div>
             </div>
-            <div style={{ textAlign: "right", fontSize: 11, color: "#9CA3AF", whiteSpace: "nowrap" }}>
-              <div>{l.user.name}</div>
-              <div>{l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
-            </div>
-          </div>
-        ))}
-        {logs.length === 0 && <p style={{ color: "#6B7280" }}>No activity logged yet.</p>}
-      </div>
-    </main>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

@@ -1,14 +1,74 @@
 import "./globals.css";
 import { getSession } from "@/lib/getSession";
 import { prisma } from "@/lib/prisma";
+import { getPermissions } from "@/lib/permissions";
 import { logout } from "./login/actions";
 import { SidebarNav } from "@/components/SidebarNav";
 import { MobileNav } from "@/components/MobileNav";
+import { Avatar } from "@/components/ui/Avatar";
+import { Icon } from "@/components/ui/Icon";
+import { roleLabel } from "@/lib/roleLabel";
+import { getNavItems } from "@/lib/navItems";
+import Link from "next/link";
 
 export const metadata = {
   title: "Touchline",
-  description: "Grassroots coaching management",
+  description: "Professional football coaching management",
 };
+
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+// Top header: page-context breadcrumb handled per-page; this shell provides
+// the consistent header strip with the Touchline wordmark, date/greeting, and
+// the user's profile chip linking to Settings.
+function TopHeader({ name, role, photoUrl }: { name: string; role: string; photoUrl: string | null }) {
+  return (
+    <header
+      style={{
+        height: 60,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        padding: "0 28px",
+        background: "var(--surface)",
+        borderBottom: "1px solid var(--border)",
+        position: "sticky",
+        top: 0,
+        zIndex: 20,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--text-muted)" }}>
+        <Icon name="calendar" size={16} style={{ color: "var(--secondary)" }} />
+        {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+      </div>
+      <Link
+        href="/settings"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          textDecoration: "none",
+          color: "var(--text)",
+          padding: "5px 10px",
+          borderRadius: 8,
+          transition: "background var(--transition)",
+        }}
+      >
+        <Avatar name={name} src={photoUrl} size={32} />
+        <div style={{ lineHeight: 1.2 }}>
+          <div style={{ fontSize: 13, fontWeight: 700 }}>{name}</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{greeting()}, {roleLabel(role)}</div>
+        </div>
+      </Link>
+    </header>
+  );
+}
 
 export default async function RootLayout({
   children,
@@ -16,73 +76,50 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true } }) : null;
+  const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true } }) : null;
   const photoUrl = user?.photoUrl ?? null;
+  const theme = user?.theme ?? "light";
+  const perms = await getPermissions();
+  const navItems = getNavItems(perms);
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme}>
       <body>
         {session ? (
-          // Logged in: sidebar + content on desktop, hamburger + drawer on
-          // mobile. Both read from the same session, so they can never show
-          // different information. The login page never reaches this branch
-          // because there's no session yet when it's rendered.
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <MobileNav userName={session.name} userRole={session.role} photoUrl={photoUrl} logoutAction={logout} />
+            <MobileNav userName={session.name} userRole={session.role} photoUrl={photoUrl} logoutAction={logout} items={navItems} />
             <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
               <aside
                 className="desktop-sidebar"
                 style={{
-                  width: 220,
+                  width: 236,
                   flexShrink: 0,
-                  background: "var(--pitch)",
+                  background: "var(--primary-dark)",
                   color: "#fff",
                   flexDirection: "column",
-                  padding: "20px 0",
                   position: "sticky",
                   top: 0,
                   height: "100vh",
                 }}
               >
-                <div style={{ padding: "0 20px 20px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", opacity: 0.7 }}>
-                    GRASSROOTS COACHING
+                <div style={{ padding: "20px 20px 16px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55 }}>
+                    Grassroots Coaching
                   </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, textTransform: "uppercase" }}>Touchline</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 2 }}>
+                    <Icon name="football" size={22} style={{ color: "var(--accent)" }} />
+                    <div style={{ fontSize: 21, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.02em" }}>Touchline</div>
+                  </div>
                 </div>
 
-                <SidebarNav />
+                <SidebarNav items={navItems} />
 
-                <div style={{ padding: "16px 20px 0", borderTop: "1px solid rgba(255,255,255,0.15)", marginTop: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                    {photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={photoUrl}
-                        alt={session.name}
-                        style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.3)" }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: "50%",
-                          background: "var(--turf)",
-                          color: "#fff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 16,
-                          fontWeight: 800,
-                        }}
-                      >
-                        {session.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700 }}>{session.name}</div>
-                      <div style={{ fontSize: 11, opacity: 0.7 }}>{session.role.replace("_", " ")}</div>
+                <div style={{ padding: "16px 20px 20px", borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                    <Avatar name={session.name} src={photoUrl} size={36} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
+                      <div style={{ fontSize: 11, opacity: 0.65 }}>{roleLabel(session.role)}</div>
                     </div>
                   </div>
                   <form action={logout}>
@@ -90,21 +127,32 @@ export default async function RootLayout({
                       type="submit"
                       style={{
                         width: "100%",
-                        padding: "6px 10px",
-                        background: "rgba(255,255,255,0.1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        padding: "8px 10px",
+                        background: "rgba(255,255,255,0.07)",
                         color: "#fff",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                        borderRadius: 6,
+                        border: "1px solid rgba(255,255,255,0.18)",
+                        borderRadius: 8,
                         cursor: "pointer",
-                        fontSize: 12,
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                        transition: "background var(--transition)",
                       }}
                     >
+                      <Icon name="logout" size={15} />
                       Sign out
                     </button>
                   </form>
                 </div>
               </aside>
-              <main style={{ flex: 1, minWidth: 0 }}>{children}</main>
+
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+                <TopHeader name={session.name} role={session.role} photoUrl={photoUrl} />
+                <main style={{ flex: 1, padding: "28px 28px 48px", width: "100%", maxWidth: 1060, margin: "0 auto" }}>{children}</main>
+              </div>
             </div>
           </div>
         ) : (

@@ -1,33 +1,145 @@
+/* Touchline design system
+   Tokens live here; pages/components reference these variables so the whole
+   app shares one visual language. Keep legacy aliases (--pitch, --turf,
+   --chalk, --amber, --clay) so nothing breaks mid-migration. */
+
 :root {
-  --pitch: #1b4332;
-  --turf: #2d6a4f;
-  --chalk: #f1faee;
-  --amber: #ffb703;
-  --clay: #e63946;
+  /* Brand */
+  --primary: #0b3d2e;
+  --primary-dark: #06271e;
+  --primary-light: #0f4d3a;
+  --secondary: #16a34a;
+  --accent: #a3e635;
+
+  /* Surfaces */
+  --bg: #f5f7f6;
+  --surface: #ffffff;
+  --surface-muted: #f3f5f4;
+
+  /* Text */
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-faint: #9ca3af;
+
+  /* Lines & states */
+  --border: #e5e7eb;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+  --error: #ef4444;
+  --error-bg: #fef2f2;
+  --success: #22c55e;
+  --success-bg: #f0fdf4;
+  --info-bg: #eff6ff;
+
+  /* Legacy aliases */
+  --pitch: var(--primary);
+  --turf: var(--secondary);
+  --chalk: var(--bg);
+  --amber: var(--warning);
+  --clay: var(--error);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(6, 39, 30, 0.06);
+  --shadow: 0 1px 3px rgba(6, 39, 30, 0.08), 0 1px 2px rgba(6, 39, 30, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(6, 39, 30, 0.12), 0 2px 4px -2px rgba(6, 39, 30, 0.08);
+  --shadow-lg: 0 12px 32px -8px rgba(6, 39, 30, 0.2);
+
+  /* Motion */
+  --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Dark theme ─────────────────────────────────────────────
+   data-theme="dark" on <html> overrides the same tokens so every
+   component that uses var() picks up the dark palette automatically. */
+
+:root[data-theme="dark"] {
+  --primary: #2e7d57;
+  --primary-dark: #0a1813;
+  --primary-light: #3b9469;
+  --secondary: #22c55e;
+  --accent: #a3e635;
+
+  --bg: #0b1512;
+  --surface: #132019;
+  --surface-muted: #1a2a21;
+
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --text-faint: #6b7280;
+
+  --border: #2a3d33;
+
+  --warning: #fbbf24;
+  --warning-bg: #3a2f14;
+  --error: #f87171;
+  --error-bg: #3b1517;
+  --success: #4ade80;
+  --success-bg: #143324;
+  --info-bg: #14283d;
+
+  --pitch: var(--primary);
+  --turf: var(--secondary);
+  --chalk: var(--bg);
+  --amber: var(--warning);
+  --clay: var(--error);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: var(--chalk);
-  color: var(--pitch);
-  font-family: "Helvetica Neue", Arial, sans-serif;
+  padding: 0;
 }
 
-/* Layout shell: permanent sidebar on desktop, hamburger + drawer on mobile.
-   This split can't be done with inline styles alone - there's no way to
-   express "different layout below this width" without real CSS. */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+a {
+  color: var(--secondary);
+}
+
+/* ── Layout shell ─────────────────────────────────────────── */
+
 .desktop-sidebar {
   display: flex;
 }
+
 .mobile-topbar {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .desktop-sidebar {
     display: none;
   }
@@ -36,20 +148,20 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    background: var(--pitch);
+    background: var(--primary-dark);
     color: #fff;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 40;
   }
 }
 
-/* Two-column forms (batches, schedule, drills) collapse to one column on
-   narrow screens instead of squeezing both columns unreadably thin. */
+/* ── Form helpers ─────────────────────────────────────────── */
+
 .form-grid-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 14px;
 }
 
 @media (max-width: 600px) {
@@ -58,7 +170,6 @@ body {
   }
 }
 
-/* Two-column rollup tables (attendance) collapse to one on narrow screens. */
 .rollup-grid {
   grid-template-columns: 1fr 1fr;
 }
@@ -67,4 +178,27 @@ body {
   .rollup-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Focus rings ──────────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* ── Scrollbars (subtle) ──────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }

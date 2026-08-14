@@ -34,11 +34,11 @@ async function main() {
   console.log("Seeding a starter admin + head coach account...");
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@touchline.local" },
-    update: {},
+    update: { name: "Umar Inthikab" },
     create: {
       email: "admin@touchline.local",
       password: hashedPassword,
-      name: "Admin",
+      name: "Umar Inthikab",
       role: "ADMIN",
     },
   });
@@ -72,7 +72,7 @@ async function main() {
 
   console.log("Done.");
   console.log({ adminUser: adminUser.email, headUser: headUser.email, seedPassword: SEED_PASSWORD });
-  console.log("Note: if these accounts already existed from before auth was added, this upsert did NOT overwrite their password - use 'npm run set-password' instead.");
+  console.log("Note: if these accounts already existed from before auth was added, this upsert did NOT overwrite their password.");
 }
 
 main()

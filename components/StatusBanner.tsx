@@ -1,3 +1,5 @@
+// Banner for action results (error/success) shown after redirects.
+
 const ERROR_MESSAGES: Record<string, string> = {
   duplicate_email: "That email is already in use by another account.",
   duplicate_name: "That name is already in use.",
@@ -13,14 +15,44 @@ const ERROR_MESSAGES: Record<string, string> = {
 export function StatusBanner({ error, success }: { error?: string; success?: string }) {
   if (error) {
     return (
-      <div style={{ background: "#FEE2E2", color: "#991B1B", padding: "10px 14px", borderRadius: 8, marginBottom: 16, fontSize: 13, fontWeight: 600 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: "var(--error-bg)",
+          color: "var(--error)",
+          border: "1px solid var(--error)",
+          padding: "10px 14px",
+          borderRadius: 8,
+          marginBottom: 16,
+          fontSize: 13,
+          fontWeight: 600,
+        }}
+      >
+        <span aria-hidden="true">⚠</span>
         {ERROR_MESSAGES[error] || "Something went wrong. Please try again."}
       </div>
     );
   }
   if (success) {
     return (
-      <div style={{ background: "#D1FAE5", color: "#065F46", padding: "10px 14px", borderRadius: 8, marginBottom: 16, fontSize: 13, fontWeight: 600 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          background: "var(--success-bg)",
+          color: "var(--success)",
+          border: "1px solid var(--success)",
+          padding: "10px 14px",
+          borderRadius: 8,
+          marginBottom: 16,
+          fontSize: 13,
+          fontWeight: 600,
+        }}
+      >
+        <span aria-hidden="true">✓</span>
         {success}
       </div>
     );

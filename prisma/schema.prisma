@@ -82,6 +82,10 @@ model User {
   // so admins and anyone without a hosted avatar can skip it.
   photoUrl String?
 
+  // UI theme preference. Persisted per user so the whole app renders in the
+  // same mode across devices.
+  theme String @default("light")
+
   coach        Coach?
   parent       Parent?
   activityLogs ActivityLog[]

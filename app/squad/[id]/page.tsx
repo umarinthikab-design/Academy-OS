@@ -5,6 +5,11 @@ import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
 import { calculateAge, getSkillBandForAge } from "@/lib/skills";
+import { Avatar } from "@/components/ui/Avatar";
+import { Badge } from "@/components/ui/Badge";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { inputBase } from "@/components/ui/Form";
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
 
 export default async function PlayerDetailPage({
   params,
@@ -72,62 +77,46 @@ export default async function PlayerDetailPage({
   const rated = activeSkills.filter((s) => s.value > 0);
   const average = rated.length ? rated.reduce((sum, s) => sum + s.value, 0) / rated.length : 0;
 
+  const sectionStyle: React.CSSProperties = {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius)",
+    padding: 16,
+    marginBottom: 20,
+    boxShadow: "var(--shadow-sm)",
+  };
+
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
+    <>
       <StatusBanner error={p.error} success={p.success} />
 
+      {/* Player hero */}
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        {player.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={player.photoUrl}
-            alt={player.name}
-            style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--pitch)" }}
-          />
-        ) : (
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: "50%",
-              background: "var(--turf)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 26,
-              fontWeight: 800,
-            }}
-          >
-            {player.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Avatar name={player.name} src={player.photoUrl} size={72} />
         <div>
-          <h1 style={{ fontSize: 26, margin: "0 0 4px" }}>{player.name}</h1>
-          <div style={{ fontSize: 13, color: "#6B7280" }}>
-            Age {age} · Born {player.dateOfBirth.toLocaleDateString()} · Joined{" "}
-            {player.dateJoined.toLocaleDateString()}
+          <h1 style={{ fontSize: 26, margin: "0 0 4px", letterSpacing: "-0.02em" }}>{player.name}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <Badge tone="muted">Age {age}</Badge>
+            <Badge tone="muted">Born {player.dateOfBirth.toLocaleDateString()}</Badge>
+            <Badge tone="muted">Joined {player.dateJoined.toLocaleDateString()}</Badge>
+            {player.batches.map((b) => (
+              <Badge key={b.id} tone="blue">{b.name}</Badge>
+            ))}
           </div>
-          {player.batches.length > 0 && (
-            <div style={{ fontSize: 13, color: "#6B7280" }}>
-              {player.batches.map((b) => `${b.name} (${b.ageGroup.name})`).join(", ")}
-            </div>
-          )}
-          <div style={{ fontSize: 13, color: "#6B7280" }}>
-            Position: <strong>{player.position}</strong>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
+            Position: <strong style={{ color: "var(--text)" }}>{player.position}</strong>
             {average > 0 && (
-              <span>
-                {" "}
-                · Average: <strong style={{ color: "var(--turf)" }}>{average.toFixed(1)}</strong>/5
-              </span>
+              <>
+                {" "}· Average: <strong style={{ color: "var(--secondary)" }}>{average.toFixed(1)}</strong>/5
+              </>
             )}
           </div>
         </div>
       </div>
 
       {/* Skill history / trend */}
-      <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, margin: "0 0 4px" }}>Skills</h2>
+      <section style={sectionStyle}>
+        <SectionHeader title="Skills" />
         <PlayerRatingCard
           playerId={player.id}
           dateOfBirth={player.dateOfBirth.toISOString()}
@@ -135,14 +124,13 @@ export default async function PlayerDetailPage({
           skills={player.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
           canEdit={canEdit}
         />
-        <div style={{ marginTop: 12, borderTop: "1px solid #F3F4F6", paddingTop: 10 }}>
+        <div style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
           {skillTrend.map(({ skillName, current, history }) => (
-            <div key={skillName} style={{ marginBottom: 6, fontSize: 12, color: "#6B7280" }}>
-              <strong style={{ color: "#374151" }}>{skillName}</strong>
+            <div key={skillName} style={{ marginBottom: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              <strong style={{ color: "var(--text)" }}>{skillName}</strong>
               {history.length > 1 && (
                 <span>
-                  {" "}
-                  · Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`).join(" → ")}
+                  {" "}· Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`).join(" → ")}
                 </span>
               )}
             </div>
@@ -151,54 +139,52 @@ export default async function PlayerDetailPage({
       </section>
 
       {/* Attended sessions */}
-      <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>Sessions attended ({player.attendance.length})</h2>
+      <section style={sectionStyle}>
+        <SectionHeader title={`Sessions attended (${player.attendance.length})`} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {player.attendance.map((att) => {
             const s = att.scheduledSession;
             return (
-              <div key={att.id} style={{ fontSize: 13, padding: "4px 0", borderBottom: "1px solid #F3F4F6" }}>
+              <div key={att.id} style={{ fontSize: 13, padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
                 <strong>{s.date.toLocaleDateString()}</strong> · {s.ageGroup.name} · {s.location.name}
-                {s.session && <span style={{ color: "var(--turf)" }}> · Plan: {s.session.name}</span>}
+                {s.session && <span style={{ color: "var(--secondary)" }}> · Plan: {s.session.name}</span>}
               </div>
             );
           })}
-          {player.attendance.length === 0 && <p style={{ fontSize: 12, color: "#9CA3AF" }}>No attended sessions recorded yet.</p>}
+          {player.attendance.length === 0 && <p style={{ fontSize: 12, color: "var(--text-faint)" }}>No attended sessions recorded yet.</p>}
         </div>
       </section>
 
       {/* Areas trained most */}
       {topAreas.length > 0 && (
-        <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-          <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>Areas trained most</h2>
+        <section style={sectionStyle}>
+          <SectionHeader title="Areas trained most" />
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {topAreas.map(([category, count]) => (
-              <span key={category} style={{ fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 20, background: "var(--turf)", color: "#fff" }}>
-                {category} ×{count}
-              </span>
+              <Badge key={category} tone="green">{category} ×{count}</Badge>
             ))}
           </div>
         </section>
       )}
 
       {/* Coach notes */}
-      <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>Coach notes</h2>
+      <section style={sectionStyle}>
+        <SectionHeader title="Coach notes" />
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
           {player.notes.map((n) => (
-            <div key={n.id} style={{ fontSize: 13, padding: "8px 10px", background: "#F9FAFB", borderRadius: 8 }}>
+            <div key={n.id} style={{ fontSize: 13, padding: "8px 10px", background: "var(--surface-muted)", borderRadius: 8 }}>
               <div>{n.content}</div>
-              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 4 }}>
                 {n.coach.user.name} · {n.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
               </div>
             </div>
           ))}
-          {player.notes.length === 0 && <p style={{ fontSize: 12, color: "#9CA3AF" }}>No notes yet.</p>}
+          {player.notes.length === 0 && <p style={{ fontSize: 12, color: "var(--text-faint)" }}>No notes yet.</p>}
         </div>
         {canEdit && (
           <form action={createNote.bind(null, player.id)} style={{ display: "flex", gap: 6 }}>
-            <input name="content" placeholder="Add a note..." required style={{ flex: 1, padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13 }} />
-            <button type="submit" style={{ padding: "8px 14px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+            <input name="content" placeholder="Add a note..." required style={{ ...inputBase, flex: 1, fontSize: 13 }} />
+            <button type="submit" style={{ padding: "9px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
               Add
             </button>
           </form>
@@ -207,40 +193,37 @@ export default async function PlayerDetailPage({
 
       {/* Emergency / medical — safety-relevant, readable by any coach with
           squad view access, not gated behind edit permissions. */}
-      <section style={{ background: "#FFF3CD", border: "2px solid var(--amber)", borderRadius: 12, padding: 16 }}>
-        <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>Emergency & medical</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 13 }}>
+      <section style={{ ...sectionStyle, background: "var(--warning-bg)", border: "1px solid #fde68a" }}>
+        <SectionHeader title="Emergency & medical" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 13 }} className="form-grid-2col">
           <div>
-            <span style={{ color: "#6B7280" }}>Emergency contact: </span>
+            <span style={{ color: "var(--text-muted)" }}>Emergency contact: </span>
             <strong>{player.emergencyContactName || "—"}</strong>
           </div>
           <div>
-            <span style={{ color: "#6B7280" }}>Phone: </span>
+            <span style={{ color: "var(--text-muted)" }}>Phone: </span>
             <strong>{player.emergencyContactPhone || "—"}</strong>
           </div>
           <div style={{ gridColumn: "1 / -1" }}>
-            <span style={{ color: "#6B7280" }}>Medical notes: </span>
+            <span style={{ color: "var(--text-muted)" }}>Medical notes: </span>
             <strong>{player.medicalNotes || "—"}</strong>
           </div>
         </div>
 
         {canEdit && (
-          <form
-            action={updatePlayerInfo.bind(null, player.id)}
-            style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}
-          >
-            <input name="photoUrl" placeholder="Photo URL (e.g. hosted avatar link)" defaultValue={player.photoUrl ?? ""} style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }} />
+          <form action={updatePlayerInfo.bind(null, player.id)} style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+            <PhotoUpload name="photoUrl" current={player.photoUrl} label="Upload photo from device" />
             <div style={{ display: "flex", gap: 8 }}>
-              <input name="emergencyContactName" placeholder="Emergency contact name" defaultValue={player.emergencyContactName ?? ""} style={{ flex: 1, padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13 }} />
-              <input name="emergencyContactPhone" placeholder="Emergency contact phone" defaultValue={player.emergencyContactPhone ?? ""} style={{ flex: 1, padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13 }} />
+              <input name="emergencyContactName" placeholder="Emergency contact name" defaultValue={player.emergencyContactName ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />
+              <input name="emergencyContactPhone" placeholder="Emergency contact phone" defaultValue={player.emergencyContactPhone ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />
             </div>
-            <textarea name="medicalNotes" placeholder="Medical notes (allergies, conditions...)" defaultValue={player.medicalNotes ?? ""} style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, minHeight: 50, boxSizing: "border-box" }} />
-            <button type="submit" style={{ alignSelf: "flex-start", padding: "8px 14px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+            <textarea name="medicalNotes" placeholder="Medical notes (allergies, conditions...)" defaultValue={player.medicalNotes ?? ""} style={{ ...inputBase, minHeight: 50, fontSize: 13 }} />
+            <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
               Save details
             </button>
           </form>
         )}
       </section>
-    </main>
+    </>
   );
 }

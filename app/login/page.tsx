@@ -1,4 +1,5 @@
 import { login } from "./actions";
+import { Icon } from "@/components/ui/Icon";
 
 const ERROR_MESSAGES: Record<string, string> = {
   "1": "Incorrect email or password.",
@@ -14,66 +15,90 @@ export default async function LoginPage({
   const params = await searchParams;
 
   return (
-    <main
-      style={{
-        maxWidth: 360,
-        margin: "80px auto",
-        padding: "0 20px",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          color: "var(--turf)",
-          textAlign: "center",
-        }}
-      >
-        GRASSROOTS COACHING
-      </div>
-      <h1 style={{ fontSize: 28, margin: "4px 0 24px", textTransform: "uppercase", textAlign: "center" }}>
-        Touchline
-      </h1>
-
-      <form
-        action={login}
-        style={{
-          background: "#fff",
-          border: "2px solid var(--pitch)",
-          borderRadius: 12,
-          padding: 20,
-        }}
-      >
-        {params.error && (
-          <div style={{ background: "#FEE2E2", color: "#991B1B", padding: 10, borderRadius: 6, marginBottom: 14, fontSize: 13 }}>
-            {ERROR_MESSAGES[params.error] || "Something went wrong. Please try again."}
+    <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 20px", background: "var(--bg)" }}>
+      <div style={{ maxWidth: 400, width: "100%" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              background: "linear-gradient(135deg, var(--primary-dark), var(--primary))",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 14,
+              boxShadow: "var(--shadow-md)",
+            }}
+          >
+            <Icon name="football" size={28} />
           </div>
-        )}
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: "var(--text-muted)", textTransform: "uppercase" }}>
+            Grassroots Coaching
+          </div>
+          <h1 style={{ fontSize: 30, margin: "4px 0 0", textTransform: "uppercase", letterSpacing: "0.02em", fontWeight: 800 }}>
+            Touchline
+          </h1>
+        </div>
 
-        <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Email</label>
-        <input
-          name="email"
-          type="email"
-          required
-          style={{ width: "100%", padding: 8, marginBottom: 12, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }}
-        />
-
-        <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Password</label>
-        <input
-          name="password"
-          type="password"
-          required
-          style={{ width: "100%", padding: 8, marginBottom: 16, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }}
-        />
-
-        <button
-          type="submit"
-          style={{ width: "100%", padding: 10, background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer" }}
+        <form
+          action={login}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-lg)",
+            boxShadow: "var(--shadow-md)",
+            padding: 28,
+          }}
         >
-          Log In
-        </button>
-      </form>
+          {params.error && (
+            <div style={{ background: "var(--error-bg)", color: "#b91c1c", border: "1px solid #fecaca", padding: 10, borderRadius: 8, marginBottom: 14, fontSize: 13, fontWeight: 600 }}>
+              {ERROR_MESSAGES[params.error] || "Something went wrong. Please try again."}
+            </div>
+          )}
+
+          <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Email</label>
+          <input
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            style={{ width: "100%", padding: "10px 12px", marginBottom: 14, border: "1px solid var(--border)", borderRadius: 8, boxSizing: "border-box", fontSize: 14, background: "var(--surface)", color: "var(--text)", transition: "border-color var(--transition), box-shadow var(--transition)" }}
+          />
+
+          <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Password</label>
+          <input
+            name="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            style={{ width: "100%", padding: "10px 12px", marginBottom: 18, border: "1px solid var(--border)", borderRadius: 8, boxSizing: "border-box", fontSize: 14, background: "var(--surface)", color: "var(--text)", transition: "border-color var(--transition), box-shadow var(--transition)" }}
+          />
+
+          <button
+            type="submit"
+            style={{
+              width: "100%",
+              padding: "11px 12px",
+              background: "var(--primary)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: 14,
+              cursor: "pointer",
+              transition: "background var(--transition), transform var(--transition)",
+            }}
+          >
+            Log In
+          </button>
+        </form>
+
+        <p style={{ textAlign: "center", fontSize: 12, color: "var(--text-faint)", marginTop: 18 }}>
+          Touchline · Football Academy Management
+        </p>
+      </div>
     </main>
   );
 }

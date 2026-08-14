@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { defaultSkillsForAge, ALL_SKILLS, PLAYER_POSITIONS } from "@/lib/skills";
+import { sanitizePhotoUrl } from "@/lib/photo";
 
 function calculateAge(dob: Date): number {
   const today = new Date();
@@ -128,7 +129,7 @@ export async function updatePlayerInfo(playerId: string, formData: FormData) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canEditSquad)) redirect(`/squad/${playerId}?error=no_permission`);
 
-  const photoUrl = formData.get("photoUrl") as string;
+  const photoUrl = sanitizePhotoUrl(formData.get("photoUrl") as string);
   const emergencyContactName = formData.get("emergencyContactName") as string;
   const emergencyContactPhone = formData.get("emergencyContactPhone") as string;
   const medicalNotes = formData.get("medicalNotes") as string;
@@ -136,7 +137,7 @@ export async function updatePlayerInfo(playerId: string, formData: FormData) {
   await prisma.player.update({
     where: { id: playerId },
     data: {
-      photoUrl: photoUrl || null,
+      photoUrl,
       emergencyContactName: emergencyContactName || null,
       emergencyContactPhone: emergencyContactPhone || null,
       medicalNotes: medicalNotes || null,

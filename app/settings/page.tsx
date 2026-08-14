@@ -3,6 +3,12 @@ import { getSession } from "@/lib/getSession";
 import { redirect } from "next/navigation";
 import { StatusBanner } from "@/components/StatusBanner";
 import { updateProfile, changePassword } from "./actions";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Avatar } from "@/components/ui/Avatar";
+import { inputBase } from "@/components/ui/Form";
+import { roleLabel } from "@/lib/roleLabel";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_fields: "Please fill in all required fields.",
@@ -23,84 +29,74 @@ export default async function SettingsPage({
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/login");
 
+  const sectionStyle: React.CSSProperties = {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius)",
+    boxShadow: "var(--shadow-sm)",
+    padding: 18,
+    marginBottom: 20,
+  };
+
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "8px 0 4px" }}>Settings</h1>
-      <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 20px" }}>Your account details. A profile photo is optional.</p>
+    <>
+      <PageHeader title="Settings" subtitle="Your account details. A profile photo is optional." />
 
       <StatusBanner error={p.error ? ERROR_MESSAGES[p.error] ?? p.error : undefined} success={p.success} />
 
-      <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
+      <section style={sectionStyle}>
         <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>Profile</h2>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-          {user.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.photoUrl}
-              alt={user.name}
-              style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--pitch)" }}
-            />
-          ) : (
-            <div
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                background: "var(--turf)",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 26,
-                fontWeight: 800,
-              }}
-            >
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div style={{ fontSize: 13, color: "#6B7280" }}>
-            <div style={{ fontWeight: 800, color: "var(--pitch)", fontSize: 15 }}>{user.name}</div>
+          <Avatar name={user.name} src={user.photoUrl} size={72} />
+          <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            <div style={{ fontWeight: 800, color: "var(--primary)", fontSize: 15 }}>{user.name}</div>
             <div>{user.email}</div>
-            <div>{user.role.replace("_", " ")}</div>
+            <div>{roleLabel(user.role)}</div>
           </div>
         </div>
 
-        <form action={updateProfile} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>Name</label>
-            <input name="name" defaultValue={user.name} required style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }} />
+        <form action={updateProfile} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Name</label>
+            <input name="name" defaultValue={user.name} required style={inputBase} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>Profile photo URL (optional)</label>
-            <input name="photoUrl" defaultValue={user.photoUrl ?? ""} placeholder="https://example.com/avatar.jpg" style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }} />
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Profile photo</label>
+            <PhotoUpload name="photoUrl" current={user.photoUrl} label="Upload from device" />
           </div>
-          <button type="submit" style={{ alignSelf: "flex-start", padding: "8px 16px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer" }}>
+          <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
             Save profile
           </button>
         </form>
       </section>
 
-      <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16 }}>
+      <section style={sectionStyle}>
+        <h2 style={{ fontSize: 16, margin: "0 0 4px" }}>Appearance</h2>
+        <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 14px" }}>Choose how Touchline looks on this device. Saved to your account.</p>
+        <ThemeToggle theme={user.theme} />
+      </section>
+
+      <section style={sectionStyle}>
         <h2 style={{ fontSize: 16, margin: "0 0 4px" }}>Change password</h2>
-        <p style={{ fontSize: 12, color: "#6B7280", margin: "0 0 12px" }}>You'll stay signed in on this device; all other sessions are signed out.</p>
-        <form action={changePassword} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>Current password</label>
-            <input name="currentPassword" type="password" required style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }} />
+        <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 14px" }}>You'll stay signed in on this device; all other sessions are signed out.</p>
+        <form action={changePassword} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Current password</label>
+            <input name="currentPassword" type="password" required style={inputBase} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>New password</label>
-            <input name="newPassword" type="password" required minLength={8} style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }} />
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>New password</label>
+            <input name="newPassword" type="password" required minLength={8} style={inputBase} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ fontSize: 12, fontWeight: 700 }}>Confirm new password</label>
-            <input name="confirmPassword" type="password" required minLength={8} style={{ padding: 8, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13, boxSizing: "border-box" }} />
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Confirm new password</label>
+            <input name="confirmPassword" type="password" required minLength={8} style={inputBase} />
           </div>
-          <button type="submit" style={{ alignSelf: "flex-start", padding: "8px 16px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, cursor: "pointer" }}>
+          <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
             Change password
           </button>
         </form>
       </section>
-    </main>
+    </>
   );
 }

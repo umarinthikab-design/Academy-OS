@@ -1,42 +1,48 @@
-import { prisma } from "@/lib/prisma";
+// Dashboard — role + permission + assignment-aware dispatcher.
+//
+// The flow is:
+//   getSession → role → permissions → current DB assignments (lib/assignments.ts)
+//   → role-specific dashboard component that queries the DB scoped to those
+//   assignments.
+//
+// Nothing here hardcodes a coach's teams. Reassigning a coach in the DB
+// automatically changes what their dashboard returns on the next render.
 
-export default async function Home() {
-  // This runs on the server and hits your real Postgres database via Prisma.
-  // If this page loads without an error, your whole chain - Next.js, Prisma,
-  // and the database - is wired correctly.
-  const ageGroups = await prisma.ageGroup.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
-  const locations = await prisma.location.findMany();
-  const coachCount = await prisma.coach.count();
+import { getSession } from "@/lib/getSession";
+import { getPermissions } from "@/lib/permissions";
+import { getDashboardScope } from "@/lib/assignments";
+import { CoachDashboard } from "@/components/dashboard/CoachDashboard";
+import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
+import { ParentDashboard } from "@/components/dashboard/ParentDashboard";
 
-  return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: 28, margin: "0 0 20px" }}>Dashboard</h1>
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ team?: string }>;
+}) {
+  const params = await searchParams;
+  const session = await getSession();
+  const perms = await getPermissions();
+  const scope = await getDashboardScope();
 
-      <div
-        style={{
-          background: "#fff",
-          border: "2px solid var(--pitch)",
-          borderRadius: 12,
-          padding: 20,
-        }}
-      >
-        <h2 style={{ fontSize: 16, marginTop: 0 }}>Database connection check</h2>
-        <p>
-          Age groups seeded: <strong>{ageGroups.map((a) => a.name).join(", ") || "none yet"}</strong>
-        </p>
-        <p>
-          Locations seeded: <strong>{locations.map((l) => l.name).join(", ") || "none yet"}</strong>
-        </p>
-        <p>
-          Coaches in the roster: <strong>{coachCount}</strong>
-        </p>
-        <p style={{ color: "#6B7280", fontSize: 13 }}>
-          If you're seeing real numbers above (not an error page), your database is connected
-          and working.
-        </p>
-      </div>
-    </main>
-  );
+  const team = params.team ?? null;
+  const userName = session?.name ?? "";
+
+  if (scope.role === "ADMIN") {
+    return <AdminDashboard perms={perms} userName={userName} />;
+  }
+
+  if (scope.role === "HEAD_COACH" || scope.role === "ASSISTANT_COACH") {
+    return <CoachDashboard scope={scope} perms={perms} userName={userName} team={team} />;
+  }
+
+  if (scope.role === "PARENT") {
+    return <ParentDashboard scope={scope} userName={userName} />;
+  }
+
+  // Fallback (no role resolved) — should not normally be reachable since
+  // middleware requires a valid session.
+  return null;
 }
+
+export const dynamic = "force-dynamic";

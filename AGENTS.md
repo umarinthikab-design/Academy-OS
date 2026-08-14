@@ -20,7 +20,6 @@ npm install
 npx prisma migrate dev
 npm run seed          # optional sample data
 npm run dev
-npm run set-password   # reset a user's password (tsx script)
 ```
 `.env` needs `DATABASE_URL` (Neon pooled string) and `SESSION_SECRET`.
 
