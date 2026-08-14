@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { NAV_ITEMS } from "@/lib/navItems";
 
 export function SidebarNav() {
@@ -11,7 +12,7 @@ export function SidebarNav() {
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href;
         return (
-          <a
+          <Link
             key={item.href}
             href={item.href}
             style={{
@@ -25,7 +26,7 @@ export function SidebarNav() {
             }}
           >
             {item.label}
-          </a>
+          </Link>
         );
       })}
     </nav>

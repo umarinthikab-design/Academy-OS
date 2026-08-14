@@ -1,10 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { createDrill, addFeedback, approveDrill, rejectDrill } from "./actions";
 import { getPermissions } from "@/lib/permissions";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { StatusBanner } from "@/components/StatusBanner";
 
 const CATEGORIES = ["Warm-up", "Passing", "Dribbling", "Shooting", "Defending", "Fun Game"];
 
-export default async function DrillsPage() {
+export default async function DrillsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const params = await searchParams;
   const perms = await getPermissions();
   const canSuggest = perms.canSuggestDrills;
   const canApprove = perms.isAdmin || perms.canApproveRequests;
@@ -23,6 +30,8 @@ export default async function DrillsPage() {
   return (
     <main style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Drill Library</h1>
+
+      <StatusBanner error={params.error} success={params.success} />
 
       {!canSuggest && (
         <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
@@ -99,11 +108,12 @@ export default async function DrillsPage() {
                       Approve
                     </button>
                   </form>
-                  <form action={rejectDrill.bind(null, d.id)}>
-                    <button type="submit" style={{ padding: "5px 10px", background: "#fff", color: "#E63946", border: "2px solid #E63946", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                      Reject
-                    </button>
-                  </form>
+                  <ConfirmDeleteButton
+                    action={rejectDrill.bind(null, d.id)}
+                    confirmMessage={`Reject "${d.name}"? This deletes the suggestion and its feedback thread permanently.`}
+                    label="Reject"
+                    buttonStyle={{ padding: "5px 10px", background: "#fff", color: "#E63946", border: "2px solid #E63946", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+                  />
                 </div>
               )}
             </div>

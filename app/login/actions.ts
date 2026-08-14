@@ -6,11 +6,40 @@ import { createSessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+// Window (ms) and cap for failed attempts per email before we lock the
+// login out for the remainder of the window.
+const ATTEMPT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_FAILED_ATTEMPTS = 5;
+// Rows older than this are dead weight; pruned lazily on each attempt.
+const PRUNE_OLDER_THAN_MS = 60 * 60 * 1000; // 1 hour
+
 export async function login(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  const user = email ? await prisma.user.findUnique({ where: { email } }) : null;
+  const now = new Date();
+  const normalizedEmail = (email || "").trim().toLowerCase();
+
+  // Keep the attempts table small. Runs on every login attempt, which is
+  // rare enough that a single DELETE per login is not worth optimizing.
+  await prisma.loginAttempt.deleteMany({
+    where: { createdAt: { lt: new Date(now.getTime() - PRUNE_OLDER_THAN_MS) } },
+  });
+
+  if (normalizedEmail) {
+    const failedInWindow = await prisma.loginAttempt.count({
+      where: {
+        email: normalizedEmail,
+        success: false,
+        createdAt: { gte: new Date(now.getTime() - ATTEMPT_WINDOW_MS) },
+      },
+    });
+    if (failedInWindow >= MAX_FAILED_ATTEMPTS) {
+      redirect("/login?error=rate_limited");
+    }
+  }
+
+  const user = normalizedEmail ? await prisma.user.findUnique({ where: { email: normalizedEmail } }) : null;
 
   let valid = false;
   if (user) {
@@ -24,11 +53,23 @@ export async function login(formData: FormData) {
     }
   }
 
+  // Record the attempt for rate limiting. Failed attempts against a
+  // nonexistent email are still recorded so the limiter can't be bypassed
+  // by rotating through unknown addresses.
+  await prisma.loginAttempt.create({
+    data: { email: normalizedEmail || "(empty)", success: valid },
+  });
+
   if (!user || !valid) {
     redirect("/login?error=1");
   }
 
-  const token = await createSessionToken({ userId: user.id, name: user.name, role: user.role });
+  const token = await createSessionToken({
+    userId: user.id,
+    name: user.name,
+    role: user.role,
+    sessionVersion: user.sessionVersion,
+  });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,

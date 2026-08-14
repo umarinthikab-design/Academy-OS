@@ -1,5 +1,11 @@
 import { login } from "./actions";
 
+const ERROR_MESSAGES: Record<string, string> = {
+  "1": "Incorrect email or password.",
+  rate_limited: "Too many failed attempts. Try again in 15 minutes.",
+  session_revoked: "Your session was signed out. Please log in again.",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -41,7 +47,7 @@ export default async function LoginPage({
       >
         {params.error && (
           <div style={{ background: "#FEE2E2", color: "#991B1B", padding: 10, borderRadius: 6, marginBottom: 14, fontSize: 13 }}>
-            Incorrect email or password.
+            {ERROR_MESSAGES[params.error] || "Something went wrong. Please try again."}
           </div>
         )}
 

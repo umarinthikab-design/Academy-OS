@@ -1,8 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { createLocation, deleteLocation } from "./actions";
 import { getPermissions } from "@/lib/permissions";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { StatusBanner } from "@/components/StatusBanner";
 
-export default async function LocationsPage() {
+export default async function LocationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const params = await searchParams;
   const perms = await getPermissions();
   const canEdit = perms.isAdmin || perms.canEditLocations;
   const locations = await prisma.location.findMany({ orderBy: { name: "asc" } });
@@ -10,6 +17,8 @@ export default async function LocationsPage() {
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Locations</h1>
+
+      <StatusBanner error={params.error} success={params.success} />
 
       {!canEdit && (
         <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
@@ -69,14 +78,10 @@ export default async function LocationsPage() {
           >
             <span>{l.name}</span>
             {canEdit && (
-              <form action={deleteLocation.bind(null, l.id)}>
-                <button
-                  type="submit"
-                  style={{ background: "none", border: "none", color: "#E63946", cursor: "pointer", fontWeight: 700 }}
-                >
-                  Remove
-                </button>
-              </form>
+              <ConfirmDeleteButton
+                action={deleteLocation.bind(null, l.id)}
+                confirmMessage={`Remove ${l.name}? This can't be undone.`}
+              />
             )}
           </div>
         ))}

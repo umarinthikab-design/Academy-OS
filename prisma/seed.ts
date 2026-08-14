@@ -1,9 +1,20 @@
-import { PrismaClient, Designation } from "@prisma/client";
+import { PrismaClient, Designation, AgeGroupCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const AGE_GROUPS = ["U7", "U9", "U11", "U13", "U15"];
+// Default academy structure: Little League is the young/foundation groups
+// (U4, U6), Junior Varsity the competitive ones (U8-U16). Even-numbered per
+// the club's age-band split.
+const AGE_GROUPS: { name: string; category: AgeGroupCategory }[] = [
+  { name: "U4", category: AgeGroupCategory.LITTLE_LEAGUE },
+  { name: "U6", category: AgeGroupCategory.LITTLE_LEAGUE },
+  { name: "U8", category: AgeGroupCategory.JUNIOR_VARSITY },
+  { name: "U10", category: AgeGroupCategory.JUNIOR_VARSITY },
+  { name: "U12", category: AgeGroupCategory.JUNIOR_VARSITY },
+  { name: "U14", category: AgeGroupCategory.JUNIOR_VARSITY },
+  { name: "U16", category: AgeGroupCategory.JUNIOR_VARSITY },
+];
 const SEED_PASSWORD = "touchline123"; // change this after first login
 
 async function main() {
@@ -11,9 +22,9 @@ async function main() {
   const ageGroups: Record<string, string> = {};
   for (let i = 0; i < AGE_GROUPS.length; i++) {
     const ag = await prisma.ageGroup.upsert({
-      where: { name: AGE_GROUPS[i] },
-      update: {},
-      create: { name: AGE_GROUPS[i], sortOrder: i },
+      where: { name: AGE_GROUPS[i].name },
+      update: { category: AGE_GROUPS[i].category },
+      create: { name: AGE_GROUPS[i].name, category: AGE_GROUPS[i].category, sortOrder: i },
     });
     ageGroups[ag.name] = ag.id;
   }
@@ -45,7 +56,7 @@ async function main() {
           designation: Designation.HEAD,
           canApproveRequests: true,
           primaryFocus: {
-            connect: [{ id: ageGroups["U9"] }, { id: ageGroups["U11"] }],
+            connect: [{ id: ageGroups["U10"] }, { id: ageGroups["U12"] }],
           },
         },
       },

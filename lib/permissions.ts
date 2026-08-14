@@ -6,6 +6,8 @@ export type Permissions = {
   isAdmin: boolean;
   isHeadCoach: boolean;
   isAssistant: boolean;
+  // The logged-in User's id (ActivityLog.userId) - null when not signed in.
+  userId: string | null;
   coachId: string | null;
   canEditRoster: boolean;
   canEditDrills: boolean;
@@ -30,6 +32,7 @@ const EMPTY: Permissions = {
   isAdmin: false,
   isHeadCoach: false,
   isAssistant: false,
+  userId: null,
   coachId: null,
   canEditRoster: false,
   canEditDrills: false,
@@ -54,6 +57,7 @@ export async function getPermissions(): Promise<Permissions> {
       ...EMPTY,
       role: "ADMIN",
       isAdmin: true,
+      userId: session.userId,
       canEditRoster: true,
       canEditDrills: true,
       canApproveRequests: true,
@@ -72,6 +76,7 @@ export async function getPermissions(): Promise<Permissions> {
       ...EMPTY,
       role: "HEAD_COACH",
       isHeadCoach: true,
+      userId: session.userId,
       coachId: coach?.id ?? null,
       canEditRoster: coach?.canEditRoster ?? false,
       canEditDrills: coach?.canEditDrills ?? false,
@@ -91,11 +96,12 @@ export async function getPermissions(): Promise<Permissions> {
       ...EMPTY,
       role: "ASSISTANT_COACH",
       isAssistant: true,
+      userId: session.userId,
       coachId: coach?.id ?? null,
       canSuggestDrills: true,
     };
   }
 
   // PARENT - no admin/coach pages are built for this role yet.
-  return { ...EMPTY, role: "PARENT" };
+  return { ...EMPTY, role: "PARENT", userId: session.userId };
 }

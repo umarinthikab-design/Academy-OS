@@ -5,7 +5,7 @@ import { jwtVerify } from "jose";
 // this file's dependency chain minimal and Edge-safe. If in doubt about
 // what's allowed in middleware, less is safer.
 const SESSION_COOKIE_NAME = "touchline_session";
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/auth/revoked"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

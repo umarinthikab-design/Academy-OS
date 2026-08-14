@@ -2,20 +2,22 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
+import { logActivity } from "@/lib/logActivity";
 
 export async function createBatch(formData: FormData) {
   const perms = await getPermissions();
-  if (!(perms.isAdmin || perms.canEditBatches)) return;
+  if (!(perms.isAdmin || perms.canEditBatches)) redirect("/batches?error=no_permission");
 
   const name = formData.get("name") as string;
   const ageGroupId = formData.get("ageGroupId") as string;
   const coachIds = formData.getAll("mainCoaches") as string[];
   const playerIds = formData.getAll("players") as string[];
 
-  if (!name || !ageGroupId) return;
+  if (!name || !ageGroupId) redirect("/batches?error=missing_fields");
 
-  await prisma.batch.create({
+  const batch = await prisma.batch.create({
     data: {
       name,
       ageGroupId,
@@ -24,19 +26,23 @@ export async function createBatch(formData: FormData) {
     },
   });
 
+  if (perms.userId) await logActivity(perms.userId, "created_batch", "Batch", batch.id, name);
+
   revalidatePath("/batches");
+  redirect(`/batches?success=${encodeURIComponent(`${name} created.`)}`);
 }
 
 export async function deleteBatch(id: string) {
   const perms = await getPermissions();
-  if (!(perms.isAdmin || perms.canEditBatches)) return;
+  if (!(perms.isAdmin || perms.canEditBatches)) redirect("/batches?error=no_permission");
 
-  // If any ScheduledSession points at this batch, the delete will fail
-  // (batchId isn't set to cascade). Same limitation as Age Groups - checked
-  // first to avoid a crash, silently no-ops if in use.
+  // If any ScheduledSession points at this batch, the delete would fail
+  // (batchId isn't set to cascade). Checked first to avoid a crash.
   const sessionCount = await prisma.scheduledSession.count({ where: { batchId: id } });
-  if (sessionCount > 0) return;
+  if (sessionCount > 0) redirect("/batches?error=in_use");
 
   await prisma.batch.delete({ where: { id } });
+  if (perms.userId) await logActivity(perms.userId, "deleted_batch", "Batch", id);
   revalidatePath("/batches");
+  redirect("/batches?success=Batch removed.");
 }

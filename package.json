@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx prisma/seed.ts",
+    "seed:demo": "tsx prisma/seedDemo.ts",
     "set-password": "tsx scripts/set-password.ts"
   },
   "dependencies": {

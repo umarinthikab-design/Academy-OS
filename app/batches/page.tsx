@@ -1,8 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { createBatch, deleteBatch } from "./actions";
 import { getPermissions } from "@/lib/permissions";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { StatusBanner } from "@/components/StatusBanner";
 
-export default async function BatchesPage() {
+export default async function BatchesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const params = await searchParams;
   const perms = await getPermissions();
   const canEdit = perms.isAdmin || perms.canEditBatches;
   const [batches, ageGroups, coaches, players] = await Promise.all([
@@ -20,6 +27,8 @@ export default async function BatchesPage() {
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Batches</h1>
+
+      <StatusBanner error={params.error} success={params.success} />
 
       {!canEdit && (
         <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
@@ -95,11 +104,10 @@ export default async function BatchesPage() {
                 </div>
               </div>
               {canEdit && (
-                <form action={deleteBatch.bind(null, b.id)}>
-                  <button type="submit" style={{ background: "none", border: "none", color: "#E63946", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>
-                    Remove
-                  </button>
-                </form>
+                <ConfirmDeleteButton
+                  action={deleteBatch.bind(null, b.id)}
+                  confirmMessage={`Remove ${b.name}? This can't be undone.`}
+                />
               )}
             </div>
           </div>

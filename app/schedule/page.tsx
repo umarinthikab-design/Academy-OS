@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { createScheduledSession, deleteScheduledSession } from "./actions";
+import { createScheduledSession, deleteScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
 import { getPermissions } from "@/lib/permissions";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { StatusBanner } from "@/components/StatusBanner";
 
 function endTime(time: string, durationMinutes: number): string {
   const [h, m] = time.split(":").map(Number);
@@ -10,30 +12,76 @@ function endTime(time: string, durationMinutes: number): string {
   return `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
 }
 
-export default async function SchedulePage() {
+export default async function SchedulePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const params = await searchParams;
   const perms = await getPermissions();
   const canEdit = perms.isAdmin || perms.canEditSchedule;
-  const [ageGroups, locations, headCoaches, assistantCoaches, sessions] = await Promise.all([
+
+  // DB-level date filtering instead of loading every session and splitting
+  // client-side. Coaches without schedule-edit access only see the current
+  // calendar month (they're planning near-term, not months ahead); admins
+  // and editors see everything from today onward so they can manage
+  // recurring plans well in advance. Past sessions live on the history
+  // page (/schedule/history) rather than this view.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const dateFilter: { gte: Date; lt?: Date } = canEdit
+    ? { gte: today }
+    : { gte: startOfMonth, lt: new Date(today.getFullYear(), today.getMonth() + 1, 1) };
+
+  const [ageGroups, locations, headCoaches, assistantCoaches, sessions, sessionPlans] = await Promise.all([
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.location.findMany({ orderBy: { name: "asc" } }),
     prisma.coach.findMany({ where: { designation: "HEAD" }, include: { user: true } }),
     prisma.coach.findMany({ where: { designation: "ASSISTANT" }, include: { user: true } }),
     prisma.scheduledSession.findMany({
-      include: { ageGroup: true, location: true, headCoaches: { include: { user: true } }, assistantCoaches: { include: { user: true } } },
+      where: { date: dateFilter },
+      include: {
+        ageGroup: true,
+        location: true,
+        headCoaches: { include: { user: true } },
+        assistantCoaches: { include: { user: true } },
+        session: { include: { drills: { include: { drill: true }, orderBy: { order: "asc" } }, createdBy: { include: { user: true } } } },
+      },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
+    }),
+    prisma.session.findMany({
+      where: perms.coachId ? { OR: [{ createdById: perms.coachId }, { shareStatus: "APPROVED" }] } : { shareStatus: "APPROVED" },
+      orderBy: { createdAt: "desc" },
     }),
   ]);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const upcoming = sessions.filter((s) => s.date >= today);
-  const past = sessions.filter((s) => s.date < today);
-
   const missingPrereqs = locations.length === 0 || headCoaches.length === 0;
+
+  // The 72h attach/edit window starts at the session's end time. Within the
+  // window a past session can still be given a plan; after it, both
+  // attaching and editing are locked.
+  const SIXTY_TWO_MS = 72 * 60 * 60 * 1000;
+  const inAttachWindow = (s: (typeof sessions)[number]) => {
+    const [h, m] = s.startTime.split(":").map(Number);
+    const start = new Date(s.date);
+    start.setHours(h, m, 0, 0);
+    const end = new Date(start.getTime() + s.durationMinutes * 60 * 1000);
+    return new Date().getTime() <= end.getTime() + SIXTY_TWO_MS;
+  };
 
   return (
     <main style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Schedule</h1>
+
+      <a
+        href="/schedule/history"
+        style={{ display: "inline-block", marginBottom: 16, fontSize: 13, fontWeight: 700, color: "var(--turf)", textDecoration: "none" }}
+      >
+        Session history (12 months) →
+      </a>
+
+      <StatusBanner error={params.error} success={params.success} />
 
       {!canEdit && (
         <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
@@ -139,9 +187,11 @@ export default async function SchedulePage() {
         </form>
       )}
 
-      <h3 style={{ fontSize: 16 }}>Upcoming ({upcoming.length})</h3>
+      <h3 style={{ fontSize: 16 }}>
+        {canEdit ? "Upcoming" : "This month"} ({sessions.length})
+      </h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-        {upcoming.map((s) => (
+        {sessions.map((s) => (
           <div key={s.id} style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
               <div>
@@ -159,29 +209,57 @@ export default async function SchedulePage() {
                 </div>
               </div>
               {canEdit && (
-                <form action={deleteScheduledSession.bind(null, s.id)}>
-                  <button type="submit" style={{ background: "none", border: "none", color: "#E63946", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>
-                    Remove
+                <ConfirmDeleteButton
+                  action={deleteScheduledSession.bind(null, s.id)}
+                  confirmMessage="Remove this session? This can't be undone."
+                />
+              )}
+            </div>
+
+            {/* Attached session plan + attach control */}
+            <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #E5E7EB", fontSize: 12 }}>
+              {s.session ? (
+                <div>
+                  <strong style={{ color: "var(--turf)" }}>Plan: {s.session.name}</strong>{" "}
+                  <span style={{ color: "#6B7280" }}>· by {s.session.createdBy.user.name}</span>
+                  <div style={{ marginTop: 4, color: "#374151" }}>
+                    {s.session.drills.map((sd, i) => (
+                      <div key={sd.id} style={{ padding: "1px 0" }}>
+                        <span style={{ color: "#9CA3AF", marginRight: 4 }}>{i + 1}.</span> {sd.drill.name}
+                      </div>
+                    ))}
+                  </div>
+                  {canEdit && inAttachWindow(s) && (
+                    <form action={detachSessionPlan.bind(null, s.id)} style={{ marginTop: 6 }}>
+                      <button type="submit" style={{ fontSize: 11, padding: "4px 10px", border: "1px solid #d1d5db", background: "#fff", borderRadius: 6, cursor: "pointer", color: "#6B7280" }}>
+                        Remove plan
+                      </button>
+                    </form>
+                  )}
+                </div>
+              ) : canEdit && inAttachWindow(s) && (
+                <form action={attachSessionPlan.bind(null, s.id)}>
+                  <select name="sessionId" required style={{ padding: 6, border: "1px solid #d1d5db", borderRadius: 6, fontSize: 12 }}>
+                    <option value="">Attach a session plan…</option>
+                    {sessionPlans.map((sp) => (
+                      <option key={sp.id} value={sp.id}>{sp.name}</option>
+                    ))}
+                  </select>
+                  <button type="submit" style={{ marginLeft: 6, padding: "6px 12px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                    Attach
                   </button>
                 </form>
               )}
             </div>
           </div>
         ))}
-        {upcoming.length === 0 && <p style={{ color: "#6B7280" }}>Nothing scheduled yet.</p>}
+        {sessions.length === 0 && <p style={{ color: "#6B7280" }}>Nothing scheduled yet.</p>}
       </div>
 
-      {past.length > 0 && (
-        <>
-          <h4 style={{ fontSize: 13, color: "#6B7280" }}>Past</h4>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {past.map((s) => (
-              <div key={s.id} style={{ fontSize: 12, color: "#9CA3AF" }}>
-                {s.date.toLocaleDateString()} · {s.ageGroup.name} · {s.location.name}
-              </div>
-            ))}
-          </div>
-        </>
+      {!canEdit && (
+        <p style={{ fontSize: 12, color: "#9CA3AF" }}>
+          Showing this calendar month only. Past sessions are available on the history page.
+        </p>
       )}
     </main>
   );

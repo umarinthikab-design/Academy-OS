@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { NAV_ITEMS } from "@/lib/navItems";
 
 export function MobileNav({
@@ -70,7 +71,7 @@ export function MobileNav({
               {NAV_ITEMS.map((item) => {
                 const active = pathname === item.href;
                 return (
-                  <a
+                  <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
@@ -85,7 +86,7 @@ export function MobileNav({
                     }}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 );
               })}
             </nav>

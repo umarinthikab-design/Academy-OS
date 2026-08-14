@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { createCoach, deleteCoach, updateCoachPermission } from "./actions";
+import { createCoach, deleteCoach, updateCoachPermission, revokeSessions } from "./actions";
 import { getPermissions } from "@/lib/permissions";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { StatusBanner } from "@/components/StatusBanner";
 
 const PERMISSION_TOGGLES = [
   { field: "canEditRoster", label: "Edit Coach Roster" },
@@ -11,7 +13,12 @@ const PERMISSION_TOGGLES = [
   { field: "canEditAgeGroups", label: "Edit Age Groups" },
 ] as const;
 
-export default async function CoachesPage() {
+export default async function CoachesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const params = await searchParams;
   const perms = await getPermissions();
   const [coaches, ageGroups] = await Promise.all([
     prisma.coach.findMany({
@@ -26,6 +33,8 @@ export default async function CoachesPage() {
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ fontSize: 28, margin: "8px 0 20px" }}>Coach Roster</h1>
+
+      <StatusBanner error={params.error} success={params.success} />
 
       {!canEdit && (
         <p style={{ fontSize: 13, color: "#6B7280", marginTop: -8, marginBottom: 20 }}>
@@ -150,14 +159,31 @@ export default async function CoachesPage() {
                 )}
               </div>
               {canEdit && (
-                <form action={deleteCoach.bind(null, c.id)}>
-                  <button
-                    type="submit"
-                    style={{ background: "none", border: "none", color: "#E63946", cursor: "pointer", fontWeight: 700 }}
-                  >
-                    Remove
-                  </button>
-                </form>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  {perms.isAdmin && (
+                    <form action={revokeSessions.bind(null, c.id)}>
+                      <button
+                        type="submit"
+                        title="Invalidate all of this coach's active sessions so they must log in again"
+                        style={{
+                          fontSize: 11,
+                          padding: "6px 10px",
+                          borderRadius: 6,
+                          border: "1px solid #d1d5db",
+                          background: "#fff",
+                          color: "#6B7280",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Revoke sessions
+                      </button>
+                    </form>
+                  )}
+                  <ConfirmDeleteButton
+                    action={deleteCoach.bind(null, c.id)}
+                    confirmMessage={`Remove ${c.user.name} from the roster? This can't be undone.`}
+                  />
+                </div>
               )}
             </div>
 

@@ -24,6 +24,11 @@ enum Designation {
   ASSISTANT
 }
 
+enum AgeGroupCategory {
+  LITTLE_LEAGUE
+  JUNIOR_VARSITY
+}
+
 enum DrillStatus {
   PENDING
   APPROVED
@@ -61,16 +66,20 @@ enum CoachAttendanceStatus {
 // ── People ───────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String // hashed - never store plain text
-  name      String
-  role      Role
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String // hashed - never store plain text
+  name           String
+  role           Role
+  // Bump this to invalidate every existing session for this user without
+  // rotating SESSION_SECRET (which would log everyone out). The value is
+  // baked into the JWT at login time and checked against this column on
+  // every request in getSession().
+  sessionVersion Int      @default(0)
+  createdAt      DateTime @default(now())
 
-  coach  Coach?
-  parent Parent?
-
+  coach        Coach?
+  parent       Parent?
   activityLogs ActivityLog[]
 }
 
@@ -117,9 +126,10 @@ model Parent {
 // ── Structure (admin-managed rosters) ───────────────────
 
 model AgeGroup {
-  id        String @id @default(cuid())
-  name      String @unique // e.g. "U9"
-  sortOrder Int    @default(0)
+  id        String           @id @default(cuid())
+  name      String           @unique // e.g. "U9"
+  category  AgeGroupCategory @default(JUNIOR_VARSITY)
+  sortOrder Int              @default(0)
 
   coaches           Coach[]            @relation("CoachPrimaryFocus")
   batches           Batch[]
@@ -149,13 +159,27 @@ model Player {
   id          String   @id @default(cuid())
   name        String
   dateOfBirth DateTime
+  // Mirrors Coach.dateJoined - set automatically on creation. Added for the
+  // Squad date-joined filter and the player detail page.
+  dateJoined  DateTime @default(now())
+
+  // Profile expansion (Release 1 §8). photoUrl is just a URL field for now -
+  // actual file upload needs a storage provider decision (Vercel Blob, S3,
+  // etc.), so the UI falls back to a placeholder avatar until then.
+  // Emergency/medical info is safety-relevant, so it's readable by any
+  // coach with squad view access (not gated behind edit permissions).
+  photoUrl               String?
+  emergencyContactName   String?
+  emergencyContactPhone  String?
+  medicalNotes           String?
 
   batches Batch[]  @relation("PlayerBatches")
   parents Parent[] @relation("ParentPlayers")
 
-  skills     PlayerSkill[]
-  attendance PlayerAttendance[]
-  notes      Note[]
+  skills        PlayerSkill[]
+  skillHistory  PlayerSkillHistory[]
+  attendance    PlayerAttendance[]
+  notes         Note[]
 }
 
 model PlayerSkill {
@@ -167,6 +191,19 @@ model PlayerSkill {
   updatedAt DateTime @updatedAt
 
   @@unique([playerId, skillName])
+}
+
+// Append-only history of skill ratings. PlayerSkill.value is overwritten in
+// place on each update, so without this there'd be no record of how a
+// player's ratings changed over time. A row is inserted here from
+// updateSkill on every change.
+model PlayerSkillHistory {
+  id         String   @id @default(cuid())
+  playerId   String
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  skillName  String
+  value      Int
+  recordedAt DateTime @default(now())
 }
 
 model Note {
@@ -260,6 +297,12 @@ model ScheduledSession {
 
   status String @default("scheduled") // scheduled | completed | cancelled
 
+  // Set when attendance review for this session is finished. Sessions whose
+  // date has passed but have no resolvedAt still need their attendance
+  // confirmed. Kept separate from `status` because a session can be marked
+  // "completed" without its attendance being reviewed, and vice versa.
+  resolvedAt DateTime?
+
   playerAttendance PlayerAttendance[]
   coachAttendance  CoachAttendance[]
 
@@ -316,4 +359,17 @@ model ActivityLog {
   entityId   String?
   details    String?
   createdAt  DateTime @default(now())
+}
+
+// Failed/successful login attempts, keyed by email. Used for brute-force
+// rate limiting on the login form - a DB-backed counter because the app
+// runs on Vercel serverless, where in-memory state doesn't survive between
+// cold starts (and multiple instances would each have their own counter).
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
 }
