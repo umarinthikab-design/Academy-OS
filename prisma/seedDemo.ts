@@ -38,8 +38,18 @@ async function clean() {
     await prisma.approvalRequest.deleteMany({ where: { OR: [{ requestedById: { in: demoCoachIds } }, { resolvedById: { in: demoCoachIds } }] } });
     await prisma.note.deleteMany({ where: { coachId: { in: demoCoachIds } } });
     await prisma.drillFeedback.deleteMany({ where: { authorId: { in: demoCoachIds } } });
+
+    // Delete scheduled sessions created by demo coaches first: they may
+    // reference a demo session plan (sessionId, RESTRICT) and demo locations.
+    const demoSessions = await prisma.session.findMany({ where: { createdById: { in: demoCoachIds } }, select: { id: true } });
+    const demoSessionIds = demoSessions.map((s) => s.id);
+    if (demoSessionIds.length) {
+      await prisma.scheduledSession.deleteMany({ where: { sessionId: { in: demoSessionIds } } });
+    }
+    // Sessions cascade their SessionDrill rows (sessionId onDelete: Cascade),
+    // so sessions MUST go before drills - SessionDrill.drillId is RESTRICT.
+    await prisma.session.deleteMany({ where: { id: { in: demoSessionIds } } });
     await prisma.drill.deleteMany({ where: { createdById: { in: demoCoachIds } } });
-    await prisma.session.deleteMany({ where: { createdById: { in: demoCoachIds } } });
   }
 
   const demoLocations = await prisma.location.findMany({ where: { name: { endsWith: " (Demo)" } }, select: { id: true } });
