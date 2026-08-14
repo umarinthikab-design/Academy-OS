@@ -8,6 +8,7 @@ import { DashboardHero } from "./DashboardHero";
 import { TeamSelector } from "./TeamSelector";
 import { QuickActions } from "./QuickActions";
 import { ApprovalInbox } from "./ApprovalInbox";
+import { MyRequests } from "./MyRequests";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
@@ -54,6 +55,7 @@ export async function CoachDashboard({
           message="You don't currently have any squad or batch assignments. Once an administrator assigns you to a team, your sessions, players and schedule will appear here. Contact your club administrator if this is unexpected."
         />
         <ApprovalInbox perms={perms} />
+        <MyRequests perms={perms} />
       </div>
     );
   }
@@ -175,6 +177,9 @@ export async function CoachDashboard({
 
       {/* Approvals */}
       <ApprovalInbox perms={perms} />
+
+      {/* My requests */}
+      <MyRequests perms={perms} />
 
       {/* Priority card - today's / next session */}
       {priority && (

@@ -6,6 +6,7 @@ import { jwtVerify } from "jose";
 // what's allowed in middleware, less is safer.
 const SESSION_COOKIE_NAME = "touchline_session";
 const PUBLIC_PATHS = ["/login", "/auth/revoked"];
+const CHANGE_PASSWORD_PATH = "/change-password";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,7 +22,18 @@ export async function middleware(request: NextRequest) {
 
   try {
     const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
-    await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret);
+
+    // Users flagged mustChangePassword are locked to /change-password until
+    // they set a real password. The login action already bounces them there;
+    // this catches manual navigation elsewhere too.
+    if (payload.mustChangePassword && pathname !== CHANGE_PASSWORD_PATH) {
+      return NextResponse.redirect(new URL(CHANGE_PASSWORD_PATH, request.url));
+    }
+    if (!payload.mustChangePassword && pathname === CHANGE_PASSWORD_PATH) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
     return NextResponse.next();
   } catch {
     return NextResponse.redirect(new URL("/login", request.url));

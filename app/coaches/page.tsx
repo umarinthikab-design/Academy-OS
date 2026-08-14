@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createCoach, deleteCoach, updateCoachPermission, revokeSessions } from "./actions";
+import { createCoach, deleteCoach, updateCoachPermission, revokeSessions, promoteCoach, resetCoachPassword } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -73,7 +73,16 @@ export default async function CoachesPage({
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={fieldLabel}>Temporary password</label>
-              <input name="password" type="text" required placeholder="Share this with them - they can log in immediately" style={inputBase} />
+              <input name="password" type="text" required placeholder="Share this with them - they must change it on first login" style={inputBase} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Gender</label>
+              <select name="gender" required defaultValue="" style={inputBase}>
+                <option value="" disabled>Select gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
             </div>
             <div>
               <label style={fieldLabel}>Designation</label>
@@ -123,6 +132,7 @@ export default async function CoachesPage({
                       <Badge tone={c.designation === "HEAD" ? "green" : "blue"}>
                         {c.designation === "HEAD" ? "Head Coach" : "Assistant Coach"}
                       </Badge>
+                      {c.gender && <Badge tone="accent">{c.gender === "MALE" ? "Male" : c.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                     </div>
                     {c.primaryFocus.length > 0 && (
                       <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
@@ -134,23 +144,42 @@ export default async function CoachesPage({
                 {canEdit && (
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     {perms.isAdmin && (
-                      <form action={revokeSessions.bind(null, c.id)}>
-                        <button
-                          type="submit"
-                          title="Invalidate all of this coach's active sessions so they must log in again"
-                          style={{
-                            fontSize: 11,
-                            padding: "6px 12px",
-                            borderRadius: 8,
-                            border: "1px solid var(--border)",
-                            background: "var(--surface)",
-                            color: "var(--text-muted)",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Revoke sessions
-                        </button>
-                      </form>
+                      <>
+                        <form action={resetCoachPassword.bind(null, c.id)}>
+                          <button
+                            type="submit"
+                            title="Reset this coach's password to a temporary value they must change on next login"
+                            style={{
+                              fontSize: 11,
+                              padding: "6px 12px",
+                              borderRadius: 8,
+                              border: "1px solid var(--border)",
+                              background: "var(--surface)",
+                              color: "var(--text-muted)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Reset password
+                          </button>
+                        </form>
+                        <form action={revokeSessions.bind(null, c.id)}>
+                          <button
+                            type="submit"
+                            title="Invalidate all of this coach's active sessions so they must log in again"
+                            style={{
+                              fontSize: 11,
+                              padding: "6px 12px",
+                              borderRadius: 8,
+                              border: "1px solid var(--border)",
+                              background: "var(--surface)",
+                              color: "var(--text-muted)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Revoke sessions
+                          </button>
+                        </form>
+                      </>
                     )}
                     <ConfirmDeleteButton
                       action={deleteCoach.bind(null, c.id)}
@@ -185,6 +214,39 @@ export default async function CoachesPage({
                       </form>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {perms.isAdmin && c.designation === "ASSISTANT" && (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 4 }}>
+                    Promote to head coach
+                  </div>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 10px" }}>
+                    Pick which head-coach permissions they should inherit, then promote. Their focus areas are kept.
+                  </p>
+                  <form action={promoteCoach.bind(null, c.id)} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                    {PERMISSION_TOGGLES.map((t) => (
+                      <label key={t.field} style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <input type="checkbox" name={t.field} defaultChecked={c[t.field]} /> {t.label}
+                      </label>
+                    ))}
+                    <button
+                      type="submit"
+                      style={{
+                        fontSize: 12,
+                        padding: "6px 14px",
+                        borderRadius: 8,
+                        border: "none",
+                        background: "var(--primary)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Promote to Head Coach
+                    </button>
+                  </form>
                 </div>
               )}
             </div>

@@ -40,11 +40,97 @@ export type InboxRequest = {
   createdAt: Date;
 };
 
+// Full content + conversation thread for a request, used by both the
+// approver's inbox and the requester's "My Requests" section.
+export type ApprovalDetail = {
+  id: string;
+  type: "ATTENDANCE_CONFIRM" | "SESSION_SHARE";
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  requesterName: string;
+  requesterId: string;
+  detail: string;
+  // Human-readable lines describing exactly what is being approved.
+  content: string[];
+  createdAt: Date;
+  resolvedAt: Date | null;
+  messages: { id: string; authorName: string; authorId: string; message: string; createdAt: Date }[];
+};
+
+// Load the full detail (content + thread) for a single request. Used by the
+// expanded inbox items and the requester's My Requests. Returns null if the
+// request (or its referenced session/plan) is gone.
+export async function getApprovalDetail(requestId: string): Promise<ApprovalDetail | null> {
+  const request = await prisma.approvalRequest.findUnique({
+    where: { id: requestId },
+    include: {
+      requestedBy: { include: { user: { select: { name: true } } } },
+      messages: { include: { author: { select: { name: true } } }, orderBy: { createdAt: "asc" } },
+    },
+  });
+  if (!request) return null;
+
+  const base = {
+    id: request.id,
+    type: request.type as "ATTENDANCE_CONFIRM" | "SESSION_SHARE",
+    status: request.status,
+    requesterName: request.requestedBy.user.name,
+    requesterId: request.requestedById,
+    detail: "",
+    content: [] as string[],
+    createdAt: request.createdAt,
+    resolvedAt: request.resolvedAt,
+    messages: request.messages.map((m) => ({
+      id: m.id,
+      authorName: m.author.name,
+      authorId: m.authorId,
+      message: m.message,
+      createdAt: m.createdAt,
+    })),
+  };
+
+  if (request.type === "ATTENDANCE_CONFIRM") {
+    const payload = request.payload as { scheduledSessionId?: string; statuses?: { playerId: string; status: string }[] };
+    const session = payload.scheduledSessionId
+      ? await prisma.scheduledSession.findUnique({
+          where: { id: payload.scheduledSessionId },
+          include: { ageGroup: true },
+        })
+      : null;
+    if (!session) return null;
+    const statuses = payload.statuses ?? [];
+    const players = await prisma.player.findMany({
+      where: { id: { in: statuses.map((s) => s.playerId) } },
+      select: { id: true, name: true },
+    });
+    const playerMap = new Map(players.map((p) => [p.id, p.name]));
+    const when = session.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    base.detail = `${session.ageGroup.name} · ${when} ${session.startTime}`;
+    base.content = statuses.map((s) => `${playerMap.get(s.playerId) ?? "Unknown player"} — ${s.status === "ATTENDED" ? "attended" : s.status === "ABSENT" ? "absent" : s.status}`);
+    return base;
+  }
+
+  if (request.type === "SESSION_SHARE") {
+    const payload = request.payload as { sessionId?: string };
+    const plan = payload.sessionId
+      ? await prisma.session.findUnique({
+          where: { id: payload.sessionId },
+          include: { drills: { include: { drill: true }, orderBy: { order: "asc" } } },
+        })
+      : null;
+    if (!plan) return null;
+    base.detail = plan.name;
+    base.content = plan.drills.map((sd, i) => `${i + 1}. ${sd.drill.name}`);
+    return base;
+  }
+
+  return null;
+}
+
 // Which pending requests can THIS user approve? Scoped to their role and
 // permissions — the same authorization the approve action re-checks. Only
 // admins and head coaches ever get canApproveRequests (see permissions.ts),
 // so this gate matches the per-page actions exactly.
-export async function getApprovalInbox(perms: Permissions): Promise<InboxRequest[]> {
+export async function getApprovalInbox(perms: Permissions): Promise<(InboxRequest & { full: ApprovalDetail | null })[]> {
   const canApprove = perms.isAdmin || (perms.canApproveRequests && !!perms.coachId);
   if (!canApprove) return [];
 
@@ -78,7 +164,7 @@ export async function getApprovalInbox(perms: Permissions): Promise<InboxRequest
   const sessionMap = new Map(sessions.map((s) => [s.id, s]));
   const planMap = new Map(plans.map((s) => [s.id, s]));
 
-  const inbox: InboxRequest[] = [];
+  const inbox: (InboxRequest & { full: ApprovalDetail | null })[] = [];
   for (const r of requests) {
     if (r.requestedById === perms.coachId) continue; // never your own
 
@@ -101,6 +187,7 @@ export async function getApprovalInbox(perms: Permissions): Promise<InboxRequest
         detail: `${session.ageGroup.name} · ${when} ${session.startTime}`,
         summary: `Attendance: ${attended} attended · ${absent} absent`,
         createdAt: r.createdAt,
+        full: null,
       });
     } else if (r.type === "SESSION_SHARE") {
       const payload = r.payload as { sessionId?: string };
@@ -113,11 +200,87 @@ export async function getApprovalInbox(perms: Permissions): Promise<InboxRequest
         detail: plan.name,
         summary: `${plan.drills.length} ${plan.drills.length === 1 ? "drill" : "drills"}`,
         createdAt: r.createdAt,
+        full: null,
       });
     }
   }
 
+  // Enrich each item with the full content + conversation thread for the
+  // expandable view. Pending counts are small, so a query per request is fine.
+  for (const item of inbox) {
+    item.full = await getApprovalDetail(item.id);
+  }
+
   return inbox;
+}
+
+// Requests the logged-in user submitted, newest first, any status. Powers the
+// "My Requests" section on the coach dashboard where they can see feedback and
+// reply to the back-and-forth.
+export async function getMyRequests(perms: Permissions): Promise<ApprovalDetail[]> {
+  if (!perms.coachId) return [];
+
+  const requests = await prisma.approvalRequest.findMany({
+    where: { requestedById: perms.coachId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+
+  const details: ApprovalDetail[] = [];
+  for (const r of requests) {
+    const detail = await getApprovalDetail(r.id);
+    if (detail) details.push(detail);
+  }
+  return details;
+}
+
+// Badge count for the nav "Requests" item — how many pending requests matter
+// to this user. Approvers see the requests they can act on (excluding their
+// own); every coach also sees their own pending proposals, so nothing is
+// silently stuck awaiting feedback.
+export async function getRequestsBadge(perms: Permissions): Promise<number> {
+  let count = 0;
+
+  if (perms.coachId) {
+    count += await prisma.approvalRequest.count({
+      where: { requestedById: perms.coachId, status: "PENDING" },
+    });
+  }
+
+  const canApprove = perms.isAdmin || (perms.canApproveRequests && !!perms.coachId);
+  if (!canApprove) return count;
+
+  const pending = await prisma.approvalRequest.findMany({
+    where: { status: "PENDING" },
+    include: { requestedBy: true },
+  });
+
+  for (const r of pending) {
+    if (r.requestedById === perms.coachId) continue;
+    if (r.type === "SESSION_SHARE") {
+      count++;
+      continue;
+    }
+    if (r.type === "ATTENDANCE_CONFIRM") {
+      if (perms.isAdmin) {
+        count++;
+        continue;
+      }
+      const payload = r.payload as { scheduledSessionId?: string };
+      const session = payload.scheduledSessionId
+        ? await prisma.scheduledSession.findUnique({
+            where: { id: payload.scheduledSessionId },
+            include: { headCoaches: { select: { id: true } } },
+          })
+        : null;
+      if (!session) continue;
+      const requesterIsHead = r.requestedBy.designation === "HEAD";
+      const isHeadOfSession = session.headCoaches.some((c) => c.id === perms.coachId);
+      if (!requesterIsHead && isHeadOfSession) count++;
+    }
+  }
+
+  return count;
 }
 
 // Re-check authorization at apply time (never trust the inbox — the request

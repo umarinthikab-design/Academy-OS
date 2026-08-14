@@ -16,9 +16,13 @@ export async function createCoach(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
   const password = formData.get("password") as string;
   const designation = formData.get("designation") as string; // "HEAD" | "ASSISTANT"
+  const genderRaw = formData.get("gender") as string;
   const focusIds = formData.getAll("primaryFocus") as string[];
 
   if (!name || !email || !password || !designation) redirect("/coaches?error=missing_fields");
+
+  const gender = genderRaw as "MALE" | "FEMALE" | "OTHER" | null;
+  if (genderRaw && !["MALE", "FEMALE", "OTHER"].includes(genderRaw)) redirect("/coaches?error=missing_fields");
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -29,9 +33,12 @@ export async function createCoach(formData: FormData) {
         password: hashedPassword,
         name,
         role: designation === "HEAD" ? Role.HEAD_COACH : Role.ASSISTANT_COACH,
+        // New accounts must pick their own password on first login.
+        mustChangePassword: true,
         coach: {
           create: {
             designation: designation as Designation,
+            gender,
             primaryFocus: {
               connect: focusIds.map((id) => ({ id })),
             },
@@ -133,4 +140,66 @@ export async function revokeSessions(coachId: string) {
   if (perms.userId) await logActivity(perms.userId, "revoked_sessions", "User", coach.userId);
   revalidatePath("/coaches");
   redirect("/coaches?success=Active sessions revoked — this coach must log in again.");
+}
+
+// Promote an assistant coach to head coach. The admin picks which of the
+// permission overrides the promoted coach should carry (the "characteristics
+// of a head coach" - roster editing, drill editing, approval, etc.). Role and
+// designation flip to HEAD; existing focus areas are kept.
+export async function promoteCoach(coachId: string, formData: FormData) {
+  const perms = await getPermissions();
+  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+
+  const coach = await prisma.coach.findUnique({
+    where: { id: coachId },
+    select: { userId: true, designation: true },
+  });
+  if (!coach) redirect("/coaches");
+  if (coach.designation !== "ASSISTANT") redirect("/coaches?error=not_assistant");
+
+  const flags: Record<string, boolean> = {};
+  for (const field of PERMISSION_FIELDS) {
+    flags[field] = formData.get(field) === "on";
+  }
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: coach.userId }, data: { role: Role.HEAD_COACH } }),
+    prisma.coach.update({
+      where: { id: coachId },
+      data: { designation: Designation.HEAD, ...flags },
+    }),
+  ]);
+
+  if (perms.userId) await logActivity(perms.userId, "promoted_coach", "Coach", coachId);
+  revalidatePath("/coaches");
+  redirect("/coaches?success=Coach promoted to head coach.");
+}
+
+// Admin-only password reset. Generates a fresh temporary password, forces a
+// change on next login, and invalidates any existing sessions. The temporary
+// password is shown to the admin in the success banner so they can pass it on.
+export async function resetCoachPassword(coachId: string) {
+  const perms = await getPermissions();
+  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+
+  const coach = await prisma.coach.findUnique({
+    where: { id: coachId },
+    select: { userId: true, user: { select: { email: true } } },
+  });
+  if (!coach) redirect("/coaches");
+
+  const temporary = `tl-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(10).slice(2, 6)}`;
+  const hashed = await bcrypt.hash(temporary, 10);
+  await prisma.user.update({
+    where: { id: coach.userId },
+    data: {
+      password: hashed,
+      mustChangePassword: true,
+      sessionVersion: { increment: 1 },
+    },
+  });
+
+  if (perms.userId) await logActivity(perms.userId, "reset_password", "User", coach.userId);
+  revalidatePath("/coaches");
+  redirect(`/coaches?success=${encodeURIComponent(`Password reset for ${coach.user.email} — temporary password: ${temporary} (must change on next login).`)}`);
 }

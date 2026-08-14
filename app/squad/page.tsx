@@ -95,6 +95,15 @@ export default async function SquadPage({
               <label style={fieldLabel}>Date of birth</label>
               <input name="dateOfBirth" type="date" required style={inputBase} />
             </div>
+            <div>
+              <label style={fieldLabel}>Gender</label>
+              <select name="gender" required defaultValue="" style={inputBase}>
+                <option value="" disabled>Select gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
           </div>
           <button
             type="submit"
@@ -186,6 +195,7 @@ export default async function SquadPage({
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
                       <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
+                      {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
                       {p.batches.map((b) => (
                         <Badge key={b.id} tone="blue">{b.name}</Badge>

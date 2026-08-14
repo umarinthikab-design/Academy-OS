@@ -97,6 +97,7 @@ export default async function PlayerDetailPage({
           <h1 style={{ fontSize: 26, margin: "0 0 4px", letterSpacing: "-0.02em" }}>{player.name}</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <Badge tone="muted">Age {age}</Badge>
+            {player.gender && <Badge tone="accent">{player.gender === "MALE" ? "Male" : player.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
             <Badge tone="muted">Born {player.dateOfBirth.toLocaleDateString()}</Badge>
             <Badge tone="muted">Joined {player.dateJoined.toLocaleDateString()}</Badge>
             {player.batches.map((b) => (

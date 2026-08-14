@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { roleLabel } from "@/lib/roleLabel";
 import { getNavItems } from "@/lib/navItems";
+import { getRequestsBadge } from "@/lib/approvals";
 import Link from "next/link";
 
 export const metadata = {
@@ -80,7 +81,8 @@ export default async function RootLayout({
   const photoUrl = user?.photoUrl ?? null;
   const theme = user?.theme ?? "light";
   const perms = await getPermissions();
-  const navItems = getNavItems(perms);
+  const requestsBadge = await getRequestsBadge(perms);
+  const navItems = getNavItems(perms, requestsBadge);
 
   return (
     <html lang="en" data-theme={theme}>

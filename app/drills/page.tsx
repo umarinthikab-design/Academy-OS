@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createDrill, addFeedback, approveDrill, rejectDrill } from "./actions";
+import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -20,6 +20,7 @@ export default async function DrillsPage({
   const perms = await getPermissions();
   const canSuggest = perms.canSuggestDrills;
   const canApprove = perms.isAdmin || perms.canApproveRequests;
+  const canPublishEdit = perms.canEditDrills;
 
   const [drills, ageGroups] = await Promise.all([
     prisma.drill.findMany({
@@ -38,7 +39,7 @@ export default async function DrillsPage({
     <>
       <PageHeader
         title="Drill Library"
-        subtitle={canSuggest ? "Suggest drills for the team library." : "Only coaches can suggest drills. You can still view the library and pending queue below."}
+        subtitle={canPublishEdit ? "Publish drills straight into the library and edit existing ones." : canSuggest ? "Suggest drills for the team library." : "Only coaches can suggest drills. You can still view the library and pending queue below."}
       />
 
       <StatusBanner error={params.error} success={params.success} />
@@ -57,7 +58,7 @@ export default async function DrillsPage({
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
             <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>Suggest a drill</span>
+            <span style={{ fontSize: 14, fontWeight: 800 }}>{canPublishEdit ? "Add a drill" : "Suggest a drill"}</span>
           </div>
           <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
@@ -96,10 +97,12 @@ export default async function DrillsPage({
             </div>
           </div>
           <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            Suggest Drill
+            {canPublishEdit ? "Publish Drill" : "Suggest Drill"}
           </button>
           <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
-            All new drills go to Pending Approval below — nothing joins the library automatically.
+            {canPublishEdit
+              ? "Published drills join the library immediately."
+              : "All new drills go to Pending Approval below — nothing joins the library automatically."}
           </p>
         </form>
       )}
@@ -188,6 +191,34 @@ export default async function DrillsPage({
               <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
                 {d.category} · {d.duration}m · {d.ageGroups.map((a) => a.name).join(", ")}
               </div>
+              {canPublishEdit && (
+                <details style={{ marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
+                  <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>Edit</summary>
+                  <form action={updateDrill.bind(null, d.id)} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                    <input name="name" defaultValue={d.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <select name="category" defaultValue={d.category} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", flex: 1 }}>
+                        {CATEGORIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <input name="duration" type="number" defaultValue={d.duration} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 70 }} />
+                    </div>
+                    <input name="playerRange" defaultValue={d.playerRange ?? ""} placeholder="Player range" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
+                    <textarea name="description" defaultValue={d.description ?? ""} placeholder="Description" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", minHeight: 54, resize: "vertical" }} />
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {ageGroups.map((ag) => (
+                        <label key={ag.id} style={{ fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <input type="checkbox" name="ageGroups" value={ag.id} defaultChecked={d.ageGroups.some((a) => a.id === ag.id)} /> {ag.name}
+                        </label>
+                      ))}
+                    </div>
+                    <button type="submit" style={{ alignSelf: "flex-start", padding: "6px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                      Save
+                    </button>
+                  </form>
+                </details>
+              )}
             </div>
           ))}
         </div>

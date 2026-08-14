@@ -105,7 +105,26 @@ export function MobileNav({
                     }}
                   >
                     <Icon name={item.icon} size={18} />
-                    {item.label}
+                    <span style={{ flex: 1, minWidth: 0 }}>{item.label}</span>
+                    {item.badge ? (
+                      <span
+                        style={{
+                          minWidth: 18,
+                          height: 18,
+                          padding: "0 5px",
+                          borderRadius: "var(--radius-pill)",
+                          background: "var(--accent)",
+                          color: "var(--primary-dark)",
+                          fontSize: 11,
+                          fontWeight: 800,
+                          lineHeight: "18px",
+                          textAlign: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    ) : null}
                   </Link>
                 );
               })}

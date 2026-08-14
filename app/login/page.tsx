@@ -1,5 +1,6 @@
 import { login } from "./actions";
 import { Icon } from "@/components/ui/Icon";
+import { PasswordField } from "@/components/ui/PasswordField";
 
 const ERROR_MESSAGES: Record<string, string> = {
   "1": "Incorrect email or password.",
@@ -68,12 +69,11 @@ export default async function LoginPage({
           />
 
           <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Password</label>
-          <input
+          <PasswordField
             name="password"
-            type="password"
             required
             autoComplete="current-password"
-            style={{ width: "100%", padding: "10px 12px", marginBottom: 18, border: "1px solid var(--border)", borderRadius: 8, boxSizing: "border-box", fontSize: 14, background: "var(--surface)", color: "var(--text)", transition: "border-color var(--transition), box-shadow var(--transition)" }}
+            style={{ marginBottom: 18 }}
           />
 
           <button

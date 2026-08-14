@@ -14,6 +14,10 @@ export type SessionPayload = {
   // Snapshot of User.sessionVersion at login time. getSession() compares it
   // to the live DB value so a bumped version invalidates existing sessions.
   sessionVersion: number;
+  // True when the user still has to pick their own password before using the
+  // app (admin-created accounts and admin resets). Baked into the JWT so the
+  // Edge middleware can bounce the user to /change-password without a DB hit.
+  mustChangePassword?: boolean;
 };
 
 export async function createSessionToken(payload: SessionPayload): Promise<string> {

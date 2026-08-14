@@ -5,14 +5,21 @@
 
 import type { Permissions } from "./permissions";
 
-export type NavItem = { href: string; label: string; icon: string };
+export type NavItem = { href: string; label: string; icon: string; badge?: number };
 
-export function getNavItems(perms: Permissions): NavItem[] {
+export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
   const items: NavItem[] = [{ href: "/", label: "Dashboard", icon: "dashboard" }];
 
   if (perms.role === "PARENT") {
     items.push({ href: "/settings", label: "Settings", icon: "settings" });
     return items;
+  }
+
+  // Requests are visible to coaching staff and admins alike: approvers action
+  // pending proposals, requesters track their own submissions. The badge
+  // highlights how many pending requests matter to this user.
+  if (perms.isAdmin || perms.isHeadCoach || perms.isAssistant) {
+    items.push({ href: "/requests", label: "Requests", icon: "bell", badge: requestsBadge || undefined });
   }
 
   // Coaching staff (head + assistant) and admins share the football-ops pages.

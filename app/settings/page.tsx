@@ -9,6 +9,7 @@ import { inputBase } from "@/components/ui/Form";
 import { roleLabel } from "@/lib/roleLabel";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PhotoUpload } from "@/components/ui/PhotoUpload";
+import { PasswordField } from "@/components/ui/PasswordField";
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_fields: "Please fill in all required fields.",
@@ -82,15 +83,15 @@ export default async function SettingsPage({
         <form action={changePassword} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Current password</label>
-            <input name="currentPassword" type="password" required style={inputBase} />
+            <PasswordField name="currentPassword" required autoComplete="current-password" />
           </div>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>New password</label>
-            <input name="newPassword" type="password" required minLength={8} style={inputBase} />
+            <PasswordField name="newPassword" required minLength={8} autoComplete="new-password" />
           </div>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Confirm new password</label>
-            <input name="confirmPassword" type="password" required minLength={8} style={inputBase} />
+            <PasswordField name="confirmPassword" required minLength={8} autoComplete="new-password" />
           </div>
           <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer" }}>
             Change password

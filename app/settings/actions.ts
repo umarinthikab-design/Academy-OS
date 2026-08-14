@@ -13,12 +13,13 @@ import { sanitizePhotoUrl } from "@/lib/photo";
 // the JWT (name, or sessionVersion after a password change). Without this,
 // the sidebar would keep showing the old name, and a bumped sessionVersion
 // would log the current user out too.
-async function refreshSessionCookie(user: { id: string; name: string; role: "ADMIN" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT"; sessionVersion: number }) {
+async function refreshSessionCookie(user: { id: string; name: string; role: "ADMIN" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT"; sessionVersion: number; mustChangePassword?: boolean }) {
   const token = await createSessionToken({
     userId: user.id,
     name: user.name,
     role: user.role,
     sessionVersion: user.sessionVersion,
+    mustChangePassword: user.mustChangePassword ?? false,
   });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
@@ -84,10 +85,12 @@ export async function changePassword(formData: FormData) {
 
   const hashed = await bcrypt.hash(newPassword, 10);
   // Bump sessionVersion so every other device's session dies, then re-issue
-  // a fresh cookie so the current device stays logged in.
+  // a fresh cookie so the current device stays logged in. Clearing the
+  // mustChangePassword flag covers the forced-change path (if a flagged user
+  // reaches the settings form directly).
   const updated = await prisma.user.update({
     where: { id: session.userId },
-    data: { password: hashed, sessionVersion: user.sessionVersion + 1 },
+    data: { password: hashed, sessionVersion: user.sessionVersion + 1, mustChangePassword: false },
   });
 
   await refreshSessionCookie(updated);

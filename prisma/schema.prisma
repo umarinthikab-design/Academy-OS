@@ -63,6 +63,12 @@ enum CoachAttendanceStatus {
   ABSENT
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
 // ── People ───────────────────────────────────────────────
 
 model User {
@@ -86,9 +92,15 @@ model User {
   // same mode across devices.
   theme String @default("light")
 
+  // When true the user must change their password before using the app.
+  // Set when an admin creates the account or resets the password; cleared
+  // once they complete a password change.
+  mustChangePassword Boolean @default(false)
+
   coach        Coach?
   parent       Parent?
   activityLogs ActivityLog[]
+  approvalMessages ApprovalMessage[]
 }
 
 model Coach {
@@ -97,6 +109,10 @@ model Coach {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   designation Designation
   dateJoined  DateTime    @default(now())
+
+  // Gender is required at creation time in the UI (never a free-form string);
+  // stored nullable so pre-existing rows without it keep working.
+  gender Gender?
 
   // Permission overrides - only meaningful for HEAD_COACH designation.
   // Admin always has full access; assistant coaches always queue requests
@@ -186,6 +202,10 @@ model Player {
   emergencyContactName   String?
   emergencyContactPhone  String?
   medicalNotes           String?
+
+  // Gender is required at creation time in the UI; stored nullable so
+  // pre-existing rows without it keep working.
+  gender Gender?
 
   batches Batch[]  @relation("PlayerBatches")
   parents Parent[] @relation("ParentPlayers")
@@ -368,6 +388,23 @@ model ApprovalRequest {
   resolvedBy    Coach?        @relation("ResolvedBy", fields: [resolvedById], references: [id])
   createdAt     DateTime      @default(now())
   resolvedAt    DateTime?
+
+  messages ApprovalMessage[]
+}
+
+// The back-and-forth thread on a request: approvers suggest changes, the
+// requester replies, until it's approved or rejected. Mirrors DrillFeedback
+// but on ApprovalRequest so every request type gets the conversation.
+// Authors are Users (not Coaches) so admins - who have no Coach row - can
+// take part in the conversation too.
+model ApprovalMessage {
+  id               String         @id @default(cuid())
+  approvalRequestId String
+  approvalRequest  ApprovalRequest @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User           @relation(fields: [authorId], references: [id])
+  message          String
+  createdAt        DateTime       @default(now())
 }
 
 model ActivityLog {

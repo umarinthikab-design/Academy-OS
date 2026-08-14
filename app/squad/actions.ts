@@ -24,13 +24,18 @@ export async function createPlayer(formData: FormData) {
 
   const name = formData.get("name") as string;
   const dobRaw = formData.get("dateOfBirth") as string;
-  if (!name || !dobRaw) redirect("/squad?error=missing_fields");
+  const genderRaw = formData.get("gender") as string;
+  if (!name || !dobRaw || !genderRaw) redirect("/squad?error=missing_fields");
+
+  const gender = genderRaw as "MALE" | "FEMALE" | "OTHER";
+  if (!["MALE", "FEMALE", "OTHER"].includes(gender)) redirect("/squad?error=missing_fields");
 
   const dob = new Date(dobRaw);
   const player = await prisma.player.create({
     data: {
       name,
       dateOfBirth: dob,
+      gender,
       // New players start with their age-band skills active at a baseline
       // of 1, so the Squad page always has age-appropriate bars to show.
       skills: {

@@ -69,6 +69,7 @@ export async function login(formData: FormData) {
     name: user.name,
     role: user.role,
     sessionVersion: user.sessionVersion,
+    mustChangePassword: user.mustChangePassword,
   });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
@@ -78,6 +79,13 @@ export async function login(formData: FormData) {
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days
   });
+
+  // First-time users (admin-created accounts, or a password reset) have to
+  // pick their own password before they can use the app. The token carries
+  // the flag so middleware enforces /change-password on every navigation.
+  if (user.mustChangePassword) {
+    redirect("/change-password");
+  }
 
   redirect("/");
 }
