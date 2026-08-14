@@ -35,7 +35,7 @@ export default async function DrillsPage() {
           action={createDrill}
           style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 28 }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div className="form-grid-2col" style={{ marginBottom: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Name</label>
               <input name="name" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
@@ -84,7 +84,7 @@ export default async function DrillsPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
         {pending.map((d) => (
           <div key={d.id} style={{ background: "#FFF3CD", border: "2px solid var(--amber)", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
               <div>
                 <strong>{d.name}</strong>
                 <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 8 }}>

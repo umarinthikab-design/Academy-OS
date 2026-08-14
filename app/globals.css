@@ -16,3 +16,44 @@ body {
   color: var(--pitch);
   font-family: "Helvetica Neue", Arial, sans-serif;
 }
+
+/* Layout shell: permanent sidebar on desktop, hamburger + drawer on mobile.
+   This split can't be done with inline styles alone - there's no way to
+   express "different layout below this width" without real CSS. */
+.desktop-sidebar {
+  display: flex;
+}
+.mobile-topbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-sidebar {
+    display: none;
+  }
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--pitch);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+}
+
+/* Two-column forms (batches, schedule, drills) collapse to one column on
+   narrow screens instead of squeezing both columns unreadably thin. */
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}

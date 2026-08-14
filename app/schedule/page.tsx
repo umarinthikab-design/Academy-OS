@@ -68,7 +68,7 @@ export default async function SchedulePage() {
             marginBottom: 24,
           }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div className="form-grid-2col" style={{ marginBottom: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Date</label>
               <input name="date" type="date" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
@@ -118,7 +118,7 @@ export default async function SchedulePage() {
                 ))}
               </div>
             </div>
-            <div style={{ gridColumn: "1 / -1", display: "flex", gap: 16, alignItems: "center" }}>
+            <div style={{ gridColumn: "1 / -1", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
               <label style={{ fontSize: 13, fontWeight: 700 }}>
                 <input type="checkbox" name="recurring" /> Weekly recurring
               </label>
@@ -143,7 +143,7 @@ export default async function SchedulePage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
         {upcoming.map((s) => (
           <div key={s.id} style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
               <div>
                 <strong>
                   {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}

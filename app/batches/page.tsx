@@ -38,7 +38,7 @@ export default async function BatchesPage() {
           action={createBatch}
           style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 24 }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div className="form-grid-2col" style={{ marginBottom: 12 }}>
             <div>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 4 }}>Batch name</label>
               <input name="name" required style={{ width: "100%", padding: 8, border: "1px solid #d1d5db", borderRadius: 6, boxSizing: "border-box" }} />
@@ -83,7 +83,7 @@ export default async function BatchesPage() {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {batches.map((b) => (
           <div key={b.id} style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
               <div>
                 <strong>{b.name}</strong>
                 <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 8 }}>{b.ageGroup.name}</span>

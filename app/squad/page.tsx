@@ -96,7 +96,7 @@ export default async function SquadPage() {
               padding: 16,
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
               <div>
                 <strong style={{ fontSize: 16 }}>{p.name}</strong>
                 <span style={{ fontSize: 12, color: "#6B7280", marginLeft: 8 }}>
