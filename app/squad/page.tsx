@@ -1,21 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { createPlayer, updateSkill, deletePlayer } from "./actions";
+import { createPlayer, deletePlayer } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
+import { PlayerRatingCard } from "@/components/PlayerRatingCard";
+import { calculateAge } from "@/lib/skills";
 import Link from "next/link";
-
-const SKILLS = ["Passing", "Dribbling", "Shooting", "Defending"];
-
-function calculateAge(dob: Date): number {
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    age--;
-  }
-  return age;
-}
 
 // Filtering is in-memory via URLSearchParams read from searchParams - the
 // Server Component reads them directly, no client state needed. This is the
@@ -210,48 +200,13 @@ export default async function SquadPage({
               )}
             </div>
 
-            <div style={{ marginTop: 10 }}>
-              {SKILLS.map((skillName) => {
-                const current = p.skills.find((s) => s.skillName === skillName)?.value ?? 0;
-                return (
-                  <div key={skillName} style={{ marginBottom: 6 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 2 }}>
-                      {skillName} — {current}/5
-                    </div>
-                    <div style={{ display: "flex", gap: 3 }}>
-                      {[1, 2, 3, 4, 5].map((n) =>
-                        canEdit ? (
-                          <form key={n} action={updateSkill.bind(null, p.id, skillName, n)}>
-                            <button
-                              type="submit"
-                              style={{
-                                width: 32,
-                                height: 20,
-                                border: "none",
-                                borderRadius: 4,
-                                cursor: "pointer",
-                                background: n <= current ? "var(--turf)" : "#E5E7EB",
-                              }}
-                              aria-label={`Set ${skillName} to ${n}`}
-                            />
-                          </form>
-                        ) : (
-                          <div
-                            key={n}
-                            style={{
-                              width: 32,
-                              height: 20,
-                              borderRadius: 4,
-                              background: n <= current ? "var(--turf)" : "#E5E7EB",
-                            }}
-                          />
-                        )
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <PlayerRatingCard
+              playerId={p.id}
+              dateOfBirth={p.dateOfBirth.toISOString()}
+              position={p.position}
+              skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
+              canEdit={canEdit}
+            />
           </div>
         ))}
         {filtered.length === 0 && <p style={{ color: "#6B7280" }}>No players match the current filters.</p>}

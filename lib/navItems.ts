@@ -10,4 +10,5 @@ export const NAV_ITEMS = [
   { href: "/locations", label: "Locations" },
   { href: "/age-groups", label: "Age Groups" },
   { href: "/activity", label: "Activity" },
+  { href: "/settings", label: "Settings" },
 ];

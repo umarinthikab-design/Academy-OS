@@ -78,6 +78,10 @@ model User {
   sessionVersion Int      @default(0)
   createdAt      DateTime @default(now())
 
+  // Profile photo (URL for now - same approach as Player.photoUrl). Optional
+  // so admins and anyone without a hosted avatar can skip it.
+  photoUrl String?
+
   coach        Coach?
   parent       Parent?
   activityLogs ActivityLog[]
@@ -163,6 +167,12 @@ model Player {
   // Squad date-joined filter and the player detail page.
   dateJoined  DateTime @default(now())
 
+  // Playing position. Free-form strings would scatter data ("GK" vs
+  // "Goalkeeper"), so the UI constrains to a fixed set. Stored as a plain
+  // String with a default rather than an enum so new positions can be added
+  // without a migration; the canonical list lives in lib/skills.ts.
+  position String @default("Unassigned (Default)")
+
   // Profile expansion (Release 1 §8). photoUrl is just a URL field for now -
   // actual file upload needs a storage provider decision (Vercel Blob, S3,
   // etc.), so the UI falls back to a placeholder avatar until then.
@@ -188,6 +198,12 @@ model PlayerSkill {
   player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   skillName String
   value     Int
+  // Whether this skill is shown on the player's rating card. Customizing a
+  // player's skills toggles this rather than deleting the row, so the value
+  // and its history survive being hidden. New players get rows for their
+  // age-band skills (all active); older players' legacy skills are kept
+  // active too so nothing disappears on upgrade.
+  active    Boolean  @default(true)
   updatedAt DateTime @updatedAt
 
   @@unique([playerId, skillName])

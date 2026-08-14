@@ -1,5 +1,6 @@
 import { PrismaClient, Designation, AgeGroupCategory, PlayerAttendanceStatus, CoachAttendanceStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { calculateAge, defaultSkillsForAge } from "../lib/skills";
 
 // Demo data generator. Run with `npm run seed:demo`. Safe to re-run: it first
 // deletes everything it created previously (identified by the @demo.touchline.local
@@ -137,18 +138,16 @@ async function main() {
   const batchU14 = await mkBatch("U14 Development", "U14", [secondHeadId]);
 
   console.log("Creating demo players...");
-  const mkPlayer = async (name: string, dob: Date, batchId: string, opts: { joinedDaysAgo?: number; emergency?: [string, string]; medical?: string; skills?: [string, number][] } = {}) => {
-    const skills = opts.skills ?? [
-      ["Passing", 2],
-      ["Dribbling", 3],
-      ["Shooting", 1],
-      ["Defending", 1],
-    ];
+  const mkPlayer = async (name: string, dob: Date, batchId: string, opts: { joinedDaysAgo?: number; emergency?: [string, string]; medical?: string; position?: string; skills?: [string, number][] } = {}) => {
+    // Skills default to the player's age band, matching the createPlayer
+    // action so the demo roster behaves like a real one.
+    const skills = opts.skills ?? defaultSkillsForAge(calculateAge(dob)).map((skillName) => [skillName, 2] as [string, number]);
     return await prisma.player.create({
       data: {
         name,
         dateOfBirth: dob,
         dateJoined: daysAgo(opts.joinedDaysAgo ?? 120),
+        position: opts.position ?? "Unassigned (Default)",
         emergencyContactName: opts.emergency?.[0],
         emergencyContactPhone: opts.emergency?.[1],
         medicalNotes: opts.medical,
@@ -173,20 +172,22 @@ async function main() {
     joinedDaysAgo: 210,
     emergency: ["Amila's Father", "071-555-8844"],
     medical: "Asthma — inhaler in kit bag.",
-    skills: [["Passing", 4], ["Dribbling", 5], ["Shooting", 3], ["Defending", 3]],
+    position: "Midfielder",
+    skills: [["Dribbling & 1v1", 5], ["First Touch", 4], ["Short Passing", 4], ["Shooting", 3], ["Coachability", 4]],
   });
-  const pU10b = await mkPlayer("Ruwan Abeysekara", new Date("2016-06-18"), batchU10A.id, { skills: [["Passing", 3], ["Dribbling", 4], ["Shooting", 4], ["Defending", 2]] });
-  const pU10c = await mkPlayer("Shanaka Ranatunga", new Date("2016-11-30"), batchU10B.id, { skills: [["Passing", 2], ["Dribbling", 3], ["Shooting", 2], ["Defending", 4]] });
+  const pU10b = await mkPlayer("Ruwan Abeysekara", new Date("2016-06-18"), batchU10A.id, { position: "Defender", skills: [["Dribbling & 1v1", 3], ["First Touch", 4], ["Short Passing", 3], ["Shooting", 4], ["Coachability", 3]] });
+  const pU10c = await mkPlayer("Shanaka Ranatunga", new Date("2016-11-30"), batchU10B.id, { position: "Forward", skills: [["Dribbling & 1v1", 3], ["First Touch", 2], ["Short Passing", 3], ["Shooting", 4], ["Coachability", 2]] });
   const pU10d = await mkPlayer("Dilshan Wijesuriya", new Date("2017-04-22"), batchU10B.id);
   const pU12a = await mkPlayer("Lasith Kumarasiri", new Date("2014-03-08"), batchU12.id, {
     joinedDaysAgo: 400,
     emergency: ["Lasith's Mother", "070-555-9910"],
-    skills: [["Passing", 5], ["Dribbling", 4], ["Shooting", 5], ["Defending", 4]],
+    position: "Goalkeeper",
+    skills: [["First Touch", 4], ["Passing Range", 5], ["Decision Making", 4], ["Tactical Awareness", 5], ["Physical Stamina", 4], ["Defending", 4], ["Shooting", 3]],
   });
-  const pU12b = await mkPlayer("Chamika Silva", new Date("2014-08-15"), batchU12.id, { skills: [["Passing", 4], ["Dribbling", 5], ["Shooting", 4], ["Defending", 3]] });
-  const pU12c = await mkPlayer("Nuwan Bandara", new Date("2015-01-27"), batchU12.id, { medical: "Allergic to penicillin.", skills: [["Passing", 3], ["Dribbling", 3], ["Shooting", 4], ["Defending", 2]] });
-  const pU14a = await mkPlayer("Ishan Gunaratne", new Date("2012-05-12"), batchU14.id, { joinedDaysAgo: 600, emergency: ["Ishan's Father", "076-555-4421"], skills: [["Passing", 5], ["Dribbling", 4], ["Shooting", 4], ["Defending", 5]] });
-  const pU14b = await mkPlayer("Kavindu Herath", new Date("2012-10-03"), batchU14.id, { skills: [["Passing", 4], ["Dribbling", 3], ["Shooting", 5], ["Defending", 3]] });
+  const pU12b = await mkPlayer("Chamika Silva", new Date("2014-08-15"), batchU12.id, { position: "Midfielder", skills: [["First Touch", 5], ["Passing Range", 4], ["Decision Making", 4], ["Tactical Awareness", 3], ["Physical Stamina", 4], ["Defending", 3], ["Shooting", 4]] });
+  const pU12c = await mkPlayer("Nuwan Bandara", new Date("2015-01-27"), batchU12.id, { medical: "Allergic to penicillin.", skills: [["First Touch", 3], ["Passing Range", 3], ["Decision Making", 3], ["Tactical Awareness", 4], ["Physical Stamina", 4], ["Defending", 3], ["Shooting", 3]] });
+  const pU14a = await mkPlayer("Ishan Gunaratne", new Date("2012-05-12"), batchU14.id, { joinedDaysAgo: 600, emergency: ["Ishan's Father", "076-555-4421"], position: "Forward", skills: [["First Touch", 5], ["Passing Range", 4], ["Decision Making", 4], ["Tactical Awareness", 4], ["Physical Stamina", 4], ["Defending", 3], ["Shooting", 5]] });
+  const pU14b = await mkPlayer("Kavindu Herath", new Date("2012-10-03"), batchU14.id, { position: "Defender", skills: [["First Touch", 3], ["Passing Range", 4], ["Decision Making", 3], ["Tactical Awareness", 3], ["Physical Stamina", 5], ["Defending", 4], ["Shooting", 3]] });
 
   const players = [pU6a, pU6b, pU8a, pU8b, pU10a, pU10b, pU10c, pU10d, pU12a, pU12b, pU12c, pU14a, pU14b];
 

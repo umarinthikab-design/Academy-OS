@@ -3,18 +3,8 @@ import { notFound } from "next/navigation";
 import { createNote, updatePlayerInfo } from "../actions";
 import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
-
-const SKILLS = ["Passing", "Dribbling", "Shooting", "Defending"];
-
-function calculateAge(dob: Date): number {
-  const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear();
-  const monthDiff = today.getMonth() - dob.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-    age--;
-  }
-  return age;
-}
+import { PlayerRatingCard } from "@/components/PlayerRatingCard";
+import { calculateAge, getSkillBandForAge } from "@/lib/skills";
 
 export default async function PlayerDetailPage({
   params,
@@ -65,11 +55,22 @@ export default async function PlayerDetailPage({
   }
   const topAreas = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-  const skillTrend = SKILLS.map((skillName) => {
+  const age = calculateAge(player.dateOfBirth);
+  const band = getSkillBandForAge(age);
+
+  // Same visible-skill logic as the squad card: show the player's active
+  // skills, falling back to their age band's skills if none are active yet.
+  const activeSkills = player.skills.filter((s) => s.active);
+  const visibleSkillNames = activeSkills.length > 0 ? activeSkills.map((s) => s.skillName) : band.skills;
+
+  const skillTrend = visibleSkillNames.map((skillName) => {
     const history = player.skillHistory.filter((h) => h.skillName === skillName);
     const current = player.skills.find((s) => s.skillName === skillName)?.value ?? 0;
     return { skillName, current, history };
   });
+
+  const rated = activeSkills.filter((s) => s.value > 0);
+  const average = rated.length ? rated.reduce((sum, s) => sum + s.value, 0) / rated.length : 0;
 
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "40px 20px" }}>
@@ -104,7 +105,7 @@ export default async function PlayerDetailPage({
         <div>
           <h1 style={{ fontSize: 26, margin: "0 0 4px" }}>{player.name}</h1>
           <div style={{ fontSize: 13, color: "#6B7280" }}>
-            Age {calculateAge(player.dateOfBirth)} · Born {player.dateOfBirth.toLocaleDateString()} · Joined{" "}
+            Age {age} · Born {player.dateOfBirth.toLocaleDateString()} · Joined{" "}
             {player.dateJoined.toLocaleDateString()}
           </div>
           {player.batches.length > 0 && (
@@ -112,29 +113,41 @@ export default async function PlayerDetailPage({
               {player.batches.map((b) => `${b.name} (${b.ageGroup.name})`).join(", ")}
             </div>
           )}
+          <div style={{ fontSize: 13, color: "#6B7280" }}>
+            Position: <strong>{player.position}</strong>
+            {average > 0 && (
+              <span>
+                {" "}
+                · Average: <strong style={{ color: "var(--turf)" }}>{average.toFixed(1)}</strong>/5
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Skill history / trend */}
       <section style={{ background: "#fff", border: "2px solid var(--pitch)", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, margin: "0 0 12px" }}>Skills</h2>
-        {skillTrend.map(({ skillName, current, history }) => (
-          <div key={skillName} style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 2 }}>
-              {skillName} — {current}/5
+        <h2 style={{ fontSize: 16, margin: "0 0 4px" }}>Skills</h2>
+        <PlayerRatingCard
+          playerId={player.id}
+          dateOfBirth={player.dateOfBirth.toISOString()}
+          position={player.position}
+          skills={player.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
+          canEdit={canEdit}
+        />
+        <div style={{ marginTop: 12, borderTop: "1px solid #F3F4F6", paddingTop: 10 }}>
+          {skillTrend.map(({ skillName, current, history }) => (
+            <div key={skillName} style={{ marginBottom: 6, fontSize: 12, color: "#6B7280" }}>
+              <strong style={{ color: "#374151" }}>{skillName}</strong>
+              {history.length > 1 && (
+                <span>
+                  {" "}
+                  · Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`).join(" → ")}
+                </span>
+              )}
             </div>
-            {history.length > 1 && (
-              <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>
-                Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`).join(" → ")}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 3 }}>
-              {[1, 2, 3, 4, 5].map((n) => (
-                <div key={n} style={{ width: 40, height: 8, borderRadius: 4, background: n <= current ? "var(--turf)" : "#E5E7EB" }} />
-              ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
       {/* Attended sessions */}

@@ -8,10 +8,12 @@ import { NAV_ITEMS } from "@/lib/navItems";
 export function MobileNav({
   userName,
   userRole,
+  photoUrl,
   logoutAction,
 }: {
   userName: string;
   userRole: string;
+  photoUrl: string | null;
   logoutAction: () => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
@@ -92,8 +94,37 @@ export function MobileNav({
             </nav>
 
             <div style={{ padding: "16px 20px 0", borderTop: "1px solid rgba(255,255,255,0.15)", marginTop: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 700 }}>{userName}</div>
-              <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 10 }}>{userRole.replace("_", " ")}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                {photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={photoUrl}
+                    alt={userName}
+                    style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.3)" }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      background: "var(--turf)",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 16,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{userName}</div>
+                  <div style={{ fontSize: 11, opacity: 0.7 }}>{userRole.replace("_", " ")}</div>
+                </div>
+              </div>
               <form action={logoutAction}>
                 <button
                   type="submit"

@@ -1,5 +1,6 @@
 import "./globals.css";
 import { getSession } from "@/lib/getSession";
+import { prisma } from "@/lib/prisma";
 import { logout } from "./login/actions";
 import { SidebarNav } from "@/components/SidebarNav";
 import { MobileNav } from "@/components/MobileNav";
@@ -15,6 +16,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
+  const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true } }) : null;
+  const photoUrl = user?.photoUrl ?? null;
 
   return (
     <html lang="en">
@@ -25,7 +28,7 @@ export default async function RootLayout({
           // different information. The login page never reaches this branch
           // because there's no session yet when it's rendered.
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <MobileNav userName={session.name} userRole={session.role} logoutAction={logout} />
+            <MobileNav userName={session.name} userRole={session.role} photoUrl={photoUrl} logoutAction={logout} />
             <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
               <aside
                 className="desktop-sidebar"
@@ -51,8 +54,37 @@ export default async function RootLayout({
                 <SidebarNav />
 
                 <div style={{ padding: "16px 20px 0", borderTop: "1px solid rgba(255,255,255,0.15)", marginTop: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>{session.name}</div>
-                  <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 10 }}>{session.role.replace("_", " ")}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    {photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={photoUrl}
+                        alt={session.name}
+                        style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.3)" }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          background: "var(--turf)",
+                          color: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 16,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {session.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>{session.name}</div>
+                      <div style={{ fontSize: 11, opacity: 0.7 }}>{session.role.replace("_", " ")}</div>
+                    </div>
+                  </div>
                   <form action={logout}>
                     <button
                       type="submit"
