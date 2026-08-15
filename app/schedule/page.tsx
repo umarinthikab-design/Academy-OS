@@ -109,21 +109,37 @@ export default async function SchedulePage({
       )}
 
       {canEdit && !missingPrereqs && (
-        <form
-          action={createScheduledSession}
+        <details
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
             borderRadius: "var(--radius)",
             boxShadow: "var(--shadow-sm)",
-            padding: 18,
+            padding: 14,
             marginBottom: 24,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              listStyle: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 14,
+              fontWeight: 800,
+              userSelect: "none",
+            }}
+          >
             <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>Schedule a new session</span>
-          </div>
+            Schedule a new session
+          </summary>
+          <form
+            action={createScheduledSession}
+            style={{
+              paddingTop: 14,
+            }}
+          >
           <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
               <label style={fieldLabel}>Date</label>
@@ -187,7 +203,8 @@ export default async function SchedulePage({
           <button type="submit" style={{ ...smallBtn, marginTop: 14, padding: "9px 18px" }}>
             Schedule Session
           </button>
-        </form>
+          </form>
+        </details>
       )}
 
       <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>

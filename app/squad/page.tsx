@@ -73,21 +73,37 @@ export default async function SquadPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canEdit && (
-        <form
-          action={createPlayer}
+        <details
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
             borderRadius: "var(--radius)",
             boxShadow: "var(--shadow-sm)",
-            padding: 18,
+            padding: 14,
             marginBottom: 20,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              listStyle: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 14,
+              fontWeight: 800,
+              userSelect: "none",
+            }}
+          >
             <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>Add a player</span>
-          </div>
+            Add a player
+          </summary>
+          <form
+            action={createPlayer}
+            style={{
+              paddingTop: 14,
+            }}
+          >
           <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
               <label style={fieldLabel}>Name</label>
@@ -117,16 +133,15 @@ export default async function SquadPage({
           >
             Add Player
           </button>
-        </form>
+          </form>
+        </details>
       )}
 
-      {/* Filter bar */}
-      <form
+      {/* Filter bar - collapsed by default so the player list stays the focus;
+          auto-opens when filters are active so the active state is visible. */}
+      <details
+        open={hasFilters}
         style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          alignItems: "flex-end",
           background: "var(--surface)",
           border: "1px solid var(--border)",
           borderRadius: "var(--radius)",
@@ -134,6 +149,35 @@ export default async function SquadPage({
           marginBottom: 20,
         }}
       >
+        <summary
+          style={{
+            cursor: "pointer",
+            listStyle: "none",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 14,
+            fontWeight: 800,
+            userSelect: "none",
+          }}
+        >
+          <Icon name="filter" size={15} style={{ color: "var(--secondary)" }} />
+          Filters
+          {hasFilters && (
+            <a href="/squad" style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none", marginLeft: 4 }}>
+              Clear
+            </a>
+          )}
+        </summary>
+        <form
+          style={{
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+            paddingTop: 14,
+          }}
+        >
         <div>
           <label style={fieldLabel}>Age</label>
           <input name="age" type="number" min={1} defaultValue={params.age ?? ""} style={{ width: 70, padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
@@ -166,12 +210,8 @@ export default async function SquadPage({
         <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
           Filter
         </button>
-        {hasFilters && (
-          <a href="/squad" style={{ fontSize: 12, color: "var(--text-muted)", padding: "6px 0", textDecoration: "none" }}>
-            Clear
-          </a>
-        )}
-      </form>
+        </form>
+      </details>
 
       {filtered.length === 0 ? (
         <EmptyState

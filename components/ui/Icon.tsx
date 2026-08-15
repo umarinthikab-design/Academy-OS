@@ -264,6 +264,11 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15" />
     </>
   ),
+  filter: (
+    <>
+      <path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3z" />
+    </>
+  ),
 };
 
 export function Icon({

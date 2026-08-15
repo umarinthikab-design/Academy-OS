@@ -66,21 +66,37 @@ export default async function SessionsPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canSuggest && (
-        <form
-          action={createSession}
+        <details
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
             borderRadius: "var(--radius)",
             boxShadow: "var(--shadow-sm)",
-            padding: 18,
+            padding: 14,
             marginBottom: 28,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              listStyle: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 14,
+              fontWeight: 800,
+              userSelect: "none",
+            }}
+          >
             <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>Create a session plan</span>
-          </div>
+            Create a session plan
+          </summary>
+          <form
+            action={createSession}
+            style={{
+              paddingTop: 14,
+            }}
+          >
           <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Plan name</label>
           <input name="name" required placeholder="e.g. Passing patterns - warmup" style={{ ...inputBase, marginBottom: 12 }} />
 
@@ -98,7 +114,8 @@ export default async function SessionsPage({
             Create Plan
           </button>
           <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
-        </form>
+          </form>
+        </details>
       )}
 
       {/* Pending share approvals */}

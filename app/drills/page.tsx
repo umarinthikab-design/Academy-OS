@@ -45,21 +45,37 @@ export default async function DrillsPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canSuggest && (
-        <form
-          action={createDrill}
+        <details
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
             borderRadius: "var(--radius)",
             boxShadow: "var(--shadow-sm)",
-            padding: 18,
+            padding: 14,
             marginBottom: 28,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              listStyle: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 14,
+              fontWeight: 800,
+              userSelect: "none",
+            }}
+          >
             <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>{canPublishEdit ? "Add a drill" : "Suggest a drill"}</span>
-          </div>
+            {canPublishEdit ? "Add a drill" : "Suggest a drill"}
+          </summary>
+          <form
+            action={createDrill}
+            style={{
+              paddingTop: 14,
+            }}
+          >
           <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
               <label style={fieldLabel}>Name</label>
@@ -104,7 +120,8 @@ export default async function DrillsPage({
               ? "Published drills join the library immediately."
               : "All new drills go to Pending Approval below — nothing joins the library automatically."}
           </p>
-        </form>
+          </form>
+        </details>
       )}
 
       <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>

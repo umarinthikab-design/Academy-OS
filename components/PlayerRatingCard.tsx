@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PLAYER_POSITIONS, SKILL_BANDS, calculateAge, getSkillBandForAge } from "@/lib/skills";
+import { PLAYER_POSITIONS, SKILL_BANDS, ALL_SKILLS, calculateAge, getSkillBandForAge } from "@/lib/skills";
 import { updateSkill, updatePlayerPosition, updatePlayerSkills } from "@/app/squad/actions";
 
 type SkillRow = { skillName: string; value: number; active: boolean };
@@ -36,9 +36,20 @@ export function PlayerRatingCard({
   // Legacy players (created before the taxonomy) may have no rows for their
   // age band - fall back to the band's skills so the card is never empty.
   const visibleSkills =
-    activeSkills.length > 0
-      ? activeSkills
-      : band.skills.map((skillName) => ({ skillName, value: 0, active: true }));
+    (activeSkills.length > 0 ? activeSkills : band.skills.map((skillName) => ({ skillName, value: 0, active: true })))
+      // Stable display order regardless of DB row order. The skills include
+      // has no ORDER BY, so a skill upsert can silently reshuffle the rows on
+      // refresh; sorting by the taxonomy keeps the bars in a fixed position.
+      // Unknown/legacy skill names go last so they never jump to the front.
+      .slice()
+      .sort((a, b) => {
+        const ia = ALL_SKILLS.indexOf(a.skillName);
+        const ib = ALL_SKILLS.indexOf(b.skillName);
+        if (ia === -1 && ib === -1) return 0;
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
 
   const rated = visibleSkills.filter((s) => s.value > 0);
   const average = rated.length ? rated.reduce((sum, s) => sum + s.value, 0) / rated.length : 0;
