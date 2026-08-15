@@ -23,10 +23,10 @@ export async function createDrill(formData: FormData) {
 
   if (!name || !category || !duration) redirect("/drills?error=missing_fields");
 
-  // Coaches with the canEditDrills permission publish straight into the
-  // library (no approval round-trip). Everyone else submits a suggestion
-  // that starts PENDING and needs an explicit approval.
-  const status = perms.canEditDrills ? "APPROVED" : "PENDING";
+  // Coaches who can approve requests publish straight into the library (no
+  // approval round-trip on their own suggestion). Everyone else submits a
+  // suggestion that starts PENDING and needs an explicit approval.
+  const status = perms.isAdmin || perms.canApproveRequests ? "APPROVED" : "PENDING";
   const drill = await prisma.drill.create({
     data: {
       name,

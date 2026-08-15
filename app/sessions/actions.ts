@@ -65,6 +65,20 @@ export async function shareSession(id: string) {
     redirect("/sessions?error=already_shared");
   }
 
+  // Self-approval: a plan owner who can approve requests shares their own
+  // plan directly - queuing a request they'd approve anyway is friction
+  // without a second pair of eyes. Everyone else goes through the normal
+  // SESSION_SHARE approval flow.
+  if (perms.isAdmin || perms.canApproveRequests) {
+    await prisma.session.update({
+      where: { id },
+      data: { isPrivate: false, shareStatus: "APPROVED" },
+    });
+    if (perms.userId) await logActivity(perms.userId, "shared_session_plan", "Session", id);
+    revalidatePath("/sessions");
+    redirect("/sessions?success=Session plan shared with the team.");
+  }
+
   await prisma.session.update({ where: { id }, data: { shareStatus: "PENDING" } });
   await prisma.approvalRequest.create({
     data: {

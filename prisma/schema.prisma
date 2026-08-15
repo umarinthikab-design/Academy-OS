@@ -69,6 +69,12 @@ enum Gender {
   OTHER
 }
 
+enum PlayerAvailability {
+  AVAILABLE
+  INJURED
+  INACTIVE
+}
+
 // Self-service pre-session RSVP. This is separate from CoachAttendance
 // ("did you attend" - checked in after the session) - this answers "will you
 // attend" ahead of time, with no approval chain.
@@ -217,6 +223,11 @@ model Player {
   // Gender is required at creation time in the UI; stored nullable so
   // pre-existing rows without it keep working.
   gender Gender?
+
+  // Availability flag: a coach marks a player AVAILABLE, INJURED, or INACTIVE
+  // straight from the squad view, so availability is visible everywhere a
+  // player card appears (no separate status page to keep in sync).
+  availability PlayerAvailability @default(AVAILABLE)
 
   batches Batch[]  @relation("PlayerBatches")
   parents Parent[] @relation("ParentPlayers")

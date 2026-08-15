@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createScheduledSession, deleteScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
+import { createScheduledSession, deleteScheduledSession, updateScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -77,7 +77,7 @@ export default async function SchedulePage({
         title="Schedule"
         subtitle={
           canEdit ? (
-            "Plan sessions, assign coaches, and attach session plans."
+            "Schedule training sessions on the calendar, assign coaches, and attach a session plan."
           ) : (
             "View only — you don't have edit access to the schedule."
           )
@@ -203,17 +203,129 @@ export default async function SchedulePage({
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
           {sessions.map((s) => (
-            <SessionCard
-              key={s.id}
-              date={s.date}
-              startTime={s.startTime}
-              durationMinutes={s.durationMinutes}
-              ageGroupName={s.ageGroup.name}
-              locationName={s.location.name}
-              headCoaches={s.headCoaches.map((c) => c.user.name)}
-              assistantCoaches={s.assistantCoaches.map((c) => c.user.name)}
-              badge={s.recurring ? <Badge tone="accent">Weekly</Badge> : undefined}
-              actions={canEdit ? <ConfirmDeleteButton action={deleteScheduledSession.bind(null, s.id)} confirmMessage="Remove this session? This can't be undone." /> : undefined}
+            <div key={s.id}>
+              <SessionCard
+                date={s.date}
+                startTime={s.startTime}
+                durationMinutes={s.durationMinutes}
+                ageGroupName={s.ageGroup.name}
+                locationName={s.location.name}
+                headCoaches={s.headCoaches.map((c) => c.user.name)}
+                assistantCoaches={s.assistantCoaches.map((c) => c.user.name)}
+                badge={s.recurring ? <Badge tone="accent">Weekly</Badge> : undefined}
+                actions={
+                  canEdit ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <details style={{ position: "relative" }}>
+                        <summary
+                          style={{
+                            cursor: "pointer",
+                            fontSize: 12,
+                            fontWeight: 700,
+                            padding: "5px 12px",
+                            borderRadius: 8,
+                            border: "1px solid var(--border)",
+                            background: "var(--surface)",
+                            color: "var(--text)",
+                            listStyle: "none",
+                            userSelect: "none",
+                          }}
+                        >
+                          Edit
+                        </summary>
+                        <div
+                          style={{
+                            position: "absolute",
+                            right: 0,
+                            top: "calc(100% + 6px)",
+                            zIndex: 20,
+                            width: 420,
+                            maxWidth: "80vw",
+                            background: "var(--surface)",
+                            border: "1px solid var(--border)",
+                            borderRadius: "var(--radius)",
+                            boxShadow: "var(--shadow-md)",
+                            padding: 16,
+                          }}
+                        >
+                          <form action={updateScheduledSession.bind(null, s.id)}>
+                            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12 }}>Edit session</div>
+                            <div className="form-grid-2col" style={{ gap: 10 }}>
+                              <div>
+                                <label style={fieldLabel}>Date</label>
+                                <input name="date" type="date" defaultValue={s.date.toISOString().slice(0, 10)} required style={inputBase} />
+                              </div>
+                              <div>
+                                <label style={fieldLabel}>Start time</label>
+                                <input name="time" type="time" defaultValue={s.startTime} required style={inputBase} />
+                              </div>
+                              <div>
+                                <label style={fieldLabel}>Duration (min)</label>
+                                <input name="duration" type="number" defaultValue={s.durationMinutes} required style={inputBase} />
+                              </div>
+                              <div>
+                                <label style={fieldLabel}>Age group</label>
+                                <select name="ageGroupId" defaultValue={s.ageGroupId} required style={inputBase}>
+                                  {ageGroups.map((ag) => (
+                                    <option key={ag.id} value={ag.id}>{ag.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1" }}>
+                                <label style={fieldLabel}>Location</label>
+                                <select name="locationId" defaultValue={s.locationId} required style={inputBase}>
+                                  {locations.map((l) => (
+                                    <option key={l.id} value={l.id}>{l.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1" }}>
+                                <label style={fieldLabel}>Head coach(es)</label>
+                                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                                  {headCoaches.map((c) => (
+                                    <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                                      <input type="checkbox" name="headCoaches" value={c.id} defaultChecked={s.headCoaches.some((hc) => hc.id === c.id)} /> {c.user.name}
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1" }}>
+                                <label style={fieldLabel}>Assistant coach(es)</label>
+                                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                                  {assistantCoaches.map((c) => (
+                                    <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                                      <input type="checkbox" name="assistantCoaches" value={c.id} defaultChecked={s.assistantCoaches.some((ac) => ac.id === c.id)} /> {c.user.name}
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 6, marginTop: 2 }}>
+                                <label style={{ fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                  <input type="radio" name="scope" value="this" defaultChecked /> This session only
+                                </label>
+                                {s.recurring && (
+                                  <label style={{ fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                    <input type="radio" name="scope" value="all_future" /> This and all future weeks
+                                  </label>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              type="submit"
+                              style={{ marginTop: 12, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                            >
+                              Save changes
+                            </button>
+                          </form>
+                        </div>
+                      </details>
+                      <ConfirmDeleteButton
+                        action={deleteScheduledSession.bind(null, s.id)}
+                        confirmMessage="Remove this session? This can't be undone."
+                      />
+                    </div>
+                  ) : undefined
+                }
               footer={
                 s.session ? (
                   <div>
@@ -249,7 +361,8 @@ export default async function SchedulePage({
                   </form>
                 ) : undefined
               }
-            />
+              />
+            </div>
           ))}
         </div>
       )}

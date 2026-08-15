@@ -28,7 +28,7 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
   // Coaching staff (head + assistant) and admins share the football-ops pages.
   items.push(
     { href: "/schedule", label: "Schedule", icon: "calendar" },
-    { href: "/sessions", label: "Sessions", icon: "sessions" },
+    { href: "/sessions", label: "Session Plans", icon: "sessions" },
     { href: "/attendance", label: "Attendance", icon: "attendance" }
   );
 

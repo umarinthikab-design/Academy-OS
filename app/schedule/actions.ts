@@ -89,6 +89,100 @@ export async function deleteScheduledSession(id: string) {
   redirect("/schedule?success=Session removed.");
 }
 
+// Edit a scheduled session. Recurring sessions can be edited one instance at
+// a time ("this"), or this instance plus every future instance in the same
+// series ("this and future"). Coach changes are reconciled with the pre-
+// session confirmation rows: newly added coaches get a PENDING row, removed
+// coaches get theirs cleared.
+export async function updateScheduledSession(scheduledSessionId: string, formData: FormData) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSchedule)) redirect("/schedule?error=no_permission");
+
+  const date = formData.get("date") as string;
+  const time = formData.get("time") as string;
+  const duration = Number(formData.get("duration"));
+  const ageGroupId = formData.get("ageGroupId") as string;
+  const locationId = formData.get("locationId") as string;
+  const headCoachIds = formData.getAll("headCoaches") as string[];
+  const assistantCoachIds = formData.getAll("assistantCoaches") as string[];
+  const scope = formData.get("scope") as string;
+
+  if (!date || !time || !duration || !ageGroupId || !locationId || headCoachIds.length === 0) {
+    redirect("/schedule?error=missing_fields");
+  }
+  if (scope !== "this" && scope !== "all_future") redirect("/schedule?error=missing_fields");
+
+  const session = await prisma.scheduledSession.findUnique({
+    where: { id: scheduledSessionId },
+  });
+  if (!session) redirect("/schedule");
+
+  const coachIds = [...headCoachIds, ...assistantCoachIds];
+  const data = {
+    date: new Date(date + "T00:00:00"),
+    startTime: time,
+    durationMinutes: duration,
+    ageGroupId,
+    locationId,
+    headCoaches: { set: headCoachIds.map((id) => ({ id })) },
+    assistantCoaches: { set: assistantCoachIds.map((id) => ({ id })) },
+  };
+
+  if (scope === "all_future" && session.recurrenceGroupId) {
+    // This instance and every later instance in the series move together. If
+    // the date changed, future weeks shift by the same number of days so the
+    // weekly cadence holds.
+    const delta = data.date.getTime() - session.date.getTime();
+    const siblings = await prisma.scheduledSession.findMany({
+      where: { recurrenceGroupId: session.recurrenceGroupId, date: { gte: session.date } },
+    });
+    for (const s of siblings) {
+      await prisma.scheduledSession.update({
+        where: { id: s.id },
+        data: { ...data, date: new Date(s.date.getTime() + delta) },
+      });
+      await syncConfirmations(s.id, coachIds);
+    }
+  } else {
+    await prisma.scheduledSession.update({ where: { id: scheduledSessionId }, data });
+    await syncConfirmations(scheduledSessionId, coachIds);
+  }
+
+  if (perms.userId) await logActivity(perms.userId, "updated_scheduled_session", "ScheduledSession", scheduledSessionId, `${date} ${time}`);
+  revalidatePath("/schedule");
+  redirect("/schedule?success=Session updated.");
+}
+
+// Keep the pre-session confirmation rows in step with a session's assigned
+// coaches: add PENDING rows for coaches who don't have one yet, clear rows
+// for coaches no longer on the session. No-op when the confirmation feature
+// is disabled.
+async function syncConfirmations(scheduledSessionId: string, coachIds: string[]) {
+  const settings = await prisma.academySettings.findFirst();
+  if (settings?.preSessionConfirmationEnabled === false) return;
+
+  const existing = await prisma.sessionCoachConfirmation.findMany({
+    where: { scheduledSessionId },
+    select: { coachId: true },
+  });
+  const existingIds = new Set(existing.map((c) => c.coachId));
+  const newCoachIds = coachIds.filter((id) => !existingIds.has(id));
+
+  if (newCoachIds.length > 0) {
+    await prisma.sessionCoachConfirmation.createMany({
+      data: newCoachIds.map((coachId) => ({ scheduledSessionId, coachId, status: "PENDING" })),
+      skipDuplicates: true,
+    });
+  }
+
+  const removedIds = existing.filter((c) => !coachIds.includes(c.coachId)).map((c) => c.coachId);
+  if (removedIds.length > 0) {
+    await prisma.sessionCoachConfirmation.deleteMany({
+      where: { scheduledSessionId, coachId: { in: removedIds } },
+    });
+  }
+}
+
 // Attach a drill plan (Session) to a calendar slot. The window for doing so
 // is 72 hours after the session's end time - after that, both attaching and
 // editing the attached plan are locked (confirmed product decision; the

@@ -4,7 +4,7 @@ import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Avatar } from "@/components/ui/Avatar";
+import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { inputBase } from "@/components/ui/Form";
@@ -124,69 +124,74 @@ export default async function CoachesPage({
           {coaches.map((c) => (
             <div key={c.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-                  <Avatar name={c.user.name} size={38} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <strong style={{ fontSize: 14 }}>{c.user.name}</strong>
+                <EntityHero
+                  name={c.user.name}
+                  src={c.user.photoUrl}
+                  size={38}
+                  badges={
+                    <>
                       <Badge tone={c.designation === "HEAD" ? "green" : "blue"}>
                         {c.designation === "HEAD" ? "Head Coach" : "Assistant Coach"}
                       </Badge>
                       {c.gender && <Badge tone="accent">{c.gender === "MALE" ? "Male" : c.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
-                    </div>
-                    {c.primaryFocus.length > 0 && (
+                    </>
+                  }
+                  subtitle={
+                    c.primaryFocus.length > 0 ? (
                       <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
                         Focus: {c.primaryFocus.map((a) => a.name).join(", ")}
                       </div>
-                    )}
-                  </div>
-                </div>
-                {canEdit && (
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    {perms.isAdmin && (
-                      <>
-                        <form action={resetCoachPassword.bind(null, c.id)}>
-                          <button
-                            type="submit"
-                            title="Reset this coach's password to a temporary value they must change on next login"
-                            style={{
-                              fontSize: 11,
-                              padding: "6px 12px",
-                              borderRadius: 8,
-                              border: "1px solid var(--border)",
-                              background: "var(--surface)",
-                              color: "var(--text-muted)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Reset password
-                          </button>
-                        </form>
-                        <form action={revokeSessions.bind(null, c.id)}>
-                          <button
-                            type="submit"
-                            title="Invalidate all of this coach's active sessions so they must log in again"
-                            style={{
-                              fontSize: 11,
-                              padding: "6px 12px",
-                              borderRadius: 8,
-                              border: "1px solid var(--border)",
-                              background: "var(--surface)",
-                              color: "var(--text-muted)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Revoke sessions
-                          </button>
-                        </form>
-                      </>
-                    )}
-                    <ConfirmDeleteButton
-                      action={deleteCoach.bind(null, c.id)}
-                      confirmMessage={`Remove ${c.user.name} from the roster? This can't be undone.`}
-                    />
-                  </div>
-                )}
+                    ) : undefined
+                  }
+                  actions={
+                    canEdit ? (
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        {perms.isAdmin && (
+                          <>
+                            <form action={resetCoachPassword.bind(null, c.id)}>
+                              <button
+                                type="submit"
+                                title="Reset this coach's password to a temporary value they must change on next login"
+                                style={{
+                                  fontSize: 11,
+                                  padding: "6px 12px",
+                                  borderRadius: 8,
+                                  border: "1px solid var(--border)",
+                                  background: "var(--surface)",
+                                  color: "var(--text-muted)",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Reset password
+                              </button>
+                            </form>
+                            <form action={revokeSessions.bind(null, c.id)}>
+                              <button
+                                type="submit"
+                                title="Invalidate all of this coach's active sessions so they must log in again"
+                                style={{
+                                  fontSize: 11,
+                                  padding: "6px 12px",
+                                  borderRadius: 8,
+                                  border: "1px solid var(--border)",
+                                  background: "var(--surface)",
+                                  color: "var(--text-muted)",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Revoke sessions
+                              </button>
+                            </form>
+                          </>
+                        )}
+                        <ConfirmDeleteButton
+                          action={deleteCoach.bind(null, c.id)}
+                          confirmMessage={`Remove ${c.user.name} from the roster? This can't be undone.`}
+                        />
+                      </div>
+                    ) : undefined
+                  }
+                />
               </div>
 
               {perms.isAdmin && c.designation === "HEAD" && (
@@ -194,7 +199,7 @@ export default async function CoachesPage({
                   <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>
                     Permissions
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: -12 }}>
                     {PERMISSION_TOGGLES.map((t) => (
                       <form key={t.field} action={updateCoachPermission.bind(null, c.id, t.field, !c[t.field])}>
                         <button

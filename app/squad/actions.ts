@@ -31,11 +31,13 @@ export async function createPlayer(formData: FormData) {
   if (!["MALE", "FEMALE", "OTHER"].includes(gender)) redirect("/squad?error=missing_fields");
 
   const dob = new Date(dobRaw);
+  const photoUrl = sanitizePhotoUrl(formData.get("photoUrl") as string) || null;
   const player = await prisma.player.create({
     data: {
       name,
       dateOfBirth: dob,
       gender,
+      photoUrl,
       // New players start with their age-band skills active at a baseline
       // of 1, so the Squad page always has age-appropriate bars to show.
       skills: {
@@ -79,6 +81,27 @@ export async function updatePlayerPosition(playerId: string, position: string) {
 
   await prisma.player.update({ where: { id: playerId }, data: { position } });
   if (perms.userId) await logActivity(perms.userId, "updated_player_position", "Player", playerId, position);
+  revalidatePath("/squad");
+  revalidatePath(`/squad/${playerId}`);
+}
+
+// Fast availability flag on a player - settable from the squad list and the
+// player page by anyone with squad-edit access. State is a small enum
+// (AVAILABLE / INJURED / INACTIVE) so it shows up as a pill everywhere.
+export async function updatePlayerAvailability(playerId: string, formData: FormData) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSquad)) redirect("/squad?error=no_permission");
+
+  const availability = formData.get("availability") as string;
+  if (!["AVAILABLE", "INJURED", "INACTIVE"].includes(availability)) {
+    redirect(`/squad/${playerId}?error=invalid_availability`);
+  }
+
+  await prisma.player.update({
+    where: { id: playerId },
+    data: { availability: availability as "AVAILABLE" | "INJURED" | "INACTIVE" },
+  });
+  if (perms.userId) await logActivity(perms.userId, "updated_player_availability", "Player", playerId, availability);
   revalidatePath("/squad");
   revalidatePath(`/squad/${playerId}`);
 }

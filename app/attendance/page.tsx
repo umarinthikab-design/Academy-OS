@@ -3,6 +3,7 @@ import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
+import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import {
@@ -269,6 +270,9 @@ export default async function AttendancePage({
                         <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                           <input type="hidden" name="playerId" value={p.id} />
                           <span style={{ width: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                          {p.availability !== "AVAILABLE" && (
+                            <AvailabilityBadge availability={p.availability} />
+                          )}
                           <select name="status" defaultValue="" style={{ padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 5, fontSize: 12 }}>
                             <option value="">—</option>
                             <option value="ATTENDED">Attended</option>

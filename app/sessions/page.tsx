@@ -59,7 +59,7 @@ export default async function SessionsPage({
   return (
     <>
       <PageHeader
-        title="Sessions"
+        title="Session Plans"
         subtitle={canSuggest ? "Build training plans from the approved drill library." : "Only coaches can create session plans. You can still view shared ones below."}
       />
 

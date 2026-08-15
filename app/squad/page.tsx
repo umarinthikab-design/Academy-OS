@@ -1,17 +1,19 @@
 import { prisma } from "@/lib/prisma";
-import { createPlayer, deletePlayer } from "./actions";
+import { createPlayer, deletePlayer, updatePlayerAvailability } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
 import { calculateAge } from "@/lib/skills";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Avatar } from "@/components/ui/Avatar";
+import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
+import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
+import { AvailabilitySelect } from "@/components/ui/AvailabilitySelect";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { inputBase } from "@/components/ui/Form";
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import { Icon } from "@/components/ui/Icon";
-import Link from "next/link";
 
 // Filtering is in-memory via URLSearchParams read from searchParams - the
 // Server Component reads them directly, no client state needed. This is the
@@ -104,6 +106,10 @@ export default async function SquadPage({
                 <option value="OTHER">Other</option>
               </select>
             </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ ...fieldLabel, marginBottom: 8 }}>Photo (optional)</label>
+              <PhotoUpload name="photoUrl" label="Upload photo" />
+            </div>
           </div>
           <button
             type="submit"
@@ -187,28 +193,36 @@ export default async function SquadPage({
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-                  <Avatar name={p.name} size={42} />
-                  <div style={{ minWidth: 0 }}>
-                    <Link href={`/squad/${p.id}`} style={{ fontSize: 16, fontWeight: 800, color: "var(--primary)", textDecoration: "none" }}>
-                      {p.name}
-                    </Link>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
+                <EntityHero
+                  name={p.name}
+                  href={`/squad/${p.id}`}
+                  src={p.photoUrl}
+                  badges={
+                    <>
+                      <AvailabilityBadge availability={p.availability} />
                       <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
                       {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
                       {p.batches.map((b) => (
                         <Badge key={b.id} tone="blue">{b.name}</Badge>
                       ))}
-                    </div>
-                  </div>
-                </div>
-                {canEdit && (
-                  <ConfirmDeleteButton
-                    action={deletePlayer.bind(null, p.id)}
-                    confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
-                  />
-                )}
+                    </>
+                  }
+                  actions={
+                    canEdit ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                        <AvailabilitySelect
+                          action={updatePlayerAvailability.bind(null, p.id)}
+                          availability={p.availability}
+                        />
+                        <ConfirmDeleteButton
+                          action={deletePlayer.bind(null, p.id)}
+                          confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
+                        />
+                      </div>
+                    ) : undefined
+                  }
+                />
               </div>
 
               <div style={{ marginTop: 12 }}>

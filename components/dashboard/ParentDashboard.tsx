@@ -80,7 +80,7 @@ export async function ParentDashboard({ scope, userName }: { scope: DashboardSco
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 16, fontWeight: 800 }}>{child.name}</div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4, marginLeft: -9 }}>
                       {child.batches.map((b) => (
                         <Badge key={b.id} tone="blue">{b.ageGroup.name} · {b.name}</Badge>
                       ))}
