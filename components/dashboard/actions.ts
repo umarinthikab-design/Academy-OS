@@ -62,3 +62,33 @@ export async function addApprovalMessage(requestId: string, formData: FormData) 
   revalidatePath("/requests");
   redirect("/requests?success=Feedback sent.");
 }
+
+// Self-service pre-session RSVP. The coach confirms or declines their own
+// attendance row - no approval chain, no admin/head gate. Only the coach who
+// owns the row can act on it. A DECLINED answer is surfaced to admins/heads
+// via the dashboard "Needs attention" section (real notifications are out of
+// scope - no provider wired up yet).
+export async function confirmSessionParticipation(
+  confirmationId: string,
+  status: "CONFIRMED" | "DECLINED"
+) {
+  const perms = await getPermissions();
+  if (!perms.coachId) redirect("/?error=no_permission");
+
+  const row = await prisma.sessionCoachConfirmation.findUnique({ where: { id: confirmationId } });
+  if (!row || row.coachId !== perms.coachId || row.status !== "PENDING") {
+    redirect("/?error=no_permission");
+  }
+
+  await prisma.sessionCoachConfirmation.update({
+    where: { id: confirmationId },
+    data: { status, confirmedAt: new Date() },
+  });
+
+  if (perms.userId) {
+    await logActivity(perms.userId, status === "CONFIRMED" ? "confirmed_session_participation" : "declined_session_participation", "SessionCoachConfirmation", confirmationId, row.scheduledSessionId);
+  }
+  revalidatePath("/");
+  revalidatePath("/schedule");
+  redirect(status === "CONFIRMED" ? "/?success=You're confirmed for this session." : "/?success=You declined - the club has been notified.");
+}

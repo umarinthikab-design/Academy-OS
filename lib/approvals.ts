@@ -17,8 +17,25 @@ import { prisma } from "./prisma";
 import { logActivity } from "./logActivity";
 import { PlayerAttendanceStatus } from "@prisma/client";
 import type { Permissions } from "./permissions";
+import type { RequestType } from "@prisma/client";
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+
+// Categorization for the Requests page: requests are grouped by type into
+// named sections, and a section only renders when it has at least one item.
+// Order here is the render order on the page.
+export const REQUEST_CATEGORIES: { label: string; types: RequestType[] }[] = [
+  { label: "Drill Suggestions", types: ["DRILL_ADD", "DRILL_EDIT"] },
+  { label: "Session Attendance", types: ["ATTENDANCE_CONFIRM"] },
+  { label: "Session Sharing", types: ["SESSION_SHARE"] },
+  { label: "Schedule Changes", types: ["SCHEDULE_CREATE"] },
+  { label: "Skill Updates", types: ["SKILL_UPDATE"] },
+];
+
+export function requestCategory(type: RequestType): string {
+  const cat = REQUEST_CATEGORIES.find((c) => c.types.includes(type));
+  return cat?.label ?? type;
+}
 
 function sessionStart(session: { date: Date; startTime: string }): Date {
   const [h, m] = session.startTime.split(":").map(Number);
@@ -33,7 +50,7 @@ function sessionDeadline(session: { date: Date; startTime: string }): Date {
 
 export type InboxRequest = {
   id: string;
-  type: "ATTENDANCE_CONFIRM" | "SESSION_SHARE";
+  type: RequestType;
   requesterName: string;
   detail: string;
   summary?: string;
@@ -44,7 +61,7 @@ export type InboxRequest = {
 // approver's inbox and the requester's "My Requests" section.
 export type ApprovalDetail = {
   id: string;
-  type: "ATTENDANCE_CONFIRM" | "SESSION_SHARE";
+  type: RequestType;
   status: "PENDING" | "APPROVED" | "REJECTED";
   requesterName: string;
   requesterId: string;
@@ -71,7 +88,7 @@ export async function getApprovalDetail(requestId: string): Promise<ApprovalDeta
 
   const base = {
     id: request.id,
-    type: request.type as "ATTENDANCE_CONFIRM" | "SESSION_SHARE",
+    type: request.type as RequestType,
     status: request.status,
     requesterName: request.requestedBy.user.name,
     requesterId: request.requestedById,

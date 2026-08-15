@@ -17,9 +17,12 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
 
   // Requests are visible to coaching staff and admins alike: approvers action
   // pending proposals, requesters track their own submissions. The badge
-  // highlights how many pending requests matter to this user.
+  // highlights how many pending requests matter to this user. Assistant
+  // coaches only ever submit requests, so their copy reads "Approvals"
+  // (they're tracking the status of their submissions, not fielding them);
+  // admins and head coaches keep "Requests" since they're approving.
   if (perms.isAdmin || perms.isHeadCoach || perms.isAssistant) {
-    items.push({ href: "/requests", label: "Requests", icon: "bell", badge: requestsBadge || undefined });
+    items.push({ href: "/requests", label: perms.isAssistant ? "Approvals" : "Requests", icon: "bell", badge: requestsBadge || undefined });
   }
 
   // Coaching staff (head + assistant) and admins share the football-ops pages.
@@ -50,6 +53,12 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
 
   if (perms.canSuggestDrills) {
     items.push({ href: "/drills", label: "Drill Library", icon: "drills" });
+  }
+
+  // Club-wide (academy) configuration - admin only. Distinct from the
+  // personal /settings page every user gets.
+  if (perms.isAdmin) {
+    items.push({ href: "/academy-settings", label: "Club Settings", icon: "settings" });
   }
 
   items.push({ href: "/activity", label: "Activity", icon: "activity" });

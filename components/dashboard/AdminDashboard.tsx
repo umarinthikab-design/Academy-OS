@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHero } from "./DashboardHero";
 import { QuickActions } from "./QuickActions";
 import { ApprovalInbox } from "./ApprovalInbox";
+import { StaffingAlerts } from "./StaffingAlerts";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
@@ -71,6 +72,9 @@ export async function AdminDashboard({ perms, userName }: { perms: Permissions; 
 
       {/* Approvals */}
       <ApprovalInbox perms={perms} />
+
+      {/* Staffing alerts - sessions where a coach hasn't confirmed / declined */}
+      <StaffingAlerts perms={perms} />
 
       {/* Stats */}
       <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>

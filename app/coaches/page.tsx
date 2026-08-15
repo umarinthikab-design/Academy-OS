@@ -204,8 +204,8 @@ export default async function CoachesPage({
                             padding: "5px 12px",
                             borderRadius: 20,
                             border: `1px solid ${c[t.field] ? "var(--secondary)" : "var(--border)"}`,
-                            background: c[t.field] ? "var(--secondary)" : "#fff",
-                            color: c[t.field] ? "#fff" : "var(--text-muted)",
+                            background: c[t.field] ? "var(--secondary)" : "var(--surface)",
+                            color: c[t.field] ? "#fff" : "var(--text)",
                             cursor: "pointer",
                           }}
                         >

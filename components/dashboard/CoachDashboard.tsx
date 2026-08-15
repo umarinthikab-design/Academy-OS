@@ -9,6 +9,8 @@ import { TeamSelector } from "./TeamSelector";
 import { QuickActions } from "./QuickActions";
 import { ApprovalInbox } from "./ApprovalInbox";
 import { MyRequests } from "./MyRequests";
+import { SessionConfirmations } from "./SessionConfirmations";
+import { StaffingAlerts } from "./StaffingAlerts";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
@@ -54,8 +56,12 @@ export async function CoachDashboard({
           title="No squad or batch assignments yet"
           message="You don't currently have any squad or batch assignments. Once an administrator assigns you to a team, your sessions, players and schedule will appear here. Contact your club administrator if this is unexpected."
         />
+        <SessionConfirmations perms={perms} />
         <ApprovalInbox perms={perms} />
         <MyRequests perms={perms} />
+        {(perms.isAdmin || (perms.canApproveRequests && !!perms.coachId)) && (
+          <StaffingAlerts perms={perms} />
+        )}
       </div>
     );
   }
@@ -175,11 +181,19 @@ export async function CoachDashboard({
         )}
       </section>
 
+      {/* Pre-session RSVP - confirm/decline your upcoming sessions */}
+      <SessionConfirmations perms={perms} />
+
       {/* Approvals */}
       <ApprovalInbox perms={perms} />
 
       {/* My requests */}
       <MyRequests perms={perms} />
+
+      {/* Staffing alerts - sessions where a coach hasn't confirmed / declined */}
+      {(perms.isAdmin || (perms.canApproveRequests && !!perms.coachId)) && (
+        <StaffingAlerts perms={perms} />
+      )}
 
       {/* Priority card - today's / next session */}
       {priority && (

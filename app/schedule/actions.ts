@@ -38,7 +38,7 @@ export async function createScheduledSession(formData: FormData) {
   });
 
   for (const d of dates) {
-    await prisma.scheduledSession.create({
+    const session = await prisma.scheduledSession.create({
       data: {
         date: d,
         startTime: time,
@@ -51,6 +51,24 @@ export async function createScheduledSession(formData: FormData) {
         assistantCoaches: { connect: assistantCoachIds.map((id) => ({ id })) },
       },
     });
+
+    // Pre-session RSVP rows - one per assigned coach, PENDING. Only created
+    // when the academy-wide confirmation feature is enabled (checked lazily
+    // via the singleton so a brand-new DB without settings still works).
+    const settings = await prisma.academySettings.findFirst();
+    if (settings?.preSessionConfirmationEnabled !== false) {
+      const coachIds = [...headCoachIds, ...assistantCoachIds];
+      if (coachIds.length > 0) {
+        await prisma.sessionCoachConfirmation.createMany({
+          data: coachIds.map((coachId) => ({
+            scheduledSessionId: session.id,
+            coachId,
+            status: "PENDING",
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
   }
 
   if (perms.userId) await logActivity(perms.userId, "scheduled_session", "ScheduledSession", undefined, `${weeks} x ${date} ${time}`);

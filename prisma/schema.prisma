@@ -69,6 +69,15 @@ enum Gender {
   OTHER
 }
 
+// Self-service pre-session RSVP. This is separate from CoachAttendance
+// ("did you attend" - checked in after the session) - this answers "will you
+// attend" ahead of time, with no approval chain.
+enum CoachConfirmationStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
 // ── People ───────────────────────────────────────────────
 
 model User {
@@ -129,6 +138,8 @@ model Coach {
 
   headSessions      ScheduledSession[] @relation("HeadCoachSessions")
   assistantSessions ScheduledSession[] @relation("AssistantCoachSessions")
+
+  sessionConfirmations SessionCoachConfirmation[]
 
   createdDrills   Drill[]         @relation("DrillCreatedBy")
   drillFeedback   DrillFeedback[]
@@ -346,6 +357,9 @@ model ScheduledSession {
   playerAttendance PlayerAttendance[]
   coachAttendance  CoachAttendance[]
 
+  // Pre-session RSVP rows, one per assigned coach.
+  coachConfirmations SessionCoachConfirmation[]
+
   createdAt DateTime @default(now())
 }
 
@@ -373,6 +387,38 @@ model CoachAttendance {
   confirmedAt        DateTime?
 
   @@unique([coachId, scheduledSessionId])
+}
+
+// Self-service pre-session RSVP: one row per assigned coach per session.
+// Created PENDING when the session is scheduled; the coach confirms or
+// declines from their dashboard. Distinct from CoachAttendance (post-session
+// check-in) - this is "will you attend", ahead of time, no approval chain.
+model SessionCoachConfirmation {
+  id                 String                   @id @default(cuid())
+  scheduledSessionId String
+  scheduledSession   ScheduledSession         @relation(fields: [scheduledSessionId], references: [id], onDelete: Cascade)
+  coachId            String
+  coach              Coach                    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  status             CoachConfirmationStatus  @default(PENDING)
+  confirmedAt        DateTime?
+  createdAt          DateTime                 @default(now())
+
+  @@unique([scheduledSessionId, coachId])
+}
+
+// Academy-wide (club-wide) configuration, distinct from the per-user
+// app/settings page. A singleton row - only one should exist, enforced in
+// the update action (Prisma has no clean "exactly one row" constraint).
+model AcademySettings {
+  id                            String  @id @default(cuid())
+  // Master switch for the pre-session confirmation feature.
+  preSessionConfirmationEnabled Boolean @default(true)
+  // When a session's start is this many hours away it appears in the
+  // "Confirm your upcoming sessions" section.
+  confirmationWindowHours       Int     @default(72)
+  // Within this many hours of start, an unanswered confirmation escalates
+  // to the "priority" treatment.
+  priorityWindowHours           Int     @default(48)
 }
 
 // ── Approvals & accountability ──────────────────────────

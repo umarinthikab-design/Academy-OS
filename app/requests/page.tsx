@@ -2,6 +2,8 @@
 // coaches with canApproveRequests) act on pending proposals here; every coach
 // also sees their own submissions with the feedback conversation. The sidebar
 // badge highlights how many pending requests matter to the current user.
+// Assistant coaches - who only ever submit requests, never approve them - see
+// this page (and the nav label) as "Approvals".
 
 import { getPermissions } from "@/lib/permissions";
 import { getApprovalInbox } from "@/lib/approvals";
@@ -22,8 +24,12 @@ export default async function RequestsPage({
   return (
     <>
       <PageHeader
-        title="Requests"
-        subtitle="Approve pending proposals and track your own submissions."
+        title={perms.isAssistant ? "Approvals" : "Requests"}
+        subtitle={
+          perms.isAssistant
+            ? "Track the status of your submissions and reply to feedback."
+            : "Approve pending proposals and track your own submissions."
+        }
       />
       <StatusBanner error={params.error} success={params.success} />
 
