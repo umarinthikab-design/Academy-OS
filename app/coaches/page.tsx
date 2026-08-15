@@ -47,21 +47,37 @@ export default async function CoachesPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canEdit && (
-        <form
-          action={createCoach}
+        <details
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
             borderRadius: "var(--radius)",
             boxShadow: "var(--shadow-sm)",
-            padding: 18,
+            padding: 14,
             marginBottom: 24,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <summary
+            style={{
+              cursor: "pointer",
+              listStyle: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 14,
+              fontWeight: 800,
+              userSelect: "none",
+            }}
+          >
             <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>Add a coach</span>
-          </div>
+            Add a coach
+          </summary>
+          <form
+            action={createCoach}
+            style={{
+              paddingTop: 14,
+            }}
+          >
           <div className="form-grid-2col" style={{ gap: 12 }}>
             <div>
               <label style={fieldLabel}>Name</label>
@@ -110,7 +126,8 @@ export default async function CoachesPage({
           <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
             Add Coach
           </button>
-        </form>
+          </form>
+        </details>
       )}
 
       {coaches.length === 0 ? (

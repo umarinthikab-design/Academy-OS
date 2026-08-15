@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { createSession, deleteSession, shareSession, approveSessionShare, rejectSessionShare, reorderSessionDrill } from "./actions";
 import { getPermissions } from "@/lib/permissions";
+import { getApprovalDetail } from "@/lib/approvals";
+import { addApprovalMessage } from "@/components/dashboard/actions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -37,13 +39,21 @@ export default async function SessionsPage({
     orderBy: { name: "asc" },
   });
 
-  // Pending share requests this user can act on.
+  // Pending share requests this user can act on. Each one is enriched with
+  // the plan content + conversation via getApprovalDetail - that resolves the
+  // plan straight from the payload, so a plan that's still PENDING (and thus
+  // filtered out of the "sessions" list above) shows its real name and drills
+  // instead of "Unknown plan".
   const pendingShares = canApprove
-    ? await prisma.approvalRequest.findMany({
-        where: { type: "SESSION_SHARE", status: "PENDING" },
-        include: { requestedBy: { include: { user: true } } },
-        orderBy: { createdAt: "asc" },
-      })
+    ? await Promise.all(
+        (
+          await prisma.approvalRequest.findMany({
+            where: { type: "SESSION_SHARE", status: "PENDING" },
+            include: { requestedBy: { include: { user: true } } },
+            orderBy: { createdAt: "asc" },
+          })
+        ).map(async (r) => ({ request: r, detail: await getApprovalDetail(r.id) }))
+      )
     : [];
 
   const statusBadge = (s: (typeof sessions)[number]) => {
@@ -125,26 +135,65 @@ export default async function SessionsPage({
             Share requests pending review <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({pendingShares.length})</span>
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {pendingShares.map((r) => {
-              const payload = r.payload as { sessionId?: string };
-              const session = sessions.find((s) => s.id === payload.sessionId);
+            {pendingShares.map(({ request: r, detail }) => {
+              if (!detail) return null;
               return (
-                <div key={r.id} style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: "var(--radius)", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 13 }}>
-                    <strong>{session?.name ?? "Unknown plan"}</strong> <span style={{ color: "var(--text-muted)" }}>· shared by {r.requestedBy.user.name}</span>
-                  </span>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <form action={approveSessionShare.bind(null, r.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                        Approve
-                      </button>
-                    </form>
-                    <form action={rejectSessionShare.bind(null, r.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", background: "var(--surface)", color: "var(--error)", border: "1px solid var(--error)", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                        Reject
-                      </button>
-                    </form>
+                <div key={r.id} style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: "var(--radius)", padding: "12px 16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 13 }}>
+                      <strong>{detail.detail}</strong> <span style={{ color: "var(--text-muted)" }}>· shared by {r.requestedBy.user.name}</span>
+                    </span>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <form action={approveSessionShare.bind(null, r.id)}>
+                        <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                          Approve
+                        </button>
+                      </form>
+                      <form action={rejectSessionShare.bind(null, r.id)}>
+                        <button type="submit" style={{ padding: "6px 12px", background: "var(--surface)", color: "var(--error)", border: "1px solid var(--error)", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                          Reject
+                        </button>
+                      </form>
+                    </div>
                   </div>
+
+                  {/* Expandable plan content + conversation */}
+                  <details style={{ marginTop: 10, borderRadius: 8, background: "var(--surface)", padding: "0 12px" }}>
+                    <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--secondary)", padding: "9px 0", outline: "none" }}>
+                      View plan & conversation {detail.messages.length > 0 ? `(${detail.messages.length})` : ""}
+                    </summary>
+                    <div style={{ padding: "0 0 12px", fontSize: 13 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 6 }}>Drills in this plan</div>
+                      <ul style={{ margin: "0 0 12px", paddingLeft: 18 }}>
+                        {detail.content.map((line, i) => (
+                          <li key={i} style={{ marginBottom: 3 }}>{line}</li>
+                        ))}
+                      </ul>
+
+                      {detail.messages.length > 0 && (
+                        <>
+                          <div style={{ fontWeight: 700, marginBottom: 6 }}>Conversation</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                            {detail.messages.map((m) => (
+                              <div key={m.id} style={{ fontSize: 12.5, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
+                                <strong>{m.authorName}:</strong> {m.message}
+                                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>
+                                  {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
+                        <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 12.5, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
+                        <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>
+                          Send
+                        </button>
+                      </form>
+                    </div>
+                  </details>
                 </div>
               );
             })}
