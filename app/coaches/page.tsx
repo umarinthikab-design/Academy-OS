@@ -223,11 +223,23 @@ export default async function CoachesPage({
               )}
 
               {perms.isAdmin && c.designation === "ASSISTANT" && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 4 }}>
+                <details style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                  <summary
+                    style={{
+                      cursor: "pointer",
+                      listStyle: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      fontSize: 14,
+                      fontWeight: 800,
+                      userSelect: "none",
+                    }}
+                  >
+                    <Icon name="plus" size={15} style={{ color: "var(--secondary)" }} />
                     Promote to head coach
-                  </div>
-                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 10px" }}>
+                  </summary>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "8px 0 10px" }}>
                     Pick which head-coach permissions they should inherit, then promote. Their focus areas are kept.
                   </p>
                   <form action={promoteCoach.bind(null, c.id)} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
@@ -252,7 +264,7 @@ export default async function CoachesPage({
                       Promote to Head Coach
                     </button>
                   </form>
-                </div>
+                </details>
               )}
             </div>
           ))}
