@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { AvailabilitySelect } from "@/components/ui/AvailabilitySelect";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
 import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import { Icon } from "@/components/ui/Icon";
@@ -73,68 +74,39 @@ export default async function SquadPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canEdit && (
-        <details
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--shadow-sm)",
-            padding: 14,
-            marginBottom: 20,
-          }}
-        >
-          <summary
-            style={{
-              cursor: "pointer",
-              listStyle: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 14,
-              fontWeight: 800,
-              userSelect: "none",
-            }}
-          >
-            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            Add a player
-          </summary>
-          <form
-            action={createPlayer}
-            style={{
-              paddingTop: 14,
-            }}
-          >
-          <div className="form-grid-2col" style={{ gap: 12 }}>
-            <div>
-              <label style={fieldLabel}>Name</label>
-              <input name="name" required style={inputBase} />
+        <CollapsibleCreate title="Add a player">
+          <form action={createPlayer}>
+            <div className="form-grid-2col" style={{ gap: 12 }}>
+              <div>
+                <label style={fieldLabel}>Name</label>
+                <input name="name" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Date of birth</label>
+                <input name="dateOfBirth" type="date" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Gender</label>
+                <select name="gender" required defaultValue="" style={inputBase}>
+                  <option value="" disabled>Select gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ ...fieldLabel, marginBottom: 8 }}>Photo (optional)</label>
+                <PhotoUpload name="photoUrl" label="Upload photo" />
+              </div>
             </div>
-            <div>
-              <label style={fieldLabel}>Date of birth</label>
-              <input name="dateOfBirth" type="date" required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Gender</label>
-              <select name="gender" required defaultValue="" style={inputBase}>
-                <option value="" disabled>Select gender</option>
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ ...fieldLabel, marginBottom: 8 }}>Photo (optional)</label>
-              <PhotoUpload name="photoUrl" label="Upload photo" />
-            </div>
-          </div>
-          <button
-            type="submit"
-            style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-          >
-            Add Player
-          </button>
+            <button
+              type="submit"
+              style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+            >
+              Add Player
+            </button>
           </form>
-        </details>
+        </CollapsibleCreate>
       )}
 
       {/* Filter bar - collapsed by default so the player list stays the focus;

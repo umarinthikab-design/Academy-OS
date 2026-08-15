@@ -6,6 +6,8 @@ import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
+import { DrillPhotoUpload } from "@/components/ui/DrillPhotoUpload";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 
@@ -24,7 +26,7 @@ export default async function DrillsPage({
 
   const [drills, ageGroups] = await Promise.all([
     prisma.drill.findMany({
-      include: { createdBy: { include: { user: true } }, ageGroups: true, feedback: { include: { author: { include: { user: true } } }, orderBy: { createdAt: "asc" } } },
+      include: { createdBy: { include: { user: true } }, ageGroups: true, photos: { orderBy: { sortOrder: "asc" } }, feedback: { include: { author: { include: { user: true } } }, orderBy: { createdAt: "asc" } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
@@ -34,6 +36,20 @@ export default async function DrillsPage({
   const pending = drills.filter((d) => d.status === "PENDING");
 
   const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+
+  const PhotoStrip = ({ urls }: { urls: string[] }) =>
+    urls.length > 0 ? (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+        {urls.map((url, i) => (
+          <img
+            key={`${url.slice(0, 24)}-${i}`}
+            src={url}
+            alt=""
+            style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid var(--border)" }}
+          />
+        ))}
+      </div>
+    ) : null;
 
   return (
     <>
@@ -45,83 +61,58 @@ export default async function DrillsPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canSuggest && (
-        <details
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--shadow-sm)",
-            padding: 14,
-            marginBottom: 28,
-          }}
-        >
-          <summary
-            style={{
-              cursor: "pointer",
-              listStyle: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 14,
-              fontWeight: 800,
-              userSelect: "none",
-            }}
-          >
-            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            {canPublishEdit ? "Add a drill" : "Suggest a drill"}
-          </summary>
-          <form
-            action={createDrill}
-            style={{
-              paddingTop: 14,
-            }}
-          >
-          <div className="form-grid-2col" style={{ gap: 12 }}>
-            <div>
-              <label style={fieldLabel}>Name</label>
-              <input name="name" required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Category</label>
-              <select name="category" required style={inputBase}>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label style={fieldLabel}>Duration (minutes)</label>
-              <input name="duration" type="number" defaultValue={10} required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Player range</label>
-              <input name="playerRange" placeholder="e.g. 4-12" style={inputBase} />
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Description</label>
-              <textarea name="description" style={{ ...inputBase, minHeight: 70, resize: "vertical" }} />
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Age groups</label>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
-                {ageGroups.map((ag) => (
-                  <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" name="ageGroups" value={ag.id} /> {ag.name}
-                  </label>
-                ))}
+        <CollapsibleCreate title={canPublishEdit ? "Add a drill" : "Suggest a drill"}>
+          <form action={createDrill}>
+            <div className="form-grid-2col" style={{ gap: 12 }}>
+              <div>
+                <label style={fieldLabel}>Name</label>
+                <input name="name" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Category</label>
+                <select name="category" required style={inputBase}>
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={fieldLabel}>Duration (minutes)</label>
+                <input name="duration" type="number" defaultValue={10} required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Player range</label>
+                <input name="playerRange" placeholder="e.g. 4-12" style={inputBase} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Description</label>
+                <textarea name="description" style={{ ...inputBase, minHeight: 70, resize: "vertical" }} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Photos (optional)</label>
+                <DrillPhotoUpload label="Add photos" />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Age groups</label>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
+                  {ageGroups.map((ag) => (
+                    <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <input type="checkbox" name="ageGroups" value={ag.id} /> {ag.name}
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            {canPublishEdit ? "Publish Drill" : "Suggest Drill"}
-          </button>
-          <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
-            {canPublishEdit
-              ? "Published drills join the library immediately."
-              : "All new drills go to Pending Approval below — nothing joins the library automatically."}
-          </p>
+            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              {canPublishEdit ? "Publish Drill" : "Suggest Drill"}
+            </button>
+            <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
+              {canPublishEdit
+                ? "Published drills join the library immediately."
+                : "All new drills go to Pending Approval below — nothing joins the library automatically."}
+            </p>
           </form>
-        </details>
+        </CollapsibleCreate>
       )}
 
       <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
@@ -145,6 +136,7 @@ export default async function DrillsPage({
                     {d.ageGroups.length > 0 && ` · ${d.ageGroups.map((a) => a.name).join(", ")}`}
                   </div>
                   {d.description && <p style={{ fontSize: 13, margin: "6px 0 0", color: "var(--text)" }}>{d.description}</p>}
+                  <PhotoStrip urls={d.photos.map((p) => p.url)} />
                 </div>
                 {canApprove && (
                   <div style={{ display: "flex", gap: 6 }}>
@@ -208,6 +200,7 @@ export default async function DrillsPage({
               <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
                 {d.category} · {d.duration}m · {d.ageGroups.map((a) => a.name).join(", ")}
               </div>
+              <PhotoStrip urls={d.photos.map((p) => p.url)} />
               {canPublishEdit && (
                 <details style={{ marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
                   <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>Edit</summary>
@@ -223,6 +216,10 @@ export default async function DrillsPage({
                     </div>
                     <input name="playerRange" defaultValue={d.playerRange ?? ""} placeholder="Player range" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
                     <textarea name="description" defaultValue={d.description ?? ""} placeholder="Description" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", minHeight: 54, resize: "vertical" }} />
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 6, color: "var(--text-muted)" }}>Photos</label>
+                      <DrillPhotoUpload name="photoUrls" current={d.photos.map((p) => p.url)} label="Add photos" />
+                    </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {ageGroups.map((ag) => (
                         <label key={ag.id} style={{ fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}>

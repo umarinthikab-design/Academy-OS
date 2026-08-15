@@ -12,7 +12,8 @@ export async function createBatch(formData: FormData) {
 
   const name = formData.get("name") as string;
   const ageGroupId = formData.get("ageGroupId") as string;
-  const coachIds = formData.getAll("mainCoaches") as string[];
+  const mainCoachIds = formData.getAll("mainCoaches") as string[];
+  const supportingCoachIds = formData.getAll("supportingCoaches") as string[];
   const playerIds = formData.getAll("players") as string[];
 
   if (!name || !ageGroupId) redirect("/batches?error=missing_fields");
@@ -21,7 +22,8 @@ export async function createBatch(formData: FormData) {
     data: {
       name,
       ageGroupId,
-      mainCoaches: { connect: coachIds.map((id) => ({ id })) },
+      mainCoaches: { connect: mainCoachIds.map((id) => ({ id })) },
+      supportingCoaches: { connect: supportingCoachIds.map((id) => ({ id })) },
       players: { connect: playerIds.map((id) => ({ id })) },
     },
   });

@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SessionCard } from "@/components/ui/SessionCard";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 
@@ -109,102 +110,73 @@ export default async function SchedulePage({
       )}
 
       {canEdit && !missingPrereqs && (
-        <details
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--shadow-sm)",
-            padding: 14,
-            marginBottom: 24,
-          }}
-        >
-          <summary
-            style={{
-              cursor: "pointer",
-              listStyle: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 14,
-              fontWeight: 800,
-              userSelect: "none",
-            }}
-          >
-            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            Schedule a new session
-          </summary>
-          <form
-            action={createScheduledSession}
-            style={{
-              paddingTop: 14,
-            }}
-          >
-          <div className="form-grid-2col" style={{ gap: 12 }}>
-            <div>
-              <label style={fieldLabel}>Date</label>
-              <input name="date" type="date" required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Start time</label>
-              <input name="time" type="time" required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Duration (minutes)</label>
-              <input name="duration" type="number" defaultValue={60} required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Age group</label>
-              <select name="ageGroupId" required style={inputBase}>
-                {ageGroups.map((ag) => (
-                  <option key={ag.id} value={ag.id}>{ag.name}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Location</label>
-              <select name="locationId" required style={inputBase}>
-                {locations.map((l) => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Head coach(es)</label>
-              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
-                {headCoaches.map((c) => (
-                  <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" name="headCoaches" value={c.id} /> {c.user.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Assistant coach(es)</label>
-              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
-                {assistantCoaches.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>None in the roster yet.</span>}
-                {assistantCoaches.map((c) => (
-                  <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" name="assistantCoaches" value={c.id} /> {c.user.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div style={{ gridColumn: "1 / -1", display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
-              <label style={{ fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" name="recurring" /> Weekly recurring
-              </label>
+        <CollapsibleCreate title="Schedule a new session">
+          <form action={createScheduledSession}>
+            <div className="form-grid-2col" style={{ gap: 12 }}>
               <div>
-                <label style={{ fontSize: 11, color: "var(--text-muted)", marginRight: 6 }}>Weeks (only if recurring):</label>
-                <input name="weeks" type="number" defaultValue={8} min={1} max={26} style={{ width: 64, padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6 }} />
+                <label style={fieldLabel}>Date</label>
+                <input name="date" type="date" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Start time</label>
+                <input name="time" type="time" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Duration (minutes)</label>
+                <input name="duration" type="number" defaultValue={60} required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Age group</label>
+                <select name="ageGroupId" required style={inputBase}>
+                  {ageGroups.map((ag) => (
+                    <option key={ag.id} value={ag.id}>{ag.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Location</label>
+                <select name="locationId" required style={inputBase}>
+                  {locations.map((l) => (
+                    <option key={l.id} value={l.id}>{l.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Head coach(es)</label>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                  {headCoaches.map((c) => (
+                    <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <input type="checkbox" name="headCoaches" value={c.id} /> {c.user.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Assistant coach(es)</label>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
+                  {assistantCoaches.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>None in the roster yet.</span>}
+                  {assistantCoaches.map((c) => (
+                    <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <input type="checkbox" name="assistantCoaches" value={c.id} /> {c.user.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div style={{ gridColumn: "1 / -1", display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
+                <label style={{ fontSize: 13, fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <input type="checkbox" name="recurring" /> Weekly recurring
+                </label>
+                <div>
+                  <label style={{ fontSize: 11, color: "var(--text-muted)", marginRight: 6 }}>Weeks (only if recurring):</label>
+                  <input name="weeks" type="number" defaultValue={8} min={1} max={26} style={{ width: 64, padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6 }} />
+                </div>
               </div>
             </div>
-          </div>
-          <button type="submit" style={{ ...smallBtn, marginTop: 14, padding: "9px 18px" }}>
-            Schedule Session
-          </button>
+            <button type="submit" style={{ ...smallBtn, marginTop: 14, padding: "9px 18px" }}>
+              Schedule Session
+            </button>
           </form>
-        </details>
+        </CollapsibleCreate>
       )}
 
       <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>

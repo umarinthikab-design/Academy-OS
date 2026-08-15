@@ -6,8 +6,11 @@ import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
+import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
+import { calculateAge } from "@/lib/skills";
 
 export default async function BatchesPage({
   searchParams,
@@ -19,16 +22,41 @@ export default async function BatchesPage({
   const canEdit = perms.isAdmin || perms.canEditBatches;
   const [batches, ageGroups, coaches, players] = await Promise.all([
     prisma.batch.findMany({
-      include: { ageGroup: true, mainCoaches: { include: { user: true } }, players: true },
+      include: { ageGroup: true, mainCoaches: { include: { user: true } }, supportingCoaches: { include: { user: true } }, players: true },
       orderBy: { name: "asc" },
     }),
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.coach.findMany({ include: { user: true } }),
-    prisma.player.findMany({ orderBy: { name: "asc" } }),
+    prisma.player.findMany({ include: { batches: true }, orderBy: { name: "asc" } }),
   ]);
 
   const missingPrereqs = ageGroups.length === 0;
   const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+
+  const coachOptions = coaches.map((c) => ({
+    id: c.id,
+    label: c.user.name,
+    sublabel: c.designation === "HEAD" ? "Head coach" : "Assistant coach",
+  }));
+
+  // Player picker options carry age + current squad so the dropdown's filter
+  // selects can narrow the list. A player's squad here means the batch they
+  // currently belong to (if any).
+  const playerOptions = players.map((p) => ({
+    id: p.id,
+    label: p.name,
+    sublabel: `Age ${calculateAge(p.dateOfBirth)}`,
+    filterValues: {
+      age: String(calculateAge(p.dateOfBirth)),
+      squad: p.batches[0]?.id ?? "none",
+    },
+  }));
+
+  const ageChoices = Array.from(new Set(players.map((p) => String(calculateAge(p.dateOfBirth))))).sort((a, b) => Number(a) - Number(b));
+  const squadChoices = [
+    { value: "none", label: "Not in a batch" },
+    ...batches.map((b) => ({ value: b.id, label: b.name })),
+  ];
 
   return (
     <>
@@ -46,61 +74,58 @@ export default async function BatchesPage({
       )}
 
       {canEdit && !missingPrereqs && (
-        <form
-          action={createBatch}
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--shadow-sm)",
-            padding: 18,
-            marginBottom: 24,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontSize: 14, fontWeight: 800 }}>Create a batch</span>
-          </div>
-          <div className="form-grid-2col" style={{ gap: 12 }}>
-            <div>
-              <label style={fieldLabel}>Batch name</label>
-              <input name="name" required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Age group</label>
-              <select name="ageGroupId" required style={inputBase}>
-                {ageGroups.map((ag) => (
-                  <option key={ag.id} value={ag.id}>{ag.name}</option>
-                ))}
-              </select>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Main coaches</label>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
-                {coaches.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No coaches in the roster yet.</span>}
-                {coaches.map((c) => (
-                  <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" name="mainCoaches" value={c.id} /> {c.user.name}
-                  </label>
-                ))}
+        <CollapsibleCreate title="Create a batch">
+          <form action={createBatch}>
+            <div className="form-grid-2col" style={{ gap: 12 }}>
+              <div>
+                <label style={fieldLabel}>Batch name</label>
+                <input name="name" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Age group</label>
+                <select name="ageGroupId" required style={inputBase}>
+                  {ageGroups.map((ag) => (
+                    <option key={ag.id} value={ag.id}>{ag.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Main coaches</label>
+                <SearchableMultiSelect
+                  name="mainCoaches"
+                  options={coachOptions}
+                  placeholder="Search and select main coaches…"
+                  emptyText="No coaches in the roster yet."
+                />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Supporting coaches</label>
+                <SearchableMultiSelect
+                  name="supportingCoaches"
+                  options={coachOptions}
+                  placeholder="Search and select supporting coaches…"
+                  emptyText="No coaches in the roster yet."
+                />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Players</label>
+                <SearchableMultiSelect
+                  name="players"
+                  options={playerOptions}
+                  placeholder="Search and select players…"
+                  emptyText="No players in the squad yet."
+                  filters={[
+                    { key: "age", label: "Age", choices: ageChoices.map((a) => ({ value: a, label: `Age ${a}` })) },
+                    { key: "squad", label: "Squad", choices: squadChoices },
+                  ]}
+                />
               </div>
             </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Players</label>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", maxHeight: 150, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginTop: 4 }}>
-                {players.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No players in the squad yet.</span>}
-                {players.map((p) => (
-                  <label key={p.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" name="players" value={p.id} /> {p.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-          <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            Create Batch
-          </button>
-        </form>
+            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              Create Batch
+            </button>
+          </form>
+        </CollapsibleCreate>
       )}
 
       {batches.length === 0 ? (
@@ -121,8 +146,14 @@ export default async function BatchesPage({
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
                     <Icon name="whistle" size={13} style={{ verticalAlign: "-2px", marginRight: 3 }} />
-                    Coaches: {b.mainCoaches.map((c) => c.user.name).join(", ") || "none assigned"}
+                    Main coaches: {b.mainCoaches.map((c) => c.user.name).join(", ") || "none assigned"}
                   </div>
+                  {b.supportingCoaches.length > 0 && (
+                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                      <Icon name="users" size={13} style={{ verticalAlign: "-2px", marginRight: 3 }} />
+                      Supporting: {b.supportingCoaches.map((c) => c.user.name).join(", ")}
+                    </div>
+                  )}
                   <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
                     <Icon name="squad" size={13} style={{ verticalAlign: "-2px", marginRight: 3 }} />
                     Players ({b.players.length}): {b.players.map((p) => p.name).join(", ") || "none yet"}

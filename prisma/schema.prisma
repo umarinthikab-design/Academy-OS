@@ -139,8 +139,9 @@ model Coach {
   canEditLocations    Boolean @default(false)
   canEditAgeGroups    Boolean @default(false)
 
-  primaryFocus AgeGroup[] @relation("CoachPrimaryFocus")
-  mainBatches  Batch[]    @relation("BatchMainCoaches")
+  primaryFocus       AgeGroup[] @relation("CoachPrimaryFocus")
+  mainBatches        Batch[]    @relation("BatchMainCoaches")
+  supportingBatches  Batch[]    @relation("BatchSupportingCoaches")
 
   headSessions      ScheduledSession[] @relation("HeadCoachSessions")
   assistantSessions ScheduledSession[] @relation("AssistantCoachSessions")
@@ -191,7 +192,11 @@ model Batch {
   ageGroupId  String
   ageGroup    AgeGroup @relation(fields: [ageGroupId], references: [id])
   mainCoaches Coach[]  @relation("BatchMainCoaches")
-  players     Player[] @relation("PlayerBatches")
+  // Support staff - separate from the main coaches who lead the batch.
+  // Stored on the same join table shape as mainCoaches so a batch can have
+  // both a primary lead and assistants.
+  supportingCoaches Coach[] @relation("BatchSupportingCoaches")
+  players           Player[] @relation("PlayerBatches")
 
   scheduledSessions ScheduledSession[]
 }
@@ -294,10 +299,25 @@ model Drill {
 
   ageGroups AgeGroup[] @relation("DrillAgeGroups")
 
+  // Drill photos - one or more per drill (setup diagram, demonstration shots,
+  // etc). Stored as small base64 data URLs (same approach as Player.photoUrl)
+  // until a storage provider decision is made.
+  photos DrillPhoto[]
+
   feedback      DrillFeedback[]
   sessionDrills SessionDrill[]
 
   createdAt DateTime @default(now())
+}
+
+// A single photo attached to a drill. Multiple allowed, shown in the order
+// they were attached.
+model DrillPhoto {
+  id        String @id @default(cuid())
+  drillId   String
+  drill     Drill  @relation(fields: [drillId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int    @default(0)
 }
 
 // The back-and-forth revision thread on a pending drill suggestion.

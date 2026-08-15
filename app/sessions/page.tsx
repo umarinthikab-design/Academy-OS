@@ -8,6 +8,7 @@ import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 
@@ -76,56 +77,27 @@ export default async function SessionsPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canSuggest && (
-        <details
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--shadow-sm)",
-            padding: 14,
-            marginBottom: 28,
-          }}
-        >
-          <summary
-            style={{
-              cursor: "pointer",
-              listStyle: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 14,
-              fontWeight: 800,
-              userSelect: "none",
-            }}
-          >
-            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            Create a session plan
-          </summary>
-          <form
-            action={createSession}
-            style={{
-              paddingTop: 14,
-            }}
-          >
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Plan name</label>
-          <input name="name" required placeholder="e.g. Passing patterns - warmup" style={{ ...inputBase, marginBottom: 12 }} />
+        <CollapsibleCreate title="Create a session plan">
+          <form action={createSession}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Plan name</label>
+            <input name="name" required placeholder="e.g. Passing patterns - warmup" style={{ ...inputBase, marginBottom: 12 }} />
 
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Drills (in order)</label>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginBottom: 12 }}>
-            {approvedDrills.map((d) => (
-              <label key={d.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category} · {d.duration}m</span>
-              </label>
-            ))}
-            {approvedDrills.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
-          </div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Drills (in order)</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginBottom: 12 }}>
+              {approvedDrills.map((d) => (
+                <label key={d.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category} · {d.duration}m</span>
+                </label>
+              ))}
+              {approvedDrills.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
+            </div>
 
-          <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            Create Plan
-          </button>
-          <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
+            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              Create Plan
+            </button>
+            <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
           </form>
-        </details>
+        </CollapsibleCreate>
       )}
 
       {/* Pending share approvals */}

@@ -7,8 +7,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
-import { Icon } from "@/components/ui/Icon";
 
 const PERMISSION_TOGGLES = [
   { field: "canEditRoster", label: "Edit Coach Roster" },
@@ -47,87 +47,58 @@ export default async function CoachesPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canEdit && (
-        <details
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--shadow-sm)",
-            padding: 14,
-            marginBottom: 24,
-          }}
-        >
-          <summary
-            style={{
-              cursor: "pointer",
-              listStyle: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: 14,
-              fontWeight: 800,
-              userSelect: "none",
-            }}
-          >
-            <Icon name="plus" size={16} style={{ color: "var(--secondary)" }} />
-            Add a coach
-          </summary>
-          <form
-            action={createCoach}
-            style={{
-              paddingTop: 14,
-            }}
-          >
-          <div className="form-grid-2col" style={{ gap: 12 }}>
-            <div>
-              <label style={fieldLabel}>Name</label>
-              <input name="name" required style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Email (this is what they'll log in with)</label>
-              <input name="email" type="email" required style={inputBase} />
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Temporary password</label>
-              <input name="password" type="text" required placeholder="Share this with them - they must change it on first login" style={inputBase} />
-            </div>
-            <div>
-              <label style={fieldLabel}>Gender</label>
-              <select name="gender" required defaultValue="" style={inputBase}>
-                <option value="" disabled>Select gender</option>
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </div>
-            <div>
-              <label style={fieldLabel}>Designation</label>
-              <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
-                <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                  <input type="radio" name="designation" value="HEAD" defaultChecked /> Head Coach
-                </label>
-                <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                  <input type="radio" name="designation" value="ASSISTANT" /> Assistant Coach
-                </label>
+        <CollapsibleCreate title="Add a coach">
+          <form action={createCoach}>
+            <div className="form-grid-2col" style={{ gap: 12 }}>
+              <div>
+                <label style={fieldLabel}>Name</label>
+                <input name="name" required style={inputBase} />
               </div>
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={fieldLabel}>Primary focus</label>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
-                {ageGroups.map((ag) => (
-                  <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" name="primaryFocus" value={ag.id} /> {ag.name}
+              <div>
+                <label style={fieldLabel}>Email (this is what they'll log in with)</label>
+                <input name="email" type="email" required style={inputBase} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Temporary password</label>
+                <input name="password" type="text" required placeholder="Share this with them - they must change it on first login" style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Gender</label>
+                <select name="gender" required defaultValue="" style={inputBase}>
+                  <option value="" disabled>Select gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style={fieldLabel}>Designation</label>
+                <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
+                  <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <input type="radio" name="designation" value="HEAD" defaultChecked /> Head Coach
                   </label>
-                ))}
-                {ageGroups.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No age groups seeded yet.</span>}
+                  <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <input type="radio" name="designation" value="ASSISTANT" /> Assistant Coach
+                  </label>
+                </div>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={fieldLabel}>Primary focus</label>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
+                  {ageGroups.map((ag) => (
+                    <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <input type="checkbox" name="primaryFocus" value={ag.id} /> {ag.name}
+                    </label>
+                  ))}
+                  {ageGroups.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No age groups seeded yet.</span>}
+                </div>
               </div>
             </div>
-          </div>
-          <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            Add Coach
-          </button>
+            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              Add Coach
+            </button>
           </form>
-        </details>
+        </CollapsibleCreate>
       )}
 
       {coaches.length === 0 ? (
@@ -240,23 +211,11 @@ export default async function CoachesPage({
               )}
 
               {perms.isAdmin && c.designation === "ASSISTANT" && (
-                <details style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                  <summary
-                    style={{
-                      cursor: "pointer",
-                      listStyle: "none",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      fontSize: 14,
-                      fontWeight: 800,
-                      userSelect: "none",
-                    }}
-                  >
-                    <Icon name="plus" size={15} style={{ color: "var(--secondary)" }} />
-                    Promote to head coach
-                  </summary>
-                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "8px 0 10px" }}>
+                <CollapsibleCreate
+                  title="Promote to head coach"
+                  style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", boxShadow: "none", marginBottom: 0 }}
+                >
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 10px" }}>
                     Pick which head-coach permissions they should inherit, then promote. Their focus areas are kept.
                   </p>
                   <form action={promoteCoach.bind(null, c.id)} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
@@ -281,7 +240,7 @@ export default async function CoachesPage({
                       Promote to Head Coach
                     </button>
                   </form>
-                </details>
+                </CollapsibleCreate>
               )}
             </div>
           ))}

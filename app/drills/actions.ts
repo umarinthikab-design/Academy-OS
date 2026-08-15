@@ -5,6 +5,22 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
+import { sanitizePhotoUrl } from "@/lib/photo";
+
+// Coaches who approve requests can also attach photos. URLs come through as
+// downscaled data URLs from DrillPhotoUpload (one hidden input per photo).
+function cleanPhotoUrls(formData: FormData): string[] {
+  const urls = (formData.getAll("photoUrls") as string[])
+    .map((u) => sanitizePhotoUrl(u))
+    .filter((u): u is string => !!u);
+  // De-dupe (a photo kept through an edit round-trips as the same data URL)
+  // while preserving order.
+  return Array.from(new Set(urls));
+}
+
+function createPhotoRows(urls: string[]) {
+  return urls.map((url, i) => ({ url, sortOrder: i }));
+}
 
 export async function createDrill(formData: FormData) {
   const perms = await getPermissions();
@@ -37,6 +53,7 @@ export async function createDrill(formData: FormData) {
       createdById: perms.coachId,
       status,
       ageGroups: { connect: ageGroupIds.map((id) => ({ id })) },
+      photos: { create: createPhotoRows(cleanPhotoUrls(formData)) },
     },
   });
 
@@ -71,6 +88,13 @@ export async function updateDrill(drillId: string, formData: FormData) {
       playerRange,
       description,
       ageGroups: { set: ageGroupIds.map((id) => ({ id })) },
+      photos: {
+        // The edit form round-trips every kept photo (existing + new) as a
+        // hidden input, so the cleanest update is replace: drop the stored
+        // rows and recreate in submitted order.
+        deleteMany: {},
+        create: createPhotoRows(cleanPhotoUrls(formData)),
+      },
     },
   });
 
