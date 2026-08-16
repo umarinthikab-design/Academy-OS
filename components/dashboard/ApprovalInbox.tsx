@@ -78,9 +78,6 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                         <span style={{ fontWeight: 700, fontSize: 14 }}>{TYPE_LABEL[r.type] ?? requestCategory(r.type)}</span>
-                        <Badge tone={r.type === "SESSION_SHARE" ? "blue" : r.type === "ATTENDANCE_CONFIRM" ? "green" : "accent"}>
-                          {requestCategory(r.type)}
-                        </Badge>
                       </div>
                       <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
                         <strong style={{ color: "var(--text)" }}>{r.detail}</strong>

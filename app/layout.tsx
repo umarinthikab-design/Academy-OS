@@ -10,11 +10,30 @@ import { Icon } from "@/components/ui/Icon";
 import { roleLabel } from "@/lib/roleLabel";
 import { getNavItems } from "@/lib/navItems";
 import { getRequestsBadge } from "@/lib/approvals";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import Link from "next/link";
+import type { Metadata, Viewport } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Touchline",
   description: "Professional football coaching management",
+  applicationName: "Touchline",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Touchline",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }, { url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0b3d2e" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1813" },
+  ],
 };
 
 function greeting(): string {
@@ -87,6 +106,7 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme={theme}>
       <body>
+        <ServiceWorkerRegister />
         {session ? (
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <MobileNav userName={session.name} userRole={session.role} photoUrl={photoUrl} logoutAction={logout} items={navItems} />

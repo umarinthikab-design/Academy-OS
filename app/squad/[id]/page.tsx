@@ -1,14 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { createNote, updatePlayerInfo, updatePlayerAvailability } from "../actions";
+import { createNote, updatePlayerInfo, updatePlayerStatus } from "../actions";
 import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
 import { calculateAge, getSkillBandForAge } from "@/lib/skills";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
-import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
-import { AvailabilitySelect } from "@/components/ui/AvailabilitySelect";
+import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
+import { PlayerStatusSelect } from "@/components/ui/PlayerStatusSelect";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { inputBase } from "@/components/ui/Form";
 import { PhotoUpload } from "@/components/ui/PhotoUpload";
@@ -98,7 +98,7 @@ export default async function PlayerDetailPage({
         <div>
           <h1 style={{ fontSize: 26, margin: "0 0 4px", letterSpacing: "-0.02em" }}>{player.name}</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: -9, flexWrap: "wrap" }}>
-            <AvailabilityBadge availability={player.availability} />
+            <PlayerStatusBadge status={player.status} />
             <Badge tone="muted">Age {age}</Badge>
             {player.gender && <Badge tone="accent">{player.gender === "MALE" ? "Male" : player.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
             <Badge tone="muted">Born {player.dateOfBirth.toLocaleDateString()}</Badge>
@@ -117,10 +117,10 @@ export default async function PlayerDetailPage({
           </div>
           {canEdit && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-              <label style={{ fontSize: 12, color: "var(--text-muted)" }}>Availability:</label>
-              <AvailabilitySelect
-                action={updatePlayerAvailability.bind(null, player.id)}
-                availability={player.availability}
+              <label style={{ fontSize: 12, color: "var(--text-muted)" }}>Status:</label>
+              <PlayerStatusSelect
+                action={updatePlayerStatus.bind(null, player.id)}
+                status={player.status}
               />
             </div>
           )}

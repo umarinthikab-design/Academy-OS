@@ -1,27 +1,27 @@
 "use client";
 
-// AvailabilitySelect - the fast availability flag setter on the squad list
-// and player page. Auto-submits on change. Lives in a client component so
-// the onChange handler stays on the client (server components can't hold
-// event handlers, and this setter is passed around as an EntityHero action).
-// The bound server action is passed in from the parent server component.
+// PlayerStatusSelect - the fast status setter on the squad list and player
+// page. Auto-submits on change. Lives in a client component so the onChange
+// handler stays on the client (server components can't hold event handlers,
+// and this setter is passed around as an EntityHero action). The bound server
+// action is passed in from the parent server component.
 
-export function AvailabilitySelect({
+export function PlayerStatusSelect({
   action,
-  availability,
+  status,
 }: {
   action: (formData: FormData) => Promise<void>;
-  availability: "AVAILABLE" | "INJURED" | "INACTIVE";
+  status: "ACTIVE" | "INJURED" | "SUSPENDED" | "INACTIVE";
 }) {
   return (
     <form
       action={action}
       style={{ display: "flex", alignItems: "center", gap: 6 }}
-      title="Set availability"
+      title="Set player status"
     >
       <select
-        name="availability"
-        defaultValue={availability}
+        name="status"
+        defaultValue={status}
         onChange={(e) => e.target.form?.requestSubmit()}
         style={{
           padding: "6px 8px",
@@ -33,8 +33,9 @@ export function AvailabilitySelect({
           cursor: "pointer",
         }}
       >
-        <option value="AVAILABLE">Available</option>
+        <option value="ACTIVE">Active</option>
         <option value="INJURED">Injured</option>
+        <option value="SUSPENDED">Suspended</option>
         <option value="INACTIVE">Inactive</option>
       </select>
     </form>

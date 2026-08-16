@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createPlayer, deletePlayer, updatePlayerAvailability } from "./actions";
+import { createPlayer, deletePlayer, updatePlayerStatus, promotePlayers } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -8,8 +8,8 @@ import { calculateAge } from "@/lib/skills";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
-import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
-import { AvailabilitySelect } from "@/components/ui/AvailabilitySelect";
+import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
+import { PlayerStatusSelect } from "@/components/ui/PlayerStatusSelect";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
@@ -64,8 +64,18 @@ export default async function SquadPage({
         subtitle={canEdit ? "Add players and rate their skills. Every player gets an age-matched rating sheet." : "View only — squad editing is limited to admins and head coaches for now."}
         actions={
           canEdit ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
-              <Icon name="squad" size={15} /> {filtered.length} {filtered.length === 1 ? "player" : "players"}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              {perms.isAdmin && (
+                <a
+                  href="/squad/promote"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}
+                >
+                  <Icon name="trendUp" size={15} /> Promote players
+                </a>
+              )}
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
+                <Icon name="squad" size={15} /> {filtered.length} {filtered.length === 1 ? "player" : "players"}
+              </span>
             </span>
           ) : undefined
         }
@@ -211,7 +221,7 @@ export default async function SquadPage({
                   src={p.photoUrl}
                   badges={
                     <>
-                      <AvailabilityBadge availability={p.availability} />
+                      <PlayerStatusBadge status={p.status} />
                       <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
                       {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
@@ -223,9 +233,9 @@ export default async function SquadPage({
                   actions={
                     canEdit ? (
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <AvailabilitySelect
-                          action={updatePlayerAvailability.bind(null, p.id)}
-                          availability={p.availability}
+                        <PlayerStatusSelect
+                          action={updatePlayerStatus.bind(null, p.id)}
+                          status={p.status}
                         />
                         <ConfirmDeleteButton
                           action={deletePlayer.bind(null, p.id)}

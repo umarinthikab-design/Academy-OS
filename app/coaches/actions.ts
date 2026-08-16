@@ -88,6 +88,44 @@ export async function deleteCoach(id: string) {
   redirect("/coaches?success=Coach removed.");
 }
 
+// Archive a coach: the alternative to deletion for coaches who've done real
+// work (and are therefore protected from deleteCoach). Archiving only sets
+// archivedAt - historical data (drills, sessions, attendance) is untouched.
+// The linked user's sessionVersion is bumped so any live session dies
+// immediately via the existing /auth/revoked flow.
+export async function archiveCoach(id: string) {
+  const perms = await getPermissions();
+  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+
+  const coach = await prisma.coach.findUnique({ where: { id }, select: { userId: true, user: { select: { name: true } } } });
+  if (!coach) redirect("/coaches");
+
+  await prisma.$transaction([
+    prisma.coach.update({ where: { id }, data: { archivedAt: new Date() } }),
+    prisma.user.update({ where: { id: coach.userId }, data: { sessionVersion: { increment: 1 } } }),
+  ]);
+
+  if (perms.userId) await logActivity(perms.userId, "archived_coach", "User", coach.userId, coach.user.name);
+  revalidatePath("/coaches");
+  redirect("/coaches?success=Coach archived.");
+}
+
+// Bring an archived coach back to the active roster. History was never
+// touched by archiving, so everything just reappears.
+export async function reactivateCoach(id: string) {
+  const perms = await getPermissions();
+  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+
+  const coach = await prisma.coach.findUnique({ where: { id }, select: { userId: true, user: { select: { name: true } } } });
+  if (!coach) redirect("/coaches");
+
+  await prisma.coach.update({ where: { id }, data: { archivedAt: null } });
+
+  if (perms.userId) await logActivity(perms.userId, "reactivated_coach", "User", coach.userId, coach.user.name);
+  revalidatePath("/coaches");
+  redirect("/coaches?success=Coach reactivated.");
+}
+
 // Only these six field names are ever writable through this action - the
 // whitelist matters because formData field names are technically
 // user-controlled input, and we don't want an arbitrary Coach column

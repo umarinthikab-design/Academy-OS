@@ -39,7 +39,17 @@ export async function login(formData: FormData) {
     }
   }
 
-  const user = normalizedEmail ? await prisma.user.findUnique({ where: { email: normalizedEmail } }) : null;
+  const user = normalizedEmail ? await prisma.user.findUnique({ where: { email: normalizedEmail }, include: { coach: { select: { archivedAt: true } } } }) : null;
+
+  // An archived coach's login is rejected with a distinct message rather than
+  // the generic wrong-password one - the account still exists (history is
+  // preserved), so the coach should know the block is deliberate.
+  if (user?.coach?.archivedAt) {
+    await prisma.loginAttempt.create({
+      data: { email: normalizedEmail, success: false },
+    });
+    redirect("/login?error=account_archived");
+  }
 
   let valid = false;
   if (user) {

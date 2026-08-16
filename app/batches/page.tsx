@@ -26,7 +26,7 @@ export default async function BatchesPage({
       orderBy: { name: "asc" },
     }),
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
-    prisma.coach.findMany({ include: { user: true } }),
+    prisma.coach.findMany({ where: { archivedAt: null }, include: { user: true } }),
     prisma.player.findMany({ include: { batches: true }, orderBy: { name: "asc" } }),
   ]);
 

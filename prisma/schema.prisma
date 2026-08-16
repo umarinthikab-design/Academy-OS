@@ -69,9 +69,10 @@ enum Gender {
   OTHER
 }
 
-enum PlayerAvailability {
-  AVAILABLE
+enum PlayerStatus {
+  ACTIVE
   INJURED
+  SUSPENDED
   INACTIVE
 }
 
@@ -138,6 +139,11 @@ model Coach {
   canEditSchedule     Boolean @default(false)
   canEditLocations    Boolean @default(false)
   canEditAgeGroups    Boolean @default(false)
+
+  // Set when an admin archives this coach. Null = active. Historical data
+  // (drills, sessions, attendance) is never touched by archiving - only
+  // login access and active-selection visibility.
+  archivedAt DateTime?
 
   primaryFocus       AgeGroup[] @relation("CoachPrimaryFocus")
   mainBatches        Batch[]    @relation("BatchMainCoaches")
@@ -229,10 +235,11 @@ model Player {
   // pre-existing rows without it keep working.
   gender Gender?
 
-  // Availability flag: a coach marks a player AVAILABLE, INJURED, or INACTIVE
-  // straight from the squad view, so availability is visible everywhere a
-  // player card appears (no separate status page to keep in sync).
-  availability PlayerAvailability @default(AVAILABLE)
+  // Availability flag: a coach marks a player ACTIVE, INJURED, SUSPENDED, or
+  // INACTIVE straight from the squad view, so availability is visible
+  // everywhere a player card appears (no separate status page to keep in
+  // sync).
+  status PlayerStatus @default(ACTIVE)
 
   batches Batch[]  @relation("PlayerBatches")
   parents Parent[] @relation("ParentPlayers")

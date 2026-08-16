@@ -85,23 +85,24 @@ export async function updatePlayerPosition(playerId: string, position: string) {
   revalidatePath(`/squad/${playerId}`);
 }
 
-// Fast availability flag on a player - settable from the squad list and the
+// Fast status flag on a player - settable from the squad list and the
 // player page by anyone with squad-edit access. State is a small enum
-// (AVAILABLE / INJURED / INACTIVE) so it shows up as a pill everywhere.
-export async function updatePlayerAvailability(playerId: string, formData: FormData) {
+// (ACTIVE / INJURED / SUSPENDED / INACTIVE) so it shows up as a pill
+// everywhere.
+export async function updatePlayerStatus(playerId: string, formData: FormData) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canEditSquad)) redirect("/squad?error=no_permission");
 
-  const availability = formData.get("availability") as string;
-  if (!["AVAILABLE", "INJURED", "INACTIVE"].includes(availability)) {
-    redirect(`/squad/${playerId}?error=invalid_availability`);
+  const status = formData.get("status") as string;
+  if (!["ACTIVE", "INJURED", "SUSPENDED", "INACTIVE"].includes(status)) {
+    redirect(`/squad/${playerId}?error=invalid_status`);
   }
 
   await prisma.player.update({
     where: { id: playerId },
-    data: { availability: availability as "AVAILABLE" | "INJURED" | "INACTIVE" },
+    data: { status: status as "ACTIVE" | "INJURED" | "SUSPENDED" | "INACTIVE" },
   });
-  if (perms.userId) await logActivity(perms.userId, "updated_player_availability", "Player", playerId, availability);
+  if (perms.userId) await logActivity(perms.userId, "updated_player_status", "Player", playerId, status);
   revalidatePath("/squad");
   revalidatePath(`/squad/${playerId}`);
 }
@@ -188,4 +189,40 @@ export async function deletePlayer(id: string) {
   if (perms.userId) await logActivity(perms.userId, "deleted_player", "Player", id);
   revalidatePath("/squad");
   redirect("/squad?success=Player removed.");
+}
+
+// Season transition: bulk-move players from their current batch(es) to a
+// target batch. Admin-only - this is a structural/season decision, not one
+// of the six permission toggles, so it deliberately can't be delegated to a
+// head coach. Only the batch membership join rows are touched: skills,
+// skill history, notes, and attendance all stay attached to the player
+// regardless of their current batch.
+export async function promotePlayers(formData: FormData) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin) redirect("/squad?error=no_permission");
+
+  const targetBatchId = formData.get("targetBatchId") as string;
+  const playerIds = formData.getAll("playerIds") as string[];
+  if (!targetBatchId || playerIds.length === 0) redirect("/squad/promote?error=missing_fields");
+
+  const targetBatch = await prisma.batch.findUnique({ where: { id: targetBatchId }, select: { name: true } });
+  if (!targetBatch) redirect("/squad/promote?error=missing_fields");
+
+  // Disconnect from all current batches, then connect to the target. Using a
+  // transaction so a partial failure can't leave players half-moved.
+  await prisma.$transaction(
+    playerIds.map((playerId) =>
+      prisma.player.update({
+        where: { id: playerId },
+        data: {
+          batches: { set: [{ id: targetBatchId }] },
+        },
+      })
+    )
+  );
+
+  if (perms.userId) await logActivity(perms.userId, "promoted_players", "Player", targetBatchId, `${playerIds.length} players to ${targetBatch.name}`);
+  revalidatePath("/squad");
+  revalidatePath("/squad/promote");
+  redirect(`/squad/promote?success=${encodeURIComponent(`Moved ${playerIds.length} ${playerIds.length === 1 ? "player" : "players"} to ${targetBatch.name}.`)}`);
 }

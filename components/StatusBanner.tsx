@@ -10,6 +10,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   not_started: "This session hasn't started yet - you can't check in early.",
   already_shared: "This session plan is already shared or has a share request in flight.",
   attach_window_closed: "The 72-hour window to attach or edit a session plan has closed.",
+  account_archived: "This account has been deactivated - contact your administrator.",
+  invalid_status: "That player status isn't valid.",
 };
 
 export function StatusBanner({ error, success }: { error?: string; success?: string }) {
