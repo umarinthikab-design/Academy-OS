@@ -40,11 +40,13 @@ export function StatCard({
         boxShadow: "var(--shadow-sm)",
         display: "flex",
         flexDirection: "column",
+        alignItems: "center",
         gap: 10,
+        textAlign: "center",
         transition: "box-shadow var(--transition), transform var(--transition)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", position: "relative" }}>
         <div
           style={{
             width: 36,
@@ -62,6 +64,9 @@ export function StatCard({
         {trend && (
           <span
             style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
               fontSize: 11,
               fontWeight: 700,
               color: trend.up !== false ? "var(--success)" : "var(--error)",
@@ -75,7 +80,7 @@ export function StatCard({
           </span>
         )}
       </div>
-      <div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{value}</div>
         <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{label}</div>
         {sub && <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>{sub}</div>}
