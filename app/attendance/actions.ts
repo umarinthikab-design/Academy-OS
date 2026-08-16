@@ -222,7 +222,7 @@ export async function rejectAttendanceRequest(requestId: string) {
 
   if (perms.userId) await logActivity(perms.userId, "rejected_request", "ApprovalRequest", requestId, "attendance");
   revalidatePath("/attendance");
-  redirect("/attendance?success=Attendance proposal rejected — the assistant can resubmit.");
+  redirect(`/attendance?success=${encodeURIComponent("Attendance proposal rejected — the assistant can resubmit.")}`);
 }
 
 // A head coach (or admin) confirms a session's attendance is done, dropping

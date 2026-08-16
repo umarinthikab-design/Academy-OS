@@ -177,7 +177,7 @@ export async function revokeSessions(coachId: string) {
 
   if (perms.userId) await logActivity(perms.userId, "revoked_sessions", "User", coach.userId);
   revalidatePath("/coaches");
-  redirect("/coaches?success=Active sessions revoked — this coach must log in again.");
+  redirect(`/coaches?success=${encodeURIComponent("Active sessions revoked — this coach must log in again.")}`);
 }
 
 // Promote an assistant coach to head coach. The admin picks which of the
