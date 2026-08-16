@@ -11,6 +11,7 @@ import { roleLabel } from "@/lib/roleLabel";
 import { getNavItems } from "@/lib/navItems";
 import { getRequestsBadge } from "@/lib/approvals";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { DevAccountSwitcher } from "@/components/DevAccountSwitcher";
 import Link from "next/link";
 import type { Metadata, Viewport } from "next";
 
@@ -96,9 +97,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true } }) : null;
+  const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true, email: true } }) : null;
   const photoUrl = user?.photoUrl ?? null;
   const theme = user?.theme ?? "light";
+  const currentEmail = user?.email ?? "";
   const perms = await getPermissions();
   const requestsBadge = await getRequestsBadge(perms);
   const navItems = getNavItems(perms, requestsBadge);
@@ -107,6 +109,7 @@ export default async function RootLayout({
     <html lang="en" data-theme={theme}>
       <body>
         <ServiceWorkerRegister />
+        {session ? <DevAccountSwitcher currentEmail={currentEmail} /> : null}
         {session ? (
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <MobileNav userName={session.name} userRole={session.role} photoUrl={photoUrl} logoutAction={logout} items={navItems} />
