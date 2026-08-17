@@ -205,12 +205,12 @@ export async function AdminDashboard({ perms, userName }: { perms: Permissions; 
           </div>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
             {recentLogs.map((l, i) => (
-              <div key={l.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "10px 16px", fontSize: 13, borderBottom: i < recentLogs.length - 1 ? "1px solid var(--border)" : "none" }}>
-                <div style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div key={l.id} className="activity-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "10px 16px", fontSize: 13, borderBottom: i < recentLogs.length - 1 ? "1px solid var(--border)" : "none" }}>
+                <div className="activity-row-main" style={{ minWidth: 0 }}>
                   <strong>{l.action.replace(/_/g, " ")}</strong>
                   <span style={{ color: "var(--text-muted)" }}> · {l.entityType}</span>
                 </div>
-                <div style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)", whiteSpace: "nowrap" }}>
+                <div className="activity-row-meta" style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)" }}>
                   {l.user.name} · {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>

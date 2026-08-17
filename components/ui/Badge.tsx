@@ -34,6 +34,8 @@ export function Badge({
         lineHeight: 1,
         padding: "4px 9px",
         borderRadius: "var(--radius-pill)",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
         ...t,
         ...style,
       }}

@@ -197,6 +197,41 @@ a {
   .page-header > div:last-child {
     justify-content: center;
   }
+  /* Center each quick-action card's icon + text block as one group (the
+     inner span sizes to content; only the group shifts, never the text). */
+  .quick-action {
+    justify-content: center;
+  }
+}
+
+/* ── Activity log rows ────────────────────────────────────
+   Single-line with ellipsis on desktop; on narrow screens the action label
+   wraps onto its own line (full text) with actor + timestamp below. */
+
+.activity-row-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-row-meta {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .activity-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .activity-row-main {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .activity-row-meta {
+    text-align: left;
+  }
 }
 
 /* ── Focus rings ──────────────────────────────────────────── */

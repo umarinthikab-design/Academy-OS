@@ -116,6 +116,7 @@ export default async function ActivityPage({
           {logs.map((l) => (
             <div
               key={l.id}
+              className="activity-row"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -126,14 +127,14 @@ export default async function ActivityPage({
                 borderBottom: "1px solid var(--border)",
               }}
             >
-              <div style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div className="activity-row-main" style={{ minWidth: 0 }}>
                 <strong>{actionLabel(l.action)}</strong>{" "}
                 <span style={{ color: "var(--text-muted)" }}>
                   · {l.entityType}
                   {l.details ? ` · ${l.details}` : ""}
                 </span>
               </div>
-              <div style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)", whiteSpace: "nowrap" }}>
+              <div className="activity-row-meta" style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)" }}>
                 <div>{l.user.name}</div>
                 <div>{l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
               </div>
