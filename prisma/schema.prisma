@@ -240,6 +240,10 @@ model Player {
   // everywhere a player card appears (no separate status page to keep in
   // sync).
   status PlayerStatus @default(ACTIVE)
+  // Bumped whenever `status` changes, so the UI can nudge coaches when a
+  // non-ACTIVE status has gone stale (see PlayerStatusBadge). Defaults to
+  // creation time so pre-existing rows read as "never flagged".
+  statusUpdatedAt DateTime @default(now())
 
   batches Batch[]  @relation("PlayerBatches")
   parents Parent[] @relation("ParentPlayers")

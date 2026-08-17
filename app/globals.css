@@ -180,6 +180,25 @@ a {
   }
 }
 
+/* ── Page headers on narrow screens ────────────────────────
+   Only the page-header (title + actions) centers on mobile; everything else
+   stays left-aligned for readability. Button groups wrap as a centered row
+   underneath the title, not stretched full-width. */
+
+@media (max-width: 600px) {
+  .page-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .page-header-title {
+    text-align: center;
+  }
+  .page-header > div:last-child {
+    justify-content: center;
+  }
+}
+
 /* ── Focus rings ──────────────────────────────────────────── */
 
 :focus-visible {

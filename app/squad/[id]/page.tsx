@@ -98,7 +98,7 @@ export default async function PlayerDetailPage({
         <div>
           <h1 style={{ fontSize: 26, margin: "0 0 4px", letterSpacing: "-0.02em" }}>{player.name}</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: -9, flexWrap: "wrap" }}>
-            <PlayerStatusBadge status={player.status} />
+            <PlayerStatusBadge status={player.status} statusUpdatedAt={player.statusUpdatedAt} />
             <Badge tone="muted">Age {age}</Badge>
             {player.gender && <Badge tone="accent">{player.gender === "MALE" ? "Male" : player.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
             <Badge tone="muted">Born {player.dateOfBirth.toLocaleDateString()}</Badge>

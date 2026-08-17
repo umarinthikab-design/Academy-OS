@@ -11,6 +11,7 @@ import { roleLabel } from "@/lib/roleLabel";
 import { getNavItems } from "@/lib/navItems";
 import { getRequestsBadge } from "@/lib/approvals";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { DevAccountSwitcher } from "@/components/DevAccountSwitcher";
 import Link from "next/link";
 import type { Metadata, Viewport } from "next";
@@ -109,6 +110,7 @@ export default async function RootLayout({
     <html lang="en" data-theme={theme}>
       <body>
         <ServiceWorkerRegister />
+        {session ? <InstallPrompt /> : null}
         {session ? <DevAccountSwitcher currentEmail={currentEmail} /> : null}
         {session ? (
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>

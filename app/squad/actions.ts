@@ -100,7 +100,7 @@ export async function updatePlayerStatus(playerId: string, formData: FormData) {
 
   await prisma.player.update({
     where: { id: playerId },
-    data: { status: status as "ACTIVE" | "INJURED" | "SUSPENDED" | "INACTIVE" },
+    data: { status: status as "ACTIVE" | "INJURED" | "SUSPENDED" | "INACTIVE", statusUpdatedAt: new Date() },
   });
   if (perms.userId) await logActivity(perms.userId, "updated_player_status", "Player", playerId, status);
   revalidatePath("/squad");

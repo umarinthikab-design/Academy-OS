@@ -271,7 +271,7 @@ export default async function AttendancePage({
                           <input type="hidden" name="playerId" value={p.id} />
                           <span style={{ width: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
                           {p.status !== "ACTIVE" && (
-                            <PlayerStatusBadge status={p.status} />
+                            <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
                           )}
                           <select name="status" defaultValue="" style={{ padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 5, fontSize: 12 }}>
                             <option value="">—</option>

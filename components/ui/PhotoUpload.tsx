@@ -3,9 +3,10 @@
 // Upload a photo from the device and put the result into the surrounding
 // form as a hidden field. The image is read client-side and opened in a small
 // crop/align editor: rotate in 90° steps, drag a square crop box (and resize
-// it) over the preview, then confirm. The result is written to a hidden input
-// as a small JPEG data URL so the existing server actions keep working with a
-// plain `photoUrl` string.
+// it) over the preview, then confirm. The cropped result is uploaded to the
+// Vercel Blob-backed /api/upload-photo route, and the returned public URL is
+// written to a hidden input so the existing server actions keep working with
+// a plain `photoUrl` string.
 //
 // Usage: render inside a <form> that submits to a server action, and read
 // `name` (default "photoUrl") from the FormData as before.
@@ -25,6 +26,29 @@ function readFile(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+}
+
+// Upload a cropped data-URL image to the Blob-backed route and return the
+// public URL. Throws with a human message on failure.
+async function uploadImage(dataUrl: string): Promise<string> {
+  const blob = await (await fetch(dataUrl)).blob();
+  const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
+  const form = new FormData();
+  form.set("file", file);
+  const res = await fetch("/api/upload-photo", {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    let message = "Upload failed.";
+    try {
+      const body = await res.json();
+      if (body?.error) message = `Upload failed (${body.error}).`;
+    } catch {}
+    throw new Error(message);
+  }
+  const body = await res.json();
+  return body.url as string;
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -191,12 +215,13 @@ export function PhotoUpload({
       out.width = MAX_DIMENSION;
       out.height = MAX_DIMENSION;
       const ctx = out.getContext("2d");
-      if (ctx) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(rotated, sx, sy, sSize, sSize, 0, 0, MAX_DIMENSION, MAX_DIMENSION);
-        setValue(out.toDataURL("image/jpeg", 0.85));
-      }
+      if (!ctx) throw new Error("Could not process that image.");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(rotated, sx, sy, sSize, sSize, 0, 0, MAX_DIMENSION, MAX_DIMENSION);
+      const dataUrl = out.toDataURL("image/jpeg", 0.85);
+      const url = await uploadImage(dataUrl);
+      setValue(url);
       setEditing(null);
       setCrop(null);
       setFit(null);

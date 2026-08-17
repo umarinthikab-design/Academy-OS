@@ -14,6 +14,7 @@ export function PageHeader({
 }) {
   return (
     <div
+      className="page-header"
       style={{
         display: "flex",
         justifyContent: "space-between",
@@ -23,7 +24,7 @@ export function PageHeader({
         marginBottom: 20,
       }}
     >
-      <div style={{ minWidth: 0 }}>
+      <div className="page-header-title" style={{ minWidth: 0 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em" }}>{title}</h1>
         {subtitle && <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-muted)" }}>{subtitle}</p>}
       </div>

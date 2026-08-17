@@ -221,7 +221,7 @@ export default async function SquadPage({
                   src={p.photoUrl}
                   badges={
                     <>
-                      <PlayerStatusBadge status={p.status} />
+                      <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
                       <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
                       {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
