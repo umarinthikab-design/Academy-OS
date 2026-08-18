@@ -36,7 +36,7 @@ export default async function SessionsPage({
   });
 
   const approvedDrills = await prisma.drill.findMany({
-    where: { status: "APPROVED" },
+    where: { status: "APPROVED", archivedAt: null },
     orderBy: { name: "asc" },
   });
 

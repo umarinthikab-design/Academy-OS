@@ -26,6 +26,10 @@ export type Permissions = {
   // Anyone who's an actual coach (head or assistant) can suggest a drill -
   // approval is what's gated, not submission.
   canSuggestDrills: boolean;
+  // Who can author drills into the library. Coaches always can. Admins always
+  // can (they have no Coach row, so they don't show up in canSuggestDrills).
+  // Club managers can unless the admin turns it off in Club Settings.
+  canAuthorDrills: boolean;
 };
 
 const EMPTY: Permissions = {
@@ -45,6 +49,7 @@ const EMPTY: Permissions = {
   canEditSquad: false,
   canEditBatches: false,
   canSuggestDrills: false,
+  canAuthorDrills: false,
 };
 
 // The single source of truth for "what can the logged-in user do." Every
@@ -69,6 +74,7 @@ export async function getPermissions(): Promise<Permissions> {
       canEditSquad: true,
       canEditBatches: true,
       canSuggestDrills: true,
+      canAuthorDrills: true,
     };
   }
 
@@ -78,6 +84,7 @@ export async function getPermissions(): Promise<Permissions> {
   // so Admin-only surfaces (account management) stay admin-gated. No Coach
   // lookup - club managers have no coach record.
   if (session.role === "CLUB_MANAGER") {
+    const settings = await prisma.academySettings.findFirst();
     return {
       ...EMPTY,
       role: "CLUB_MANAGER",
@@ -92,6 +99,8 @@ export async function getPermissions(): Promise<Permissions> {
       canEditSquad: true,
       canEditBatches: true,
       canSuggestDrills: true,
+      // Admins decide whether club managers can author drills (Club Settings).
+      canAuthorDrills: settings?.clubManagersCanAuthorDrills ?? true,
     };
   }
 
@@ -112,6 +121,7 @@ export async function getPermissions(): Promise<Permissions> {
       canEditSquad: true,
       canEditBatches: true,
       canSuggestDrills: true,
+      canAuthorDrills: true,
     };
   }
 
@@ -124,6 +134,7 @@ export async function getPermissions(): Promise<Permissions> {
       userId: session.userId,
       coachId: coach?.id ?? null,
       canSuggestDrills: true,
+      canAuthorDrills: true,
     };
   }
 

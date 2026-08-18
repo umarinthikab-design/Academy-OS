@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill } from "./actions";
+import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill, archiveDrill, reactivateDrill, deleteDrill } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -11,6 +11,12 @@ import { DrillPhotoUpload } from "@/components/ui/DrillPhotoUpload";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 
+const ERROR_MESSAGES: Record<string, string> = {
+  no_permission: "You don't have permission to do that.",
+  missing_fields: "Please fill in all required fields.",
+  in_use: "This drill is used in a session plan, so it can't be deleted. Archive it instead.",
+};
+
 const CATEGORIES = ["Warm-up", "Passing", "Dribbling", "Shooting", "Defending", "Fun Game"];
 
 export default async function DrillsPage({
@@ -20,14 +26,22 @@ export default async function DrillsPage({
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
+  const canCreate = perms.canAuthorDrills;
   const canSuggest = perms.canSuggestDrills;
   const canApprove = perms.isAdmin || perms.canApproveRequests;
   const canPublishEdit = perms.canEditDrills;
+  const canManage = perms.isAdmin || perms.isClubManager;
 
-  const [drills, ageGroups] = await Promise.all([
+  const [drills, archivedDrills, ageGroups] = await Promise.all([
     prisma.drill.findMany({
+      where: { archivedAt: null },
       include: { createdBy: { include: { user: true } }, ageGroups: true, photos: { orderBy: { sortOrder: "asc" } }, feedback: { include: { author: { include: { user: true } } }, orderBy: { createdAt: "asc" } } },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.drill.findMany({
+      where: { archivedAt: { not: null } },
+      include: { createdBy: { include: { user: true } }, ageGroups: true },
+      orderBy: { archivedAt: "desc" },
     }),
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
   ]);
@@ -55,12 +69,12 @@ export default async function DrillsPage({
     <>
       <PageHeader
         title="Drill Library"
-        subtitle={canPublishEdit ? "Publish drills straight into the library and edit existing ones." : canSuggest ? "Suggest drills for the team library." : "Only coaches can suggest drills. You can still view the library and pending queue below."}
+        subtitle={canPublishEdit ? "Add drills, edit existing ones, and manage the library." : canSuggest ? "Suggest drills for the team library." : "Only coaches can suggest drills. You can still view the library and pending queue below."}
       />
 
-      <StatusBanner error={params.error} success={params.success} />
+      <StatusBanner error={params.error ? ERROR_MESSAGES[params.error] ?? params.error : undefined} success={params.success} />
 
-      {canSuggest && (
+      {canCreate && (
         <CollapsibleCreate title={canPublishEdit ? "Add a drill" : "Suggest a drill"}>
           <form action={createDrill}>
             <div className="form-grid-2col" style={{ gap: 12 }}>
@@ -132,7 +146,7 @@ export default async function DrillsPage({
                     <Badge tone="warning">Pending</Badge>
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
-                    {d.category} · {d.duration}m · submitted by {d.createdBy.user.name}
+                    {d.category} · {d.duration}m · submitted by {d.createdBy?.user.name ?? "Staff"}
                     {d.ageGroups.length > 0 && ` · ${d.ageGroups.map((a) => a.name).join(", ")}`}
                   </div>
                   {d.description && <p style={{ fontSize: 13, margin: "6px 0 0", color: "var(--text)" }}>{d.description}</p>}
@@ -150,6 +164,13 @@ export default async function DrillsPage({
                       confirmMessage={`Reject "${d.name}"? This deletes the suggestion and its feedback thread permanently.`}
                       label="Reject"
                     />
+                    {canManage && (
+                      <ConfirmDeleteButton
+                        action={archiveDrill.bind(null, d.id)}
+                        confirmMessage={`Archive "${d.name}"? It'll leave the review queue but stay in the Archived section, fully restorable.`}
+                        label="Archive"
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -233,9 +254,58 @@ export default async function DrillsPage({
                   </form>
                 </details>
               )}
+              {canManage && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
+                  <ConfirmDeleteButton
+                    action={archiveDrill.bind(null, d.id)}
+                    confirmMessage={`Archive "${d.name}"? It'll leave the library and session-plan picker but stay in the Archived section, fully restorable.`}
+                    label="Archive"
+                    buttonStyle={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 11, padding: "4px 10px" }}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
+      )}
+
+      {canManage && archivedDrills.length > 0 && (
+        <details style={{ marginTop: 28, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+          <summary style={{ cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 800, userSelect: "none" }}>
+            <Icon name="drills" size={15} style={{ color: "var(--text-muted)" }} />
+            Archived Drills
+            <Badge tone="muted">{archivedDrills.length}</Badge>
+          </summary>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+            {archivedDrills.map((d) => (
+              <div key={d.id} style={{ background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "10px 12px", opacity: 0.8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <strong style={{ fontSize: 13 }}>{d.name}</strong>
+                      <Badge tone="muted">Archived</Badge>
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                      {d.category} · {d.duration}m · archived {d.archivedAt!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <form action={reactivateDrill.bind(null, d.id)}>
+                      <button type="submit" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--secondary)", color: "var(--secondary)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 11, padding: "4px 10px" }}>
+                        Reactivate
+                      </button>
+                    </form>
+                    <ConfirmDeleteButton
+                      action={deleteDrill.bind(null, d.id)}
+                      confirmMessage={`Delete "${d.name}" permanently? This removes it and its feedback thread for good. It's blocked while any session plan uses it.`}
+                      label="Delete"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </details>
       )}
     </>
   );

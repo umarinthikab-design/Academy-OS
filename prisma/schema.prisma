@@ -308,8 +308,15 @@ model Drill {
   description String?
   status      DrillStatus @default(APPROVED)
 
-  createdById String
-  createdBy   Coach  @relation("DrillCreatedBy", fields: [createdById], references: [id])
+  // Nullable so admins and club managers (who have no Coach row) can author
+  // drills too. Coaches keep their identity here.
+  createdById String?
+  createdBy   Coach? @relation("DrillCreatedBy", fields: [createdById], references: [id])
+
+  // Soft-archive for admin / club manager drill cleanup. Archived drills are
+  // hidden from the library and the session-plan drill picker, but history
+  // (photos, feedback, session plans using them) is untouched.
+  archivedAt DateTime?
 
   ageGroups AgeGroup[] @relation("DrillAgeGroups")
 
@@ -458,6 +465,9 @@ model AcademySettings {
   id                            String  @id @default(cuid())
   // Master switch for the pre-session confirmation feature.
   preSessionConfirmationEnabled Boolean @default(true)
+  // Whether club managers can author drills into the library like coaches.
+  // Controlled by the admin on the Club Settings page.
+  clubManagersCanAuthorDrills   Boolean @default(true)
   // When a session's start is this many hours away it appears in the
   // "Confirm your upcoming sessions" section.
   confirmationWindowHours       Int     @default(72)

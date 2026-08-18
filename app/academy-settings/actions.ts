@@ -24,15 +24,24 @@ export async function updateAcademySettings(formData: FormData) {
     redirect("/academy-settings?error=priority_window");
   }
 
+  // "Club managers can author drills" is an admin-only decision - the form
+  // field is hidden from club managers, so when they save we preserve the
+  // current value instead of resetting it to off.
+  const existing = await prisma.academySettings.findFirst();
+  const clubManagersCanAuthorDrills = perms.isAdmin
+    ? formData.get("clubManagersCanAuthorDrills") === "on"
+    : (existing?.clubManagersCanAuthorDrills ?? true);
+
   await prisma.academySettings.upsert({
-    where: { id: (await prisma.academySettings.findFirst())?.id ?? "__none__" },
-    update: { preSessionConfirmationEnabled, confirmationWindowHours, priorityWindowHours },
-    create: { preSessionConfirmationEnabled, confirmationWindowHours, priorityWindowHours },
+    where: { id: existing?.id ?? "__none__" },
+    update: { preSessionConfirmationEnabled, confirmationWindowHours, priorityWindowHours, clubManagersCanAuthorDrills },
+    create: { preSessionConfirmationEnabled, confirmationWindowHours, priorityWindowHours, clubManagersCanAuthorDrills },
   });
 
   if (perms.userId) await logActivity(perms.userId, "updated_academy_settings", "AcademySettings");
   revalidatePath("/academy-settings");
   revalidatePath("/");
   revalidatePath("/schedule");
+  revalidatePath("/drills");
   redirect("/academy-settings?success=Club settings updated.");
 }

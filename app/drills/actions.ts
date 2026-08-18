@@ -24,11 +24,10 @@ function createPhotoRows(urls: string[]) {
 
 export async function createDrill(formData: FormData) {
   const perms = await getPermissions();
-  // Only actual coaches (head or assistant) submit drills - admins approve,
-  // they don't author. This also removes the old "Submitted by" dropdown
-  // workaround from before real login existed - the server knows who's
-  // asking now.
-  if (!perms.canSuggestDrills || !perms.coachId) redirect("/drills?error=no_permission");
+  // Coaches always author drills; admins always; club managers when the
+  // admin allows it (Club Settings). createdById is nullable because admins
+  // and club managers have no Coach row.
+  if (!perms.canAuthorDrills) redirect("/drills?error=no_permission");
 
   const name = formData.get("name") as string;
   const category = formData.get("category") as string;
@@ -42,7 +41,7 @@ export async function createDrill(formData: FormData) {
   // Coaches who can approve requests publish straight into the library (no
   // approval round-trip on their own suggestion). Everyone else submits a
   // suggestion that starts PENDING and needs an explicit approval.
-  const status = perms.isAdmin || perms.canApproveRequests ? "APPROVED" : "PENDING";
+  const status = perms.isAdmin || perms.isClubManager || perms.canApproveRequests ? "APPROVED" : "PENDING";
   const drill = await prisma.drill.create({
     data: {
       name,
@@ -64,11 +63,13 @@ export async function createDrill(formData: FormData) {
 }
 
 // Edit an existing drill's details. Allowed for anyone with canEditDrills
-// (admins always, head coaches via permission override). Editing an approved
-// drill keeps it approved; editing a pending suggestion keeps it pending.
+// (admins and club managers always, head coaches via permission override).
+// Editing an approved drill keeps it approved; editing a pending suggestion
+// keeps it pending. No Coach row required - admin/CM edits aren't tied to a
+// coach identity.
 export async function updateDrill(drillId: string, formData: FormData) {
   const perms = await getPermissions();
-  if (!perms.canEditDrills || !perms.coachId) redirect("/drills?error=no_permission");
+  if (!perms.canEditDrills) redirect("/drills?error=no_permission");
 
   const name = formData.get("name") as string;
   const category = formData.get("category") as string;
@@ -139,4 +140,54 @@ export async function rejectDrill(id: string) {
   if (perms.userId) await logActivity(perms.userId, "rejected_drill", "Drill", id);
   revalidatePath("/drills");
   redirect("/drills?success=Drill rejected.");
+}
+
+// Archive a drill: admin / club manager cleanup that keeps history (photos,
+// feedback, any session plans referencing it) intact. Archived drills leave
+// the library and the session-plan picker, but can be brought back.
+export async function archiveDrill(id: string) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/drills?error=no_permission");
+
+  const drill = await prisma.drill.findUnique({ where: { id }, select: { name: true } });
+  if (!drill) redirect("/drills");
+
+  await prisma.drill.update({ where: { id }, data: { archivedAt: new Date() } });
+  if (perms.userId) await logActivity(perms.userId, "archived_drill", "Drill", id, drill.name);
+  revalidatePath("/drills");
+  revalidatePath("/sessions");
+  redirect("/drills?success=Drill archived.");
+}
+
+export async function reactivateDrill(id: string) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/drills?error=no_permission");
+
+  const drill = await prisma.drill.findUnique({ where: { id }, select: { name: true } });
+  if (!drill) redirect("/drills");
+
+  await prisma.drill.update({ where: { id }, data: { archivedAt: null } });
+  if (perms.userId) await logActivity(perms.userId, "reactivated_drill", "Drill", id, drill.name);
+  revalidatePath("/drills");
+  revalidatePath("/sessions");
+  redirect("/drills?success=Drill restored to the library.");
+}
+
+// Permanent removal, admin / club manager only. Blocked while the drill is
+// used in any session plan (SessionDrill.drillId is ON DELETE RESTRICT).
+export async function deleteDrill(id: string) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/drills?error=no_permission");
+
+  const drill = await prisma.drill.findUnique({ where: { id }, select: { name: true } });
+  if (!drill) redirect("/drills");
+
+  const inUse = await prisma.sessionDrill.count({ where: { drillId: id } });
+  if (inUse > 0) redirect("/drills?error=in_use");
+
+  await prisma.drill.delete({ where: { id } });
+  if (perms.userId) await logActivity(perms.userId, "deleted_drill", "Drill", id, drill.name);
+  revalidatePath("/drills");
+  revalidatePath("/sessions");
+  redirect("/drills?success=Drill deleted permanently.");
 }

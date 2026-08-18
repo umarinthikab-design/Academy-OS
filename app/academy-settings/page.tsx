@@ -63,6 +63,33 @@ export default async function AcademySettingsPage({
           />
         </div>
 
+        {perms.isAdmin && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              paddingBottom: 16,
+              borderBottom: "1px solid var(--border)",
+              marginBottom: 16,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800 }}>Club managers can author drills</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                When on, club managers can add drills to the library like coaches. They can always edit, archive, and delete drills.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              name="clubManagersCanAuthorDrills"
+              defaultChecked={settings.clubManagersCanAuthorDrills}
+              style={{ width: 20, height: 20, flexShrink: 0 }}
+            />
+          </div>
+        )}
+
         <div className="form-grid-2col" style={{ gap: 16 }}>
           <Field
             label="Confirmation window (hours before session)"
