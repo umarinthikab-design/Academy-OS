@@ -50,7 +50,7 @@ export async function addApprovalMessage(requestId: string, formData: FormData) 
   if (!request || request.status !== "PENDING") redirect("/?error=no_permission");
 
   const isRequester = request.requestedById === perms.coachId;
-  const isApprover = perms.isAdmin || (perms.canApproveRequests && !!perms.coachId);
+  const isApprover = perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId);
   if (!isRequester && !isApprover) redirect("/?error=no_permission");
 
   await prisma.approvalMessage.create({

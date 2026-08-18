@@ -22,7 +22,7 @@ export function QuickActions({
 }) {
   const actions: Action[] = [];
 
-  if (perms.isAdmin) {
+  if (perms.isAdmin || perms.isClubManager) {
     actions.push(
       { href: "/squad", label: "Add Player", icon: "plus", desc: "Grow the squad" },
       { href: "/coaches", label: "Add Coach", icon: "plus", desc: "Build the roster" },

@@ -18,7 +18,7 @@ export default async function AcademySettingsPage({
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
-  if (!perms.isAdmin) redirect("/?error=no_permission");
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/?error=no_permission");
 
   const settings = await getAcademySettings();
 

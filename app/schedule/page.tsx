@@ -36,8 +36,8 @@ export default async function SchedulePage({
   const [ageGroups, locations, headCoaches, assistantCoaches, sessions, sessionPlans] = await Promise.all([
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
     prisma.location.findMany({ orderBy: { name: "asc" } }),
-    prisma.coach.findMany({ where: { designation: "HEAD", archivedAt: null }, include: { user: true } }),
-    prisma.coach.findMany({ where: { designation: "ASSISTANT", archivedAt: null }, include: { user: true } }),
+    prisma.coach.findMany({ where: { designation: "HEAD", user: { archivedAt: null } }, include: { user: true } }),
+    prisma.coach.findMany({ where: { designation: "ASSISTANT", user: { archivedAt: null } }, include: { user: true } }),
     prisma.scheduledSession.findMany({
       where: { date: dateFilter },
       include: {

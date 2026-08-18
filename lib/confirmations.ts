@@ -99,7 +99,7 @@ export type StaffingAlert = {
 // PENDING or has DECLINED. Scope is all sessions (admins) or sessions the
 // head coach is assigned to (coaches who can approve requests).
 export async function getStaffingAlerts(perms: Permissions): Promise<StaffingAlert[]> {
-  if (!perms.isAdmin && !(perms.canApproveRequests && !!perms.coachId)) return [];
+  if (!perms.isAdmin && !perms.isClubManager && !(perms.canApproveRequests && !!perms.coachId)) return [];
 
   const settings = await getAcademySettings();
   if (!settings.preSessionConfirmationEnabled) return [];
@@ -110,7 +110,7 @@ export async function getStaffingAlerts(perms: Permissions): Promise<StaffingAle
   const sessionWhere = {
     date: { gte: now, lte: windowEnd },
     status: "scheduled" as const,
-    ...(!perms.isAdmin
+    ...(!perms.isAdmin && !perms.isClubManager
       ? { OR: [
           { headCoaches: { some: { id: perms.coachId ?? "__none__" } } },
           { assistantCoaches: { some: { id: perms.coachId ?? "__none__" } } },

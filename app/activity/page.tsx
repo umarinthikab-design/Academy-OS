@@ -25,10 +25,11 @@ export default async function ActivityPage({
   const to = params.to ? new Date(params.to) : null;
 
   const where = {
-    // Visibility: admins see every entry; coaches see their own plus anything
-    // tied to entities they're connected to. For a grassroots club the coach's
-    // own rows are the meaningful slice, so we start with those.
-    ...(perms.isAdmin ? {} : { userId: perms.userId ?? "no-user" }),
+    // Visibility: admins + club managers see every entry; coaches see their
+    // own plus anything tied to entities they're connected to. For a
+    // grassroots club the coach's own rows are the meaningful slice, so we
+    // start with those.
+    ...(perms.isAdmin || perms.isClubManager ? {} : { userId: perms.userId ?? "no-user" }),
     ...(entityType ? { entityType } : {}),
     ...(from ? { createdAt: { gte: from } } : {}),
     ...(to ? { createdAt: { lte: new Date(to.getTime() + 24 * 60 * 60 * 1000 - 1) } } : {}),
@@ -44,7 +45,7 @@ export default async function ActivityPage({
     }),
     prisma.activityLog.count({ where }),
     prisma.activityLog.findMany({
-      where: perms.isAdmin ? {} : { userId: perms.userId ?? "no-user" },
+      where: perms.isAdmin || perms.isClubManager ? {} : { userId: perms.userId ?? "no-user" },
       select: { entityType: true },
       distinct: ["entityType"],
       orderBy: { entityType: "asc" },
@@ -72,7 +73,7 @@ export default async function ActivityPage({
     <>
       <PageHeader
         title="Activity"
-        subtitle={perms.isAdmin ? "Everything, newest first." : "Your activity, newest first."}
+        subtitle={perms.isAdmin || perms.isClubManager ? "Everything, newest first." : "Your activity, newest first."}
       />
 
       {/* Filters - the real use case is "find who deleted this specific thing,"

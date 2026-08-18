@@ -14,6 +14,7 @@ datasource db {
 
 enum Role {
   ADMIN
+  CLUB_MANAGER
   HEAD_COACH
   ASSISTANT_COACH
   PARENT
@@ -113,6 +114,13 @@ model User {
   // once they complete a password change.
   mustChangePassword Boolean @default(false)
 
+  // Set when a club manager / admin archives this staff member. Null =
+  // active. Moved from Coach so it covers users with no Coach row (admins,
+  // club managers) too. Historical data (drills, sessions, attendance) is
+  // never touched by archiving - only login access and active-selection
+  // visibility.
+  archivedAt DateTime?
+
   coach        Coach?
   parent       Parent?
   activityLogs ActivityLog[]
@@ -139,11 +147,6 @@ model Coach {
   canEditSchedule     Boolean @default(false)
   canEditLocations    Boolean @default(false)
   canEditAgeGroups    Boolean @default(false)
-
-  // Set when an admin archives this coach. Null = active. Historical data
-  // (drills, sessions, attendance) is never touched by archiving - only
-  // login access and active-selection visibility.
-  archivedAt DateTime?
 
   primaryFocus       AgeGroup[] @relation("CoachPrimaryFocus")
   mainBatches        Batch[]    @relation("BatchMainCoaches")

@@ -6,6 +6,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   "1": "Incorrect email or password.",
   rate_limited: "Too many failed attempts. Try again in 15 minutes.",
   session_revoked: "Your session was signed out. Please log in again.",
+  account_archived: "This account has been archived. Contact an administrator.",
 };
 
 export default async function LoginPage({

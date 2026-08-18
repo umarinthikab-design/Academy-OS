@@ -286,7 +286,7 @@ export async function checkInCoach(scheduledSessionId: string) {
 
 export async function overrideCoachAttendance(scheduledSessionId: string, coachId: string, formData: FormData) {
   const perms = await getPermissions();
-  if (!perms.isAdmin) redirect("/attendance?error=no_permission");
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/attendance?error=no_permission");
 
   const status = formData.get("status") as string;
   if (!["CHECKED_IN", "ABSENT", "NOT_YET"].includes(status)) redirect("/attendance?error=missing_fields");

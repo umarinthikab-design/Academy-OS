@@ -34,7 +34,7 @@ export default async function RequestsPage({
       <StatusBanner error={params.error} success={params.success} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {perms.isAdmin || (perms.canApproveRequests && !!perms.coachId) ? (
+        {perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId) ? (
           <ApprovalInbox perms={perms} />
         ) : null}
         <MyRequests perms={perms} />

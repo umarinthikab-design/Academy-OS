@@ -15,7 +15,7 @@ export async function createCoach(formData: FormData) {
   const name = formData.get("name") as string;
   const email = (formData.get("email") as string)?.trim().toLowerCase();
   const password = formData.get("password") as string;
-  const designation = formData.get("designation") as string; // "HEAD" | "ASSISTANT"
+  const designation = formData.get("designation") as string; // "HEAD" | "ASSISTANT" | "CLUB_MANAGER"
   const genderRaw = formData.get("gender") as string;
   const focusIds = formData.getAll("primaryFocus") as string[];
 
@@ -27,25 +27,41 @@ export async function createCoach(formData: FormData) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        role: designation === "HEAD" ? Role.HEAD_COACH : Role.ASSISTANT_COACH,
-        // New accounts must pick their own password on first login.
-        mustChangePassword: true,
-        coach: {
-          create: {
-            designation: designation as Designation,
-            gender,
-            primaryFocus: {
-              connect: focusIds.map((id) => ({ id })),
+    // Club Managers are staff accounts with no Coach record - they manage
+    // the club, not a batch, so there's no designation / gender / focus to
+    // store. Coaches get the full coach profile.
+    if (designation === "CLUB_MANAGER") {
+      await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          role: Role.CLUB_MANAGER,
+          // New accounts must pick their own password on first login.
+          mustChangePassword: true,
+        },
+      });
+    } else {
+      await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          role: designation === "HEAD" ? Role.HEAD_COACH : Role.ASSISTANT_COACH,
+          // New accounts must pick their own password on first login.
+          mustChangePassword: true,
+          coach: {
+            create: {
+              designation: designation as Designation,
+              gender,
+              primaryFocus: {
+                connect: focusIds.map((id) => ({ id })),
+              },
             },
           },
         },
-      },
-    });
+      });
+    }
   } catch {
     // Most likely a duplicate email (the unique constraint on User.email).
     redirect("/coaches?error=duplicate_email");
@@ -90,20 +106,17 @@ export async function deleteCoach(id: string) {
 
 // Archive a coach: the alternative to deletion for coaches who've done real
 // work (and are therefore protected from deleteCoach). Archiving only sets
-// archivedAt - historical data (drills, sessions, attendance) is untouched.
-// The linked user's sessionVersion is bumped so any live session dies
-// immediately via the existing /auth/revoked flow.
+// User.archivedAt - historical data (drills, sessions, attendance) is
+// untouched. The linked user's sessionVersion is bumped so any live session
+// dies immediately via the existing /auth/revoked flow.
 export async function archiveCoach(id: string) {
   const perms = await getPermissions();
-  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
 
   const coach = await prisma.coach.findUnique({ where: { id }, select: { userId: true, user: { select: { name: true } } } });
   if (!coach) redirect("/coaches");
 
-  await prisma.$transaction([
-    prisma.coach.update({ where: { id }, data: { archivedAt: new Date() } }),
-    prisma.user.update({ where: { id: coach.userId }, data: { sessionVersion: { increment: 1 } } }),
-  ]);
+  await prisma.user.update({ where: { id: coach.userId }, data: { archivedAt: new Date(), sessionVersion: { increment: 1 } } });
 
   if (perms.userId) await logActivity(perms.userId, "archived_coach", "User", coach.userId, coach.user.name);
   revalidatePath("/coaches");
@@ -114,16 +127,46 @@ export async function archiveCoach(id: string) {
 // touched by archiving, so everything just reappears.
 export async function reactivateCoach(id: string) {
   const perms = await getPermissions();
-  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
 
   const coach = await prisma.coach.findUnique({ where: { id }, select: { userId: true, user: { select: { name: true } } } });
   if (!coach) redirect("/coaches");
 
-  await prisma.coach.update({ where: { id }, data: { archivedAt: null } });
+  await prisma.user.update({ where: { id: coach.userId }, data: { archivedAt: null } });
 
   if (perms.userId) await logActivity(perms.userId, "reactivated_coach", "User", coach.userId, coach.user.name);
   revalidatePath("/coaches");
   redirect("/coaches?success=Coach reactivated.");
+}
+
+// Archive / reactivate a club manager (or any non-coach staff user): there's
+// no Coach row, so the archivedAt lives directly on the User.
+export async function archiveStaffMember(userId: string) {
+  const perms = await getPermissions();
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) redirect("/coaches");
+
+  await prisma.user.update({ where: { id: userId }, data: { archivedAt: new Date(), sessionVersion: { increment: 1 } } });
+
+  if (perms.userId) await logActivity(perms.userId, "archived_coach", "User", userId, user.name);
+  revalidatePath("/coaches");
+  redirect("/coaches?success=Staff member archived.");
+}
+
+export async function reactivateStaffMember(userId: string) {
+  const perms = await getPermissions();
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) redirect("/coaches");
+
+  await prisma.user.update({ where: { id: userId }, data: { archivedAt: null } });
+
+  if (perms.userId) await logActivity(perms.userId, "reactivated_coach", "User", userId, user.name);
+  revalidatePath("/coaches");
+  redirect("/coaches?success=Staff member reactivated.");
 }
 
 // Only these six field names are ever writable through this action - the
@@ -142,10 +185,10 @@ type PermissionField = (typeof PERMISSION_FIELDS)[number];
 
 export async function updateCoachPermission(coachId: string, field: PermissionField, value: boolean) {
   const perms = await getPermissions();
-  // Only admins can grant or revoke a head coach's permission overrides -
-  // deliberately not extended to canEditRoster-holding head coaches too,
-  // since permissions-over-permissions gets confusing fast.
-  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+  // Only admins and club managers can grant or revoke a head coach's
+  // permission overrides - deliberately not extended to canEditRoster-holding
+  // head coaches too, since permissions-over-permissions gets confusing fast.
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
   if (!PERMISSION_FIELDS.includes(field)) redirect("/coaches?error=missing_fields");
 
   await prisma.coach.update({
@@ -159,7 +202,7 @@ export async function updateCoachPermission(coachId: string, field: PermissionFi
 
 export async function revokeSessions(coachId: string) {
   const perms = await getPermissions();
-  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
 
   const coach = await prisma.coach.findUnique({
     where: { id: coachId },
@@ -186,7 +229,7 @@ export async function revokeSessions(coachId: string) {
 // designation flip to HEAD; existing focus areas are kept.
 export async function promoteCoach(coachId: string, formData: FormData) {
   const perms = await getPermissions();
-  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
 
   const coach = await prisma.coach.findUnique({
     where: { id: coachId },
@@ -218,7 +261,7 @@ export async function promoteCoach(coachId: string, formData: FormData) {
 // password is shown to the admin in the success banner so they can pass it on.
 export async function resetCoachPassword(coachId: string) {
   const perms = await getPermissions();
-  if (!perms || !perms.isAdmin) redirect("/coaches?error=no_permission");
+  if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
 
   const coach = await prisma.coach.findUnique({
     where: { id: coachId },

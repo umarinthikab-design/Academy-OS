@@ -32,7 +32,7 @@ export default async function DashboardPage({
   return (
     <>
       <StatusBanner error={params.error} success={params.success} />
-      {scope.role === "ADMIN" ? (
+      {scope.role === "ADMIN" || scope.role === "CLUB_MANAGER" ? (
         <AdminDashboard perms={perms} userName={userName} />
       ) : scope.role === "HEAD_COACH" || scope.role === "ASSISTANT_COACH" ? (
         <CoachDashboard scope={scope} perms={perms} userName={userName} team={team} />

@@ -13,7 +13,7 @@ import { sanitizePhotoUrl } from "@/lib/photo";
 // the JWT (name, or sessionVersion after a password change). Without this,
 // the sidebar would keep showing the old name, and a bumped sessionVersion
 // would log the current user out too.
-async function refreshSessionCookie(user: { id: string; name: string; role: "ADMIN" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT"; sessionVersion: number; mustChangePassword?: boolean }) {
+async function refreshSessionCookie(user: { id: string; name: string; role: "ADMIN" | "CLUB_MANAGER" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT"; sessionVersion: number; mustChangePassword?: boolean }) {
   const token = await createSessionToken({
     userId: user.id,
     name: user.name,

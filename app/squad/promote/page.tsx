@@ -12,9 +12,9 @@ export default async function PromotePlayersPage({
   const params = await searchParams;
   const perms = await getPermissions();
 
-  // Admin-only: this is a structural/season decision, not one of the six
-  // per-head-coach permission toggles.
-  if (!perms.isAdmin) {
+  // Admin/Club Manager-only: this is a structural/season decision, not one
+  // of the six per-head-coach permission toggles.
+  if (!perms.isAdmin && !perms.isClubManager) {
     return (
       <>
         <PageHeader title="Promote players" subtitle="Admin only — this moves players between batches in bulk." />

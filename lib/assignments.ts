@@ -24,7 +24,7 @@ export type DashboardTeam = {
 };
 
 export type DashboardScope = {
-  role: "ADMIN" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT" | null;
+  role: "ADMIN" | "CLUB_MANAGER" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT" | null;
   isAdmin: boolean;
   coachId: string | null;
   // Teams the coach is assigned to (primary focus age groups + main batches).
@@ -57,6 +57,13 @@ export async function getDashboardScope(): Promise<DashboardScope> {
 
   if (perms.role === "ADMIN") {
     return { ...EMPTY, role: "ADMIN", isAdmin: true };
+  }
+
+  // Club managers see the whole club like admins (they land on
+  // AdminDashboard), but are NOT flagged isAdmin - that flag drives
+  // admin-only account surfaces.
+  if (perms.role === "CLUB_MANAGER") {
+    return { ...EMPTY, role: "CLUB_MANAGER" };
   }
 
   if (perms.role === "HEAD_COACH" || perms.role === "ASSISTANT_COACH") {

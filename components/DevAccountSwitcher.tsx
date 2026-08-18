@@ -17,6 +17,7 @@ import { login } from "@/app/login/actions";
 
 const ACCOUNTS = [
   { label: "Admin", email: "admin@touchline.local", password: "touchline123" },
+  { label: "Club Mgr", email: "cm@touchline.local", password: "touchline123" },
   { label: "Head Coach", email: "demo.head@demo.touchline.local", password: "touchline123" },
   { label: "Assistant", email: "demo.assist@demo.touchline.local", password: "touchline123" },
 ];

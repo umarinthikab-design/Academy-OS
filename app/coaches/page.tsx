@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createCoach, deleteCoach, updateCoachPermission, revokeSessions, promoteCoach, resetCoachPassword, archiveCoach, reactivateCoach } from "./actions";
+import { createCoach, deleteCoach, updateCoachPermission, revokeSessions, promoteCoach, resetCoachPassword, archiveCoach, reactivateCoach, archiveStaffMember, reactivateStaffMember } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -8,7 +8,7 @@ import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
-import { inputBase } from "@/components/ui/Form";
+import { CoachCreateFields } from "@/components/ui/CoachCreateFields";
 import { Icon } from "@/components/ui/Icon";
 
 const PERMISSION_TOGGLES = [
@@ -27,10 +27,15 @@ export default async function CoachesPage({
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
-  const [coaches, ageGroups] = await Promise.all([
+  const canManageStaff = perms.isAdmin || perms.isClubManager;
+  const [coaches, staff, ageGroups] = await Promise.all([
     prisma.coach.findMany({
       include: { user: true, primaryFocus: true },
       orderBy: { user: { name: "asc" } },
+    }),
+    prisma.user.findMany({
+      where: { role: "CLUB_MANAGER" },
+      orderBy: { name: "asc" },
     }),
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
   ]);
@@ -56,11 +61,12 @@ export default async function CoachesPage({
     }
   }
 
-  const active = coaches.filter((c) => !c.archivedAt);
-  const archived = coaches.filter((c) => c.archivedAt);
+  const active = coaches.filter((c) => !c.user.archivedAt);
+  const archived = coaches.filter((c) => c.user.archivedAt);
+  const staffActive = staff.filter((s) => !s.archivedAt);
+  const staffArchived = staff.filter((s) => s.archivedAt);
 
   const canEdit = perms.isAdmin || perms.canEditRoster;
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
   return (
     <>
@@ -74,51 +80,7 @@ export default async function CoachesPage({
       {canEdit && (
         <CollapsibleCreate title="Add a coach">
           <form action={createCoach}>
-            <div className="form-grid-2col" style={{ gap: 12 }}>
-              <div>
-                <label style={fieldLabel}>Name</label>
-                <input name="name" required style={inputBase} />
-              </div>
-              <div>
-                <label style={fieldLabel}>Email (this is what they'll log in with)</label>
-                <input name="email" type="email" required style={inputBase} />
-              </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label style={fieldLabel}>Temporary password</label>
-                <input name="password" type="text" required placeholder="Share this with them - they must change it on first login" style={inputBase} />
-              </div>
-              <div>
-                <label style={fieldLabel}>Gender</label>
-                <select name="gender" required defaultValue="" style={inputBase}>
-                  <option value="" disabled>Select gender</option>
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              <div>
-                <label style={fieldLabel}>Designation</label>
-                <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
-                  <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="radio" name="designation" value="HEAD" defaultChecked /> Head Coach
-                  </label>
-                  <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="radio" name="designation" value="ASSISTANT" /> Assistant Coach
-                  </label>
-                </div>
-              </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label style={fieldLabel}>Primary focus</label>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
-                  {ageGroups.map((ag) => (
-                    <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                      <input type="checkbox" name="primaryFocus" value={ag.id} /> {ag.name}
-                    </label>
-                  ))}
-                  {ageGroups.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No age groups seeded yet.</span>}
-                </div>
-              </div>
-            </div>
+            <CoachCreateFields ageGroups={ageGroups} />
             <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               Add Coach
             </button>
@@ -163,7 +125,7 @@ export default async function CoachesPage({
                     actions={
                       canEdit ? (
                         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                          {perms.isAdmin && (
+                          {canManageStaff && (
                             <>
                               <form action={resetCoachPassword.bind(null, c.id)}>
                                 <button
@@ -219,7 +181,7 @@ export default async function CoachesPage({
                   />
                 </div>
 
-                {perms.isAdmin && c.designation === "HEAD" && (
+                {canManageStaff && c.designation === "HEAD" && (
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>
                       Permissions
@@ -247,7 +209,7 @@ export default async function CoachesPage({
                   </div>
                 )}
 
-                {perms.isAdmin && c.designation === "ASSISTANT" && (
+                {canManageStaff && c.designation === "ASSISTANT" && (
                   <CollapsibleCreate
                     title="Promote to head coach"
                     style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", boxShadow: "none", marginBottom: 0 }}
@@ -308,12 +270,12 @@ export default async function CoachesPage({
                         }
                         subtitle={
                           <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
-                            Archived {c.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                            Archived {c.user.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                             {c.primaryFocus.length > 0 && ` · Focus: ${c.primaryFocus.map((a) => a.name).join(", ")}`}
                           </div>
                         }
                         actions={
-                          perms.isAdmin ? (
+                          canManageStaff ? (
                             <ConfirmDeleteButton
                               action={reactivateCoach.bind(null, c.id)}
                               label="Reactivate"
@@ -338,6 +300,86 @@ export default async function CoachesPage({
                     </div>
                   </div>
                 ))}
+              </div>
+            </details>
+          )}
+
+          {canManageStaff && staff.length > 0 && (
+            <details style={{ marginTop: 28, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+              <summary style={{ cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 800, userSelect: "none" }}>
+                <Icon name="coaches" size={15} style={{ color: "var(--text-muted)" }} />
+                Staff · Club Managers
+                <Badge tone="accent">{staffActive.length}</Badge>
+              </summary>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
+                {staffActive.map((s) => (
+                  <div key={s.id} style={{ background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <EntityHero
+                        name={s.name}
+                        src={s.photoUrl}
+                        size={38}
+                        badges={<Badge tone="accent">Club Manager</Badge>}
+                        actions={
+                          <ConfirmDeleteButton
+                            action={archiveStaffMember.bind(null, s.id)}
+                            label="Archive"
+                            confirmMessage={`Archive ${s.name}? They'll be logged out immediately and can't log back in.`}
+                          />
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+                {staffArchived.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginTop: 4 }}>
+                      Archived
+                    </div>
+                    {staffArchived.map((s) => (
+                      <div key={s.id} style={{ background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14, opacity: 0.75 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <EntityHero
+                            name={s.name}
+                            src={s.photoUrl}
+                            size={38}
+                            badges={
+                              <>
+                                <Badge tone="muted">Archived</Badge>
+                                <Badge tone="accent">Club Manager</Badge>
+                              </>
+                            }
+                            subtitle={
+                              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                                Archived {s.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                              </div>
+                            }
+                            actions={
+                              <ConfirmDeleteButton
+                                action={reactivateStaffMember.bind(null, s.id)}
+                                label="Reactivate"
+                                confirmMessage={`Reactivate ${s.name}? They'll regain access on next login.`}
+                                buttonStyle={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  background: "var(--primary)",
+                                  border: "1px solid var(--primary)",
+                                  color: "#fff",
+                                  borderRadius: 8,
+                                  cursor: "pointer",
+                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  padding: "5px 12px",
+                                }}
+                              />
+                            }
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </details>
           )}

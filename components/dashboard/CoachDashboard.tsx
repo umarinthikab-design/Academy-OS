@@ -59,7 +59,7 @@ export async function CoachDashboard({
         <SessionConfirmations perms={perms} />
         <ApprovalInbox perms={perms} />
         <MyRequests perms={perms} />
-        {(perms.isAdmin || (perms.canApproveRequests && !!perms.coachId)) && (
+        {(perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId)) && (
           <StaffingAlerts perms={perms} />
         )}
       </div>
@@ -191,7 +191,7 @@ export async function CoachDashboard({
       <MyRequests perms={perms} />
 
       {/* Staffing alerts - sessions where a coach hasn't confirmed / declined */}
-      {(perms.isAdmin || (perms.canApproveRequests && !!perms.coachId)) && (
+      {(perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId)) && (
         <StaffingAlerts perms={perms} />
       )}
 

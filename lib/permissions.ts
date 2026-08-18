@@ -2,8 +2,9 @@ import { getSession } from "./getSession";
 import { prisma } from "./prisma";
 
 export type Permissions = {
-  role: "ADMIN" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT" | null;
+  role: "ADMIN" | "CLUB_MANAGER" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT" | null;
   isAdmin: boolean;
+  isClubManager: boolean;
   isHeadCoach: boolean;
   isAssistant: boolean;
   // The logged-in User's id (ActivityLog.userId) - null when not signed in.
@@ -30,6 +31,7 @@ export type Permissions = {
 const EMPTY: Permissions = {
   role: null,
   isAdmin: false,
+  isClubManager: false,
   isHeadCoach: false,
   isAssistant: false,
   userId: null,
@@ -57,6 +59,29 @@ export async function getPermissions(): Promise<Permissions> {
       ...EMPTY,
       role: "ADMIN",
       isAdmin: true,
+      userId: session.userId,
+      canEditRoster: true,
+      canEditDrills: true,
+      canApproveRequests: true,
+      canEditSchedule: true,
+      canEditLocations: true,
+      canEditAgeGroups: true,
+      canEditSquad: true,
+      canEditBatches: true,
+      canSuggestDrills: true,
+    };
+  }
+
+  // Club Manager: an operational super-user without the Admin escalation
+  // powers (no account-creation of admins, no Coach identity for attendance
+  // chains). Same broad edit access as Admin, but flagged as a distinct role
+  // so Admin-only surfaces (account management) stay admin-gated. No Coach
+  // lookup - club managers have no coach record.
+  if (session.role === "CLUB_MANAGER") {
+    return {
+      ...EMPTY,
+      role: "CLUB_MANAGER",
+      isClubManager: true,
       userId: session.userId,
       canEditRoster: true,
       canEditDrills: true,

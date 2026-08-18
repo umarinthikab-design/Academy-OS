@@ -10,7 +10,7 @@ const secret = new TextEncoder().encode(process.env.SESSION_SECRET);
 export type SessionPayload = {
   userId: string;
   name: string;
-  role: "ADMIN" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT";
+  role: "ADMIN" | "CLUB_MANAGER" | "HEAD_COACH" | "ASSISTANT_COACH" | "PARENT";
   // Snapshot of User.sessionVersion at login time. getSession() compares it
   // to the live DB value so a bumped version invalidates existing sessions.
   sessionVersion: number;

@@ -21,7 +21,7 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
   // coaches only ever submit requests, so their copy reads "Approvals"
   // (they're tracking the status of their submissions, not fielding them);
   // admins and head coaches keep "Requests" since they're approving.
-  if (perms.isAdmin || perms.isHeadCoach || perms.isAssistant) {
+  if (perms.isAdmin || perms.isClubManager || perms.isHeadCoach || perms.isAssistant) {
     items.push({ href: "/requests", label: perms.isAssistant ? "Approvals" : "Requests", icon: "bell", badge: requestsBadge || undefined });
   }
 
@@ -32,22 +32,23 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
     { href: "/attendance", label: "Attendance", icon: "attendance" }
   );
 
-  if (perms.isAdmin || perms.isHeadCoach || perms.isAssistant) {
+  if (perms.isAdmin || perms.isClubManager || perms.isHeadCoach || perms.isAssistant) {
     items.push({ href: "/squad", label: "Squad", icon: "squad" });
   }
 
-  // Roster & structure pages: admins always; head coaches when they hold the
-  // matching permission. Assistants stay on the player-facing tools.
-  if (perms.isAdmin || (perms.isHeadCoach && perms.canEditRoster)) {
+  // Roster & structure pages: admins and club managers always; head coaches
+  // when they hold the matching permission. Assistants stay on the
+  // player-facing tools.
+  if (perms.isAdmin || perms.isClubManager || (perms.isHeadCoach && perms.canEditRoster)) {
     items.push({ href: "/coaches", label: "Coaches", icon: "coaches" });
   }
-  if (perms.isAdmin || perms.isHeadCoach) {
+  if (perms.isAdmin || perms.isClubManager || perms.isHeadCoach) {
     items.push({ href: "/batches", label: "Batches", icon: "batches" });
   }
-  if (perms.isAdmin || (perms.isHeadCoach && perms.canEditLocations)) {
+  if (perms.isAdmin || perms.isClubManager || (perms.isHeadCoach && perms.canEditLocations)) {
     items.push({ href: "/locations", label: "Locations", icon: "locations" });
   }
-  if (perms.isAdmin || (perms.isHeadCoach && perms.canEditAgeGroups)) {
+  if (perms.isAdmin || perms.isClubManager || (perms.isHeadCoach && perms.canEditAgeGroups)) {
     items.push({ href: "/age-groups", label: "Age Groups", icon: "target" });
   }
 
@@ -55,9 +56,9 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
     items.push({ href: "/drills", label: "Drill Library", icon: "drills" });
   }
 
-  // Club-wide (academy) configuration - admin only. Distinct from the
-  // personal /settings page every user gets.
-  if (perms.isAdmin) {
+  // Club-wide (academy) configuration - admin and club manager only.
+  // Distinct from the personal /settings page every user gets.
+  if (perms.isAdmin || perms.isClubManager) {
     items.push({ href: "/academy-settings", label: "Club Settings", icon: "settings" });
   }
 

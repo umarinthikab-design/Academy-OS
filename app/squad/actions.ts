@@ -192,14 +192,14 @@ export async function deletePlayer(id: string) {
 }
 
 // Season transition: bulk-move players from their current batch(es) to a
-// target batch. Admin-only - this is a structural/season decision, not one
-// of the six permission toggles, so it deliberately can't be delegated to a
-// head coach. Only the batch membership join rows are touched: skills,
-// skill history, notes, and attendance all stay attached to the player
-// regardless of their current batch.
+// target batch. Admin/Club Manager-only - this is a structural/season
+// decision, not one of the six permission toggles, so it deliberately can't
+// be delegated to a head coach. Only the batch membership join rows are
+// touched: skills, skill history, notes, and attendance all stay attached to
+// the player regardless of their current batch.
 export async function promotePlayers(formData: FormData) {
   const perms = await getPermissions();
-  if (!perms.isAdmin) redirect("/squad?error=no_permission");
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/squad?error=no_permission");
 
   const targetBatchId = formData.get("targetBatchId") as string;
   const playerIds = formData.getAll("playerIds") as string[];

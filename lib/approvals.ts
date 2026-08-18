@@ -148,7 +148,7 @@ export async function getApprovalDetail(requestId: string): Promise<ApprovalDeta
 // admins and head coaches ever get canApproveRequests (see permissions.ts),
 // so this gate matches the per-page actions exactly.
 export async function getApprovalInbox(perms: Permissions): Promise<(InboxRequest & { full: ApprovalDetail | null })[]> {
-  const canApprove = perms.isAdmin || (perms.canApproveRequests && !!perms.coachId);
+  const canApprove = perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId);
   if (!canApprove) return [];
 
   const requests = await prisma.approvalRequest.findMany({
@@ -264,7 +264,7 @@ export async function getRequestsBadge(perms: Permissions): Promise<number> {
     });
   }
 
-  const canApprove = perms.isAdmin || (perms.canApproveRequests && !!perms.coachId);
+  const canApprove = perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId);
   if (!canApprove) return count;
 
   const pending = await prisma.approvalRequest.findMany({
@@ -304,7 +304,7 @@ export async function getRequestsBadge(perms: Permissions): Promise<number> {
 // may have been resolved since render). Returns the loaded request plus its
 // session or plan when the user may act, or null.
 export async function loadActionable(requestId: string, perms: Permissions) {
-  const canApprove = perms.isAdmin || (perms.canApproveRequests && !!perms.coachId);
+  const canApprove = perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId);
   if (!canApprove) return null;
 
   const request = await prisma.approvalRequest.findUnique({

@@ -6,12 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 
-// Club-wide configuration update. Admin-only (this is academy policy, not a
-// per-head-coach permission toggle). The singleton row is created lazily by
-// getAcademySettings in lib/confirmations.ts; here we just update it.
+// Club-wide configuration update. Admin/Club Manager-only (this is academy
+// policy, not a per-head-coach permission toggle). The singleton row is
+// created lazily by getAcademySettings in lib/confirmations.ts; here we just
+// update it.
 export async function updateAcademySettings(formData: FormData) {
   const perms = await getPermissions();
-  if (!perms.isAdmin) redirect("/academy-settings?error=no_permission");
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/academy-settings?error=no_permission");
 
   const preSessionConfirmationEnabled = formData.get("preSessionConfirmationEnabled") === "on";
   const confirmationWindowHours = Math.max(1, Math.min(720, Number(formData.get("confirmationWindowHours")) || 72));
