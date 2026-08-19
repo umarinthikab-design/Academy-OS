@@ -10,7 +10,7 @@ import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { DashboardScope } from "@/lib/assignments";
 
-export async function ParentDashboard({ scope, userName }: { scope: DashboardScope; userName: string }) {
+export async function ParentDashboard({ scope, userName, academyName }: { scope: DashboardScope; userName: string; academyName: string }) {
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -34,7 +34,7 @@ export async function ParentDashboard({ scope, userName }: { scope: DashboardSco
   if (children.length === 0) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <DashboardHero name={userName} subtitle={<span>Welcome to Touchline{userName ? ", parent." : "."}</span>} />
+        <DashboardHero name={userName} subtitle={<span>Welcome to {academyName}{userName ? ", parent." : "."}</span>} />
         <EmptyState
           icon="squad"
           title="No linked players yet"

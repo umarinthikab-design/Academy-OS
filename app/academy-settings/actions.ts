@@ -18,6 +18,12 @@ export async function updateAcademySettings(formData: FormData) {
   const confirmationWindowHours = Math.max(1, Math.min(720, Number(formData.get("confirmationWindowHours")) || 72));
   const priorityWindowHours = Math.max(1, Math.min(720, Number(formData.get("priorityWindowHours")) || 48));
 
+  // Academy branding - name is required with a sane length cap; an empty logo
+  // URL clears the logo and falls back to the text name everywhere.
+  const academyName = String(formData.get("academyName") || "").trim().slice(0, 60) || "My Academy";
+  const logoUrlRaw = formData.get("logoUrl");
+  const logoUrl = typeof logoUrlRaw === "string" && logoUrlRaw.trim() ? logoUrlRaw.trim() : null;
+
   // Priority window must be narrower than the confirmation window - the
   // "escalates" threshold can't exceed when the item first appears.
   if (priorityWindowHours >= confirmationWindowHours) {
@@ -34,13 +40,28 @@ export async function updateAcademySettings(formData: FormData) {
 
   await prisma.academySettings.upsert({
     where: { id: existing?.id ?? "__none__" },
-    update: { preSessionConfirmationEnabled, confirmationWindowHours, priorityWindowHours, clubManagersCanAuthorDrills },
-    create: { preSessionConfirmationEnabled, confirmationWindowHours, priorityWindowHours, clubManagersCanAuthorDrills },
+    update: {
+      preSessionConfirmationEnabled,
+      confirmationWindowHours,
+      priorityWindowHours,
+      clubManagersCanAuthorDrills,
+      academyName,
+      logoUrl,
+    },
+    create: {
+      preSessionConfirmationEnabled,
+      confirmationWindowHours,
+      priorityWindowHours,
+      clubManagersCanAuthorDrills,
+      academyName,
+      logoUrl,
+    },
   });
 
   if (perms.userId) await logActivity(perms.userId, "updated_academy_settings", "AcademySettings");
   revalidatePath("/academy-settings");
   revalidatePath("/");
+  revalidatePath("/login");
   revalidatePath("/schedule");
   revalidatePath("/drills");
   redirect("/academy-settings?success=Club settings updated.");

@@ -11,6 +11,7 @@
 import { getSession } from "@/lib/getSession";
 import { getPermissions } from "@/lib/permissions";
 import { getDashboardScope } from "@/lib/assignments";
+import { getAcademyBranding } from "@/lib/getAcademyBranding";
 import { StatusBanner } from "@/components/StatusBanner";
 import { CoachDashboard } from "@/components/dashboard/CoachDashboard";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
@@ -25,6 +26,7 @@ export default async function DashboardPage({
   const session = await getSession();
   const perms = await getPermissions();
   const scope = await getDashboardScope();
+  const branding = await getAcademyBranding();
 
   const team = params.team ?? null;
   const userName = session?.name ?? "";
@@ -33,11 +35,11 @@ export default async function DashboardPage({
     <>
       <StatusBanner error={params.error} success={params.success} />
       {scope.role === "ADMIN" || scope.role === "CLUB_MANAGER" ? (
-        <AdminDashboard perms={perms} userName={userName} />
+        <AdminDashboard perms={perms} userName={userName} academyName={branding.academyName} />
       ) : scope.role === "HEAD_COACH" || scope.role === "ASSISTANT_COACH" ? (
-        <CoachDashboard scope={scope} perms={perms} userName={userName} team={team} />
+        <CoachDashboard scope={scope} perms={perms} userName={userName} team={team} academyName={branding.academyName} />
       ) : scope.role === "PARENT" ? (
-        <ParentDashboard scope={scope} userName={userName} />
+        <ParentDashboard scope={scope} userName={userName} academyName={branding.academyName} />
       ) : null}
     </>
   );

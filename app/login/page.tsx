@@ -1,6 +1,7 @@
 import { login } from "./actions";
 import { Icon } from "@/components/ui/Icon";
 import { PasswordField } from "@/components/ui/PasswordField";
+import { getAcademyBranding } from "@/lib/getAcademyBranding";
 
 const ERROR_MESSAGES: Record<string, string> = {
   "1": "Incorrect email or password.",
@@ -15,33 +16,42 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const params = await searchParams;
+  const { academyName, logoUrl } = await getAcademyBranding();
 
   return (
     <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 20px", background: "var(--bg)" }}>
       <div style={{ maxWidth: 400, width: "100%" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 16,
-              background: "linear-gradient(135deg, var(--primary-dark), var(--primary))",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 14,
-              boxShadow: "var(--shadow-md)",
-            }}
-          >
-            <Icon name="football" size={28} />
-          </div>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: "var(--text-muted)", textTransform: "uppercase" }}>
-            Grassroots Coaching
-          </div>
-          <h1 style={{ fontSize: 30, margin: "4px 0 0", textTransform: "uppercase", letterSpacing: "0.02em", fontWeight: 800 }}>
-            Touchline
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={academyName}
+              style={{ maxWidth: 220, maxHeight: 72, objectFit: "contain", marginBottom: 14 }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: "linear-gradient(135deg, var(--primary-dark), var(--primary))",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 14,
+                boxShadow: "var(--shadow-md)",
+              }}
+            >
+              <Icon name="football" size={28} />
+            </div>
+          )}
+          <h1 style={{ fontSize: 30, margin: 0, textAlign: "center", fontWeight: 800, letterSpacing: "-0.02em" }}>
+            {academyName}
           </h1>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: "var(--text-muted)", textTransform: "uppercase", marginTop: 6 }}>
+            Powered by Touchline
+          </div>
         </div>
 
         <form

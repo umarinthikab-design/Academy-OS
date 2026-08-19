@@ -31,11 +31,13 @@ export async function CoachDashboard({
   perms,
   userName,
   team,
+  academyName,
 }: {
   scope: DashboardScope;
   perms: Permissions;
   userName: string;
   team: string | null;
+  academyName: string;
 }) {
   const now = new Date();
   const todayStart = new Date(now);
@@ -49,7 +51,7 @@ export async function CoachDashboard({
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <DashboardHero
           name={userName}
-          subtitle={<span>Welcome to Touchline{userName ? ", coach." : "."}</span>}
+          subtitle={<span>Welcome to {academyName}{userName ? ", coach." : "."}</span>}
         />
         <EmptyState
           icon="squad"

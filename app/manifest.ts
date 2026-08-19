@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
+import { getAcademyBranding } from "@/lib/getAcademyBranding";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const { academyName } = await getAcademyBranding();
   return {
-    name: "Touchline",
-    short_name: "Touchline",
-    description: "Grassroots coaching management",
+    name: academyName,
+    short_name: academyName,
+    description: `${academyName} - football coaching management, powered by Touchline`,
     start_url: "/",
     display: "standalone",
     background_color: "#f5f7f6",

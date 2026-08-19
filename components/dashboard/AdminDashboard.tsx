@@ -14,7 +14,7 @@ import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { Permissions } from "@/lib/permissions";
 
-export async function AdminDashboard({ perms, userName }: { perms: Permissions; userName: string }) {
+export async function AdminDashboard({ perms, userName, academyName }: { perms: Permissions; userName: string; academyName: string }) {
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -56,7 +56,7 @@ export async function AdminDashboard({ perms, userName }: { perms: Permissions; 
         name={userName}
         subtitle={
           <span>
-            Here's what's happening across Touchline today — {todaysSessions.length} {todaysSessions.length === 1 ? "session" : "sessions"},{" "}
+            Here's what's happening across {academyName} today — {todaysSessions.length} {todaysSessions.length === 1 ? "session" : "sessions"},{" "}
             {attendanceRate}% attendance this month.
           </span>
         }

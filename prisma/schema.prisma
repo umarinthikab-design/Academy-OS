@@ -474,6 +474,14 @@ model AcademySettings {
   // Within this many hours of start, an unanswered confirmation escalates
   // to the "priority" treatment.
   priorityWindowHours           Int     @default(48)
+  // Academy name shown prominently across the app (login screen, sidebar,
+  // mobile top bar, dashboard welcome). The "system name" stays Touchline;
+  // this is the club's own branding on top of it.
+  academyName String @default("My Academy")
+  // Academy logo - plain URL field for now (same deferred-decision pattern as
+  // Player.photoUrl); no upload flow wired up yet. Falls back to the text
+  // academyName wherever a logo is absent.
+  logoUrl     String?
 }
 
 // ── Approvals & accountability ──────────────────────────

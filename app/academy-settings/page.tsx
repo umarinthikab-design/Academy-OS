@@ -5,6 +5,7 @@ import { StatusBanner } from "@/components/StatusBanner";
 import { updateAcademySettings } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Field, Input } from "@/components/ui/Form";
+import { LogoUpload } from "@/components/ui/LogoUpload";
 
 const ERROR_MESSAGES: Record<string, string> = {
   no_permission: "You don't have permission to do that.",
@@ -38,6 +39,40 @@ export default async function AcademySettingsPage({
         action={updateAcademySettings}
         style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", boxShadow: "var(--shadow-sm)", padding: 18 }}
       >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            paddingBottom: 12,
+            borderBottom: "1px solid var(--border)",
+            marginBottom: 16,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>Academy branding</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+              Shown prominently on the login screen, sidebar, mobile app, and dashboard. Touchline stays as the small "Powered by" line.
+            </div>
+          </div>
+        </div>
+
+        <div className="form-grid-2col" style={{ gap: 16, marginBottom: 16 }}>
+          <Field
+            label="Academy name"
+            hint="Displayed as the dominant wordmark across the app."
+          >
+            <Input name="academyName" maxLength={60} defaultValue={settings.academyName} required />
+          </Field>
+          <Field
+            label="Club logo (optional)"
+            hint="Uploaded at up to 1024px with transparency kept for crisp display. Falls back to the academy name when empty."
+          >
+            <LogoUpload name="logoUrl" current={settings.logoUrl} />
+          </Field>
+        </div>
+
         <div
           style={{
             display: "flex",

@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { createSessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 import { cookies } from "next/headers";
 import { logActivity } from "@/lib/logActivity";
+import { getAcademyBranding } from "@/lib/getAcademyBranding";
 
 // Forced password change for users flagged mustChangePassword (admin-created
 // accounts and admin resets). Unlike the settings change-password flow there
@@ -50,5 +51,6 @@ export async function changePasswordOnFirstLogin(formData: FormData) {
   });
 
   if (session.userId) await logActivity(session.userId, "changed_password", "User", user.id);
-  redirect("/?success=Password set. Welcome to Touchline.");
+  const { academyName } = await getAcademyBranding();
+  redirect(`/?success=Password set. Welcome to ${academyName}.`);
 }

@@ -2,6 +2,7 @@ import "./globals.css";
 import { getSession } from "@/lib/getSession";
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
+import { getAcademyBranding } from "@/lib/getAcademyBranding";
 import { logout } from "./login/actions";
 import { SidebarNav } from "@/components/SidebarNav";
 import { MobileNav } from "@/components/MobileNav";
@@ -16,20 +17,23 @@ import { DevAccountSwitcher } from "@/components/DevAccountSwitcher";
 import Link from "next/link";
 import type { Metadata, Viewport } from "next";
 
-export const metadata: Metadata = {
-  title: "Touchline",
-  description: "Professional football coaching management",
-  applicationName: "Touchline",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Touchline",
-  },
-  icons: {
-    apple: "/apple-touch-icon.png",
-    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }, { url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { academyName } = await getAcademyBranding();
+  return {
+    title: academyName,
+    description: "Professional football coaching management",
+    applicationName: academyName,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: academyName,
+    },
+    icons: {
+      apple: "/apple-touch-icon.png",
+      icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }, { url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -98,6 +102,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
+  const branding = await getAcademyBranding();
   const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true, email: true } }) : null;
   const photoUrl = user?.photoUrl ?? null;
   const theme = user?.theme ?? "light";
@@ -114,7 +119,15 @@ export default async function RootLayout({
         {session ? <DevAccountSwitcher currentEmail={currentEmail} /> : null}
         {session ? (
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <MobileNav userName={session.name} userRole={session.role} photoUrl={photoUrl} logoutAction={logout} items={navItems} />
+            <MobileNav
+              userName={session.name}
+              userRole={session.role}
+              photoUrl={photoUrl}
+              logoutAction={logout}
+              items={navItems}
+              academyName={branding.academyName}
+              logoUrl={branding.logoUrl}
+            />
             <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
               <aside
                 className="desktop-sidebar"
@@ -130,13 +143,43 @@ export default async function RootLayout({
                 }}
               >
                 <div style={{ padding: "20px 20px 16px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55 }}>
-                    Grassroots Coaching
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 2 }}>
-                    <Icon name="football" size={22} style={{ color: "var(--accent)" }} />
-                    <div style={{ fontSize: 21, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.02em" }}>Touchline</div>
-                  </div>
+                  {branding.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt={branding.academyName}
+                      style={{ maxWidth: 180, maxHeight: 40, objectFit: "contain", display: "block", marginBottom: 6 }}
+                    />
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                      <Icon name="football" size={22} style={{ color: "var(--accent)", flexShrink: 0 }} />
+                      <div
+                        style={{
+                          fontSize: 21,
+                          fontWeight: 800,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {branding.academyName}
+                      </div>
+                    </div>
+                  )}
+                  {branding.logoUrl && (
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 800,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        marginTop: 6,
+                      }}
+                    >
+                      {branding.academyName}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.6, marginTop: 4 }}>Powered by Touchline</div>
                 </div>
 
                 <SidebarNav items={navItems} />

@@ -17,12 +17,16 @@ export function MobileNav({
   photoUrl,
   logoutAction,
   items,
+  academyName,
+  logoUrl,
 }: {
   userName: string;
   userRole: string;
   photoUrl: string | null;
   logoutAction: () => Promise<void>;
   items: NavItem[];
+  academyName: string;
+  logoUrl: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -33,14 +37,30 @@ export function MobileNav({
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", display: "flex", padding: 4 }}
+          style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
         >
           <Icon name="menu" size={24} />
         </button>
-        <Link href="/" style={{ fontWeight: 800, textTransform: "uppercase", fontSize: 16, color: "#fff", textDecoration: "none", letterSpacing: "0.02em" }}>
-          Touchline
+        <Link
+          href="/"
+          title={academyName}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            fontWeight: 800,
+            fontSize: 16,
+            color: "#fff",
+            textDecoration: "none",
+            textAlign: "center",
+            padding: "0 4px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {academyName}
         </Link>
-        <div style={{ width: 24 }} />
+        <div style={{ width: 28, flexShrink: 0 }} />
       </div>
 
       {open && (
@@ -65,11 +85,44 @@ export function MobileNav({
             }}
           >
             <div style={{ padding: "0 20px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.55, textTransform: "uppercase" }}>
-                  Grassroots Coaching
+              <div style={{ minWidth: 0 }}>
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={academyName}
+                    style={{ maxWidth: 200, maxHeight: 36, objectFit: "contain", display: "block", marginBottom: 4 }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      fontSize: 20,
+                      fontWeight: 800,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: 200,
+                    }}
+                  >
+                    {academyName}
+                  </div>
+                )}
+                {logoUrl && (
+                  <div
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 800,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: 200,
+                    }}
+                  >
+                    {academyName}
+                  </div>
+                )}
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.55, marginTop: 2 }}>
+                  Powered by Touchline
                 </div>
-                <div style={{ fontSize: 20, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.02em" }}>Touchline</div>
               </div>
               <button
                 onClick={() => setOpen(false)}
