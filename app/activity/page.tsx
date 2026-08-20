@@ -5,6 +5,24 @@ import { EmptyState } from "@/components/ui/EmptyState";
 
 const PAGE_SIZE = 50;
 
+// Friendly display labels for entityType values (raw values come from
+// logActivity call sites in lib/logActivity.ts). Anything not listed here
+// falls back to its raw value.
+const ENTITY_LABELS: Record<string, string> = {
+  AcademySettings: "Academy Settings",
+  Drill: "Drill",
+  Player: "Player",
+  Coach: "Coach",
+  ScheduledSession: "Session",
+  Batch: "Batch",
+  Location: "Location",
+  AgeGroup: "Age Group",
+  ApprovalRequest: "Approval",
+  User: "User",
+  Session: "Session Plan",
+  SessionCoachConfirmation: "Confirmation",
+};
+
 export default async function ActivityPage({
   searchParams,
 }: {
@@ -84,7 +102,7 @@ export default async function ActivityPage({
           <select name="entityType" defaultValue={entityType ?? ""} style={inputBase}>
             <option value="">All types</option>
             {entityTypes.map((e) => (
-              <option key={e.entityType} value={e.entityType}>{e.entityType}</option>
+              <option key={e.entityType} value={e.entityType}>{ENTITY_LABELS[e.entityType] ?? e.entityType}</option>
             ))}
           </select>
         </div>
@@ -131,7 +149,7 @@ export default async function ActivityPage({
               <div className="activity-row-main" style={{ minWidth: 0 }}>
                 <strong>{actionLabel(l.action)}</strong>{" "}
                 <span style={{ color: "var(--text-muted)" }}>
-                  · {l.entityType}
+                  · {ENTITY_LABELS[l.entityType] ?? l.entityType}
                   {l.details ? ` · ${l.details}` : ""}
                 </span>
               </div>

@@ -14,6 +14,10 @@ import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { Permissions } from "@/lib/permissions";
 
+// Small fixed palette for the Club Overview age-group card accents. Assigned
+// by index so it's deterministic with no extra configuration.
+const AGE_GROUP_COLORS = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed", "#0891b2"];
+
 export async function AdminDashboard({ perms, userName, academyName }: { perms: Permissions; userName: string; academyName: string }) {
   const now = new Date();
   const todayStart = new Date(now);
@@ -126,9 +130,9 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
             Manage →
           </a>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
-          {ageGroups.map((ag) => (
-            <div key={ag.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+          {ageGroups.map((ag, i) => (
+            <div key={ag.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: `3px solid ${AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length]}`, borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
               <div style={{ fontSize: 15, fontWeight: 800 }}>{ag.name}</div>
               <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>
                 {ag._count.batches} {ag._count.batches === 1 ? "batch" : "batches"} · {ag._count.scheduledSessions} sessions
