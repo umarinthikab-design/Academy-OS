@@ -148,6 +148,11 @@ export async function archiveStaffMember(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) redirect("/coaches");
 
+  // Admin accounts are managed exclusively via CLI (npm run set-password /
+  // seed scripts) - never through the app UI, by anyone, including other
+  // Admins. Enforced at creation time already; needs to hold here too.
+  if (user.role === "ADMIN") redirect("/coaches?error=no_permission");
+
   await prisma.user.update({ where: { id: userId }, data: { archivedAt: new Date(), sessionVersion: { increment: 1 } } });
 
   if (perms.userId) await logActivity(perms.userId, "archived_coach", "User", userId, user.name);
@@ -161,6 +166,10 @@ export async function reactivateStaffMember(userId: string) {
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) redirect("/coaches");
+
+  // Same invariant as archive: Admin accounts are never modifiable through
+  // the app UI, by anyone, including other Admins.
+  if (user.role === "ADMIN") redirect("/coaches?error=no_permission");
 
   await prisma.user.update({ where: { id: userId }, data: { archivedAt: null } });
 
