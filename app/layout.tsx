@@ -13,7 +13,6 @@ import { getNavItems } from "@/lib/navItems";
 import { getRequestsBadge } from "@/lib/approvals";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
-import { DevAccountSwitcher } from "@/components/DevAccountSwitcher";
 import Link from "next/link";
 import type { Metadata, Viewport } from "next";
 
@@ -111,12 +110,21 @@ export default async function RootLayout({
   const requestsBadge = await getRequestsBadge(perms);
   const navItems = getNavItems(perms, requestsBadge);
 
+  // Dev-only convenience switcher. The dynamic import sits behind a
+  // build-time-inlined NODE_ENV check, so in production builds neither the
+  // component nor its hardcoded account credentials reach the client JS.
+  let devSwitcher: React.ReactNode = null;
+  if (session && process.env.NODE_ENV !== "production") {
+    const { DevAccountSwitcher } = await import("@/components/DevAccountSwitcher");
+    devSwitcher = <DevAccountSwitcher currentEmail={currentEmail} />;
+  }
+
   return (
     <html lang="en" data-theme={theme}>
       <body>
         <ServiceWorkerRegister />
         {session ? <InstallPrompt /> : null}
-        {session ? <DevAccountSwitcher currentEmail={currentEmail} /> : null}
+        {devSwitcher}
         {session ? (
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <MobileNav
