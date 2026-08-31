@@ -10,6 +10,7 @@ import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { DrillPhotoUpload } from "@/components/ui/DrillPhotoUpload";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
+import { StatusPill } from "@/components/ui/StatusPill";
 
 const ERROR_MESSAGES: Record<string, string> = {
   no_permission: "You don't have permission to do that.",
@@ -117,7 +118,7 @@ export default async function DrillsPage({
                 </div>
               </div>
             </div>
-            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
               {canPublishEdit ? "Publish Drill" : "Suggest Drill"}
             </button>
             <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
@@ -129,34 +130,34 @@ export default async function DrillsPage({
         </CollapsibleCreate>
       )}
 
-      <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
+      <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: "28px 0 14px" }}>
         Pending Approval <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({pending.length})</span>
       </h3>
 
       {pending.length === 0 ? (
         <p style={{ color: "var(--text-muted)", fontSize: 13, marginBottom: 28 }}>Nothing waiting on review.</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 28 }}>
           {pending.map((d) => (
-            <div key={d.id} style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: "var(--radius)", padding: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+            <div key={d.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <strong style={{ fontSize: 14 }}>{d.name}</strong>
-                    <Badge tone="warning">Pending</Badge>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 17, fontWeight: 600, color: "var(--primary)" }}>{d.name}</strong>
+                    <StatusPill tone="pending">Pending</StatusPill>
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                  <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 4 }}>
                     {d.category} · {d.duration}m · submitted by {d.createdBy?.user.name ?? "Staff"}
                     {d.ageGroups.length > 0 && ` · ${d.ageGroups.map((a) => a.name).join(", ")}`}
                   </div>
-                  {d.description && <p style={{ fontSize: 13, margin: "6px 0 0", color: "var(--text)" }}>{d.description}</p>}
+                  {d.description && <p style={{ fontSize: 13, margin: "8px 0 0", color: "var(--text)" }}>{d.description}</p>}
                   <PhotoStrip urls={d.photos.map((p) => p.url)} />
                 </div>
                 {canApprove && (
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                     <form action={approveDrill.bind(null, d.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                        Approve
+                      <button type="submit" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                        <Icon name="check" size={14} /> Approve
                       </button>
                     </form>
                     <ConfirmDeleteButton
@@ -169,6 +170,7 @@ export default async function DrillsPage({
                         action={archiveDrill.bind(null, d.id)}
                         confirmMessage={`Archive "${d.name}"? It'll leave the review queue but stay in the Archived section, fully restorable.`}
                         label="Archive"
+                        buttonStyle={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--surface-muted)", border: "1px solid var(--border)", color: "var(--text-muted)", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 12, padding: "6px 12px", whiteSpace: "nowrap" }}
                       />
                     )}
                   </div>
@@ -176,9 +178,9 @@ export default async function DrillsPage({
               </div>
 
               {d.feedback.length > 0 && (
-                <div style={{ marginTop: 10, background: "var(--surface)", borderRadius: 8, padding: 10 }}>
+                <div style={{ marginTop: 12, background: "var(--surface-muted)", borderRadius: 8, padding: 10 }}>
                   {d.feedback.map((f) => (
-                    <div key={f.id} style={{ fontSize: 12, marginBottom: 4 }}>
+                    <div key={f.id} style={{ fontSize: 12.5, marginBottom: 4 }}>
                       <strong>{f.author.user.name}:</strong> {f.message}
                     </div>
                   ))}
@@ -186,9 +188,9 @@ export default async function DrillsPage({
               )}
 
               {canSuggest && (
-                <form action={addFeedback.bind(null, d.id)} style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                  <input name="message" placeholder="Add feedback..." required style={{ ...inputBase, flex: 1, fontSize: 12 }} />
-                  <button type="submit" style={{ padding: "7px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                <form action={addFeedback.bind(null, d.id)} style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <input name="message" placeholder="Add feedback..." required style={{ ...inputBase, flex: 1, fontSize: 12.5 }} />
+                  <button type="submit" style={{ padding: "7px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
                     Send
                   </button>
                 </form>
@@ -198,7 +200,7 @@ export default async function DrillsPage({
         </div>
       )}
 
-      <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
+      <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: "28px 0 14px" }}>
         Library <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({approved.length})</span>
       </h3>
 
@@ -209,61 +211,103 @@ export default async function DrillsPage({
           message="Approved suggestions will appear here and become available in session plans."
         />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
           {approved.map((d) => (
-            <div key={d.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 14px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 30, height: 30, borderRadius: 8, background: "var(--surface-muted)", color: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon name="drills" size={15} />
+            <div key={d.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden", boxShadow: "var(--shadow-sm)", display: "flex", flexDirection: "column" }}>
+              <div style={{ position: "relative", height: 128, background: "var(--surface-muted)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                {d.photos[0] ? (
+                  <img src={d.photos[0].url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <Icon name="drills" size={36} style={{ color: "var(--text-faint)" }} />
+                )}
+                <span style={{ position: "absolute", top: 10, right: 10 }}>
+                  <StatusPill tone="approved">Approved</StatusPill>
                 </span>
-                <strong style={{ fontSize: 13.5 }}>{d.name}</strong>
               </div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
-                {d.category} · {d.duration}m · {d.ageGroups.map((a) => a.name).join(", ")}
-              </div>
-              <PhotoStrip urls={d.photos.map((p) => p.url)} />
-              {canPublishEdit && (
-                <details style={{ marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 8 }}>
-                  <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>Edit</summary>
-                  <form action={updateDrill.bind(null, d.id)} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-                    <input name="name" defaultValue={d.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <select name="category" defaultValue={d.category} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", flex: 1 }}>
-                        {CATEGORIES.map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                      <input name="duration" type="number" defaultValue={d.duration} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 70 }} />
-                    </div>
-                    <input name="playerRange" defaultValue={d.playerRange ?? ""} placeholder="Player range" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
-                    <textarea name="description" defaultValue={d.description ?? ""} placeholder="Description" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", minHeight: 54, resize: "vertical" }} />
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 6, color: "var(--text-muted)" }}>Photos</label>
-                      <DrillPhotoUpload name="photoUrls" current={d.photos.map((p) => p.url)} label="Add photos" />
-                    </div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {ageGroups.map((ag) => (
-                        <label key={ag.id} style={{ fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                          <input type="checkbox" name="ageGroups" value={ag.id} defaultChecked={d.ageGroups.some((a) => a.id === ag.id)} /> {ag.name}
-                        </label>
-                      ))}
-                    </div>
-                    <button type="submit" style={{ alignSelf: "flex-start", padding: "6px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                      Save
-                    </button>
-                  </form>
-                </details>
-              )}
-              {canManage && (
-                <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
-                  <ConfirmDeleteButton
-                    action={archiveDrill.bind(null, d.id)}
-                    confirmMessage={`Archive "${d.name}"? It'll leave the library and session-plan picker but stay in the Archived section, fully restorable.`}
-                    label="Archive"
-                    buttonStyle={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 11, padding: "4px 10px" }}
-                  />
+              <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.category}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.duration}m</span>
                 </div>
-              )}
+                <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--primary)", margin: "0 0 6px" }}>{d.name}</h3>
+                <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 8 }}>
+                  {d.ageGroups.map((a) => a.name).join(", ")}
+                  {d.playerRange ? ` · ${d.playerRange} players` : ""}
+                </div>
+                {d.description && <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 12px" }}>{d.description}</p>}
+                {d.photos.length > 0 && <PhotoStrip urls={d.photos.map((p) => p.url)} />}
+
+                <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                      <span
+                        style={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          background: "var(--primary)",
+                          color: "#fff",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {((d.createdBy?.user.name ?? "Staff").match(/\b\w/g) ?? []).slice(0, 2).join("").toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: 12.5, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.createdBy?.user.name ?? "Staff"}</span>
+                    </div>
+                    {canPublishEdit && (
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--secondary)", flexShrink: 0 }}>Edit</span>
+                    )}
+                  </div>
+
+                  {canPublishEdit && (
+                    <details style={{ marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+                      <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>Edit drill</summary>
+                      <form action={updateDrill.bind(null, d.id)} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                        <input name="name" defaultValue={d.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <select name="category" defaultValue={d.category} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", flex: 1 }}>
+                            {CATEGORIES.map((c) => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                          <input name="duration" type="number" defaultValue={d.duration} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 70 }} />
+                        </div>
+                        <input name="playerRange" defaultValue={d.playerRange ?? ""} placeholder="Player range" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
+                        <textarea name="description" defaultValue={d.description ?? ""} placeholder="Description" style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", minHeight: 54, resize: "vertical" }} />
+                        <div>
+                          <label style={{ display: "block", fontSize: 11, fontWeight: 700, marginBottom: 6, color: "var(--text-muted)" }}>Photos</label>
+                          <DrillPhotoUpload name="photoUrls" current={d.photos.map((p) => p.url)} label="Add photos" />
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                          {ageGroups.map((ag) => (
+                            <label key={ag.id} style={{ fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                              <input type="checkbox" name="ageGroups" value={ag.id} defaultChecked={d.ageGroups.some((a) => a.id === ag.id)} /> {ag.name}
+                            </label>
+                          ))}
+                        </div>
+                        <button type="submit" style={{ alignSelf: "flex-start", padding: "6px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                          Save
+                        </button>
+                      </form>
+                    </details>
+                  )}
+                  {canManage && (
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
+                      <ConfirmDeleteButton
+                        action={archiveDrill.bind(null, d.id)}
+                        confirmMessage={`Archive "${d.name}"? It'll leave the library and session-plan picker but stay in the Archived section, fully restorable.`}
+                        label="Archive"
+                        buttonStyle={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 11, padding: "4px 10px" }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -271,7 +315,7 @@ export default async function DrillsPage({
 
       {canManage && archivedDrills.length > 0 && (
         <details style={{ marginTop: 28, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
-          <summary style={{ cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 800, userSelect: "none" }}>
+          <summary style={{ cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 700, userSelect: "none" }}>
             <Icon name="drills" size={15} style={{ color: "var(--text-muted)" }} />
             Archived Drills
             <Badge tone="muted">{archivedDrills.length}</Badge>
@@ -291,7 +335,7 @@ export default async function DrillsPage({
                   </div>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <form action={reactivateDrill.bind(null, d.id)}>
-                      <button type="submit" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--secondary)", color: "var(--secondary)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 11, padding: "4px 10px" }}>
+                      <button type="submit" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--secondary)", color: "var(--secondary)", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 11, padding: "4px 10px" }}>
                         Reactivate
                       </button>
                     </form>

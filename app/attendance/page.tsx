@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Badge } from "@/components/ui/Badge";
 import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
@@ -129,9 +128,10 @@ export default async function AttendancePage({
   const playerMissList = [...playerMisses.values()].sort((a, b) => b.absent - a.absent);
   const batchStatList = [...batchStats.values()].sort((a, b) => b.name.localeCompare(a.name));
 
-  const btnPrimary: React.CSSProperties = { padding: "7px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" };
+  const btnPrimary: React.CSSProperties = { padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all var(--transition)", boxShadow: "var(--shadow-sm)" };
   const btnOutline: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", cursor: "pointer", fontWeight: 700, fontSize: 12 };
   const btnDanger: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--error)", background: "var(--surface)", color: "var(--error)", cursor: "pointer", fontWeight: 700, fontSize: 12 };
+  const faceSize = 44;
 
   return (
     <>
@@ -143,10 +143,13 @@ export default async function AttendancePage({
         <p style={{ fontSize: 13, color: "var(--text-muted)" }}>This page is for coaching staff.</p>
       )}
 
-      <h3 style={{ fontSize: 16, margin: "0 0 4px" }}>
-        Needs review <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({sessions.length})</span>
-      </h3>
-      <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 16px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)" }}>
+          Needs review
+        </h3>
+        <span style={{ fontSize: 13, color: "var(--text-faint)" }}>({sessions.length})</span>
+      </div>
+      <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 18px" }}>
         Past sessions whose attendance hasn't been finalized yet.
       </p>
 
@@ -168,13 +171,14 @@ export default async function AttendancePage({
             const started = coachId ? new Date() >= sessionStart(s.date, s.startTime) : false;
 
             return (
-              <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
+              <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 18, boxShadow: "var(--shadow-sm)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
                   <div>
-                    <strong style={{ fontSize: 15 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
+                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", lineHeight: 1.2 }}>
                       {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}
                     </strong>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
                       {s.ageGroup.name} · {s.location.name} · Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}
                       {s.assistantCoaches.length > 0 && <> · Assistant: {s.assistantCoaches.map((c) => c.user.name).join(", ")}</>}
                     </div>
@@ -188,9 +192,9 @@ export default async function AttendancePage({
 
                 {/* Coach self check-in */}
                 {isAssigned(s) && started && (
-                  <div style={{ marginTop: 12, padding: "8px 10px", background: "var(--surface-muted)", borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 12, color: "var(--text)" }}>
-                      <Icon name="whistle" size={13} style={{ verticalAlign: "-2px", marginRight: 4 }} />
+                  <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 13, color: "var(--text)" }}>
+                      <Icon name="whistle" size={14} style={{ verticalAlign: "-2px", marginRight: 6, color: "var(--secondary)" }} />
                       Coach check-in:{" "}
                       {selfCheckIn?.status === "CHECKED_IN" ? (
                         <strong style={{ color: "var(--success)" }}>Checked in at {selfCheckIn.confirmedAt?.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) || "—"}</strong>
@@ -210,8 +214,8 @@ export default async function AttendancePage({
 
                 {/* Admin override for coach attendance */}
                 {isAdmin && (
-                  <details style={{ marginTop: 10, fontSize: 12 }}>
-                    <summary style={{ color: "var(--text-muted)", cursor: "pointer", fontWeight: 600 }}>Admin — override coach attendance</summary>
+                  <details style={{ marginTop: 12, fontSize: 12.5, background: "var(--surface-muted)", borderRadius: 8, padding: "8px 12px", border: "1px solid var(--border)" }}>
+                    <summary style={{ color: "var(--text-muted)", cursor: "pointer", fontWeight: 700 }}>Admin — override coach attendance</summary>
                     <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                       {[...s.headCoaches, ...s.assistantCoaches].map((c) => (
                         <form
@@ -236,11 +240,11 @@ export default async function AttendancePage({
 
                 {/* Pending request needing this user's action */}
                 {requests && canApprove(s, requests) && (
-                  <div style={{ marginTop: 12, padding: "10px 12px", background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+                  <div style={{ marginTop: 12, padding: "12px 14px", background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: 8 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "#92400e", marginBottom: 6 }}>
                       Pending proposal from {requests.requestedBy.user.name}
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--text)", marginBottom: 8 }}>
+                    <div style={{ fontSize: 12.5, color: "var(--text)", marginBottom: 8 }}>
                       {(requests.payload as { statuses?: { playerId: string; status: string }[] }).statuses?.map((p) => {
                         const player = players.find((pl) => pl.id === p.playerId);
                         return (
@@ -263,29 +267,36 @@ export default async function AttendancePage({
 
                 {/* Marking form */}
                 {canMark(s) && players.length > 0 && (
-                  <form action={submitAttendance} style={{ marginTop: 12 }}>
+                  <form action={submitAttendance} style={{ marginTop: 16 }}>
                     <input type="hidden" name="scheduledSessionId" value={s.id} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {players.map((p) => (
-                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px" }}>
                           <input type="hidden" name="playerId" value={p.id} />
-                          <span style={{ width: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
-                          {p.status !== "ACTIVE" && (
-                            <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
-                          )}
-                          <select name="status" defaultValue="" style={{ padding: "4px 6px", border: "1px solid var(--border)", borderRadius: 5, fontSize: 12 }}>
+                          <div style={{ width: faceSize, height: faceSize, borderRadius: 8, background: "var(--surface-high)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", flexShrink: 0 }}>
+                            <Icon name="user" size={20} />
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                              {p.status !== "ACTIVE" && (
+                                <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
+                              )}
+                              {marked.has(p.id) && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 700 }}>✓ recorded</span>}
+                            </div>
+                          </div>
+                          <select name="status" defaultValue="" style={{ padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12.5, background: "var(--surface)" }}>
                             <option value="">—</option>
                             <option value="ATTENDED">Attended</option>
                             <option value="ABSENT">Absent</option>
                           </select>
-                          {marked.has(p.id) && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 700 }}>✓ recorded</span>}
                         </div>
                       ))}
                     </div>
-                    <button type="submit" style={{ ...btnPrimary, marginTop: 10 }}>
+                    <button type="submit" style={{ ...btnPrimary, marginTop: 14, width: "100%", padding: "12px 18px", fontSize: 14 }}>
                       {isAdmin ? "Record attendance" : "Submit for approval"}
                     </button>
-                    <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6 }}>
+                    <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
                       {isAdmin
                         ? "Records directly — no approval needed."
                         : "Your marking goes to " + (isHeadOfSession(s) ? "an administrator for approval." : "the session's head coach for approval.")}
@@ -301,9 +312,9 @@ export default async function AttendancePage({
       {/* ── Rollup ─────────────────────────────────────────────────── */}
       <div style={{ marginTop: 36, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <h3 style={{ fontSize: 16, margin: 0 }}>Rollup</h3>
+          <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)", margin: 0 }}>Rollup</h3>
           <form style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <select name="range" defaultValue={range} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }}>
+            <select name="range" defaultValue={range} style={{ padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
               <option value="month">This month</option>
               <option value="term">Last 90 days</option>
             </select>
@@ -312,11 +323,11 @@ export default async function AttendancePage({
         </div>
 
         <div className="rollup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 16 }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>Misses by player</div>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+            <div className="label-caps" style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Misses by player</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {playerMissList.map((p) => (
-                <div key={p.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
+                <div key={p.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
                   <span>{p.name}</span>
                   <span style={{ fontWeight: 700, color: p.absent > 0 ? "var(--error)" : "var(--success)" }}>
                     {p.absent} absent / {p.attended + p.absent}
@@ -327,13 +338,13 @@ export default async function AttendancePage({
             </div>
           </div>
 
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>Attendance rate by batch</div>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+            <div className="label-caps" style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Attendance rate by batch</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {batchStatList.map((b) => {
                 const rate = b.attended + b.absent > 0 ? Math.round((b.attended / (b.attended + b.absent)) * 100) : 0;
                 return (
-                  <div key={b.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
+                  <div key={b.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
                     <span>{b.name}</span>
                     <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontWeight: 700 }}>{rate}%</span>

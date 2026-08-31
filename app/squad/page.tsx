@@ -23,7 +23,7 @@ import { Icon } from "@/components/ui/Icon";
 export default async function SquadPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string; age?: string; batch?: string; dobFrom?: string; dobTo?: string; joinedFrom?: string; joinedTo?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; age?: string; batch?: string; status?: string; dobFrom?: string; dobTo?: string; joinedFrom?: string; joinedTo?: string }>;
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
@@ -31,6 +31,7 @@ export default async function SquadPage({
 
   const ageFilter = params.age ? Number(params.age) : null;
   const batchFilter = params.batch || null;
+  const statusFilter = params.status || null;
   const dobFrom = params.dobFrom ? new Date(params.dobFrom) : null;
   const dobTo = params.dobTo ? new Date(params.dobTo) : null;
   const joinedFrom = params.joinedFrom ? new Date(params.joinedFrom) : null;
@@ -44,6 +45,7 @@ export default async function SquadPage({
   const filtered = players.filter((p) => {
     if (ageFilter !== null && calculateAge(p.dateOfBirth) !== ageFilter) return false;
     if (batchFilter && !p.batches.some((b) => b.id === batchFilter)) return false;
+    if (statusFilter && p.status !== statusFilter) return false;
     if (dobFrom && p.dateOfBirth < dobFrom) return false;
     if (dobTo && p.dateOfBirth > dobTo) return false;
     if (joinedFrom && p.dateJoined < joinedFrom) return false;
@@ -53,7 +55,7 @@ export default async function SquadPage({
 
   const batches = await prisma.batch.findMany({ orderBy: { name: "asc" }, include: { ageGroup: true } });
 
-  const hasFilters = !!params.age || !!params.batch || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
+  const hasFilters = !!params.age || !!params.batch || !!params.status || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
 
   const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
@@ -119,81 +121,54 @@ export default async function SquadPage({
         </CollapsibleCreate>
       )}
 
-      {/* Filter bar - collapsed by default so the player list stays the focus;
-          auto-opens when filters are active so the active state is visible. */}
-      <details
-        open={hasFilters}
+      {/* Filter bar - always visible, matches Stitch: filter icon + label on
+          left, batch/status/age controls, Clear action on the right. */}
+      <div
         style={{
-          background: "var(--surface)",
+          background: "var(--surface-muted)",
           border: "1px solid var(--border)",
           borderRadius: "var(--radius)",
-          padding: 14,
+          padding: "12px 16px",
           marginBottom: 20,
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 12,
         }}
       >
-        <summary
-          style={{
-            cursor: "pointer",
-            listStyle: "none",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontSize: 14,
-            fontWeight: 800,
-            userSelect: "none",
-          }}
-        >
-          <Icon name="filter" size={15} style={{ color: "var(--secondary)" }} />
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: "auto", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          <Icon name="filter" size={16} />
           Filters
-          {hasFilters && (
-            <a href="/squad" style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none", marginLeft: 4 }}>
-              Clear
-            </a>
-          )}
-        </summary>
+        </span>
         <form
           style={{
             display: "flex",
             gap: 10,
             flexWrap: "wrap",
-            alignItems: "flex-end",
-            paddingTop: 14,
+            alignItems: "center",
           }}
         >
-        <div>
-          <label style={fieldLabel}>Age</label>
-          <input name="age" type="number" min={1} defaultValue={params.age ?? ""} style={{ width: 70, padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
-        </div>
-        <div>
-          <label style={fieldLabel}>Batch</label>
-          <select name="batch" defaultValue={params.batch ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }}>
-            <option value="">All</option>
+          <select name="batch" defaultValue={params.batch ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+            <option value="">All Batches</option>
             {batches.map((b) => (
               <option key={b.id} value={b.id}>{b.name} ({b.ageGroup.name})</option>
             ))}
           </select>
-        </div>
-        <div>
-          <label style={fieldLabel}>DOB from</label>
-          <input name="dobFrom" type="date" defaultValue={params.dobFrom ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
-        </div>
-        <div>
-          <label style={fieldLabel}>DOB to</label>
-          <input name="dobTo" type="date" defaultValue={params.dobTo ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
-        </div>
-        <div>
-          <label style={fieldLabel}>Joined from</label>
-          <input name="joinedFrom" type="date" defaultValue={params.joinedFrom ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
-        </div>
-        <div>
-          <label style={fieldLabel}>Joined to</label>
-          <input name="joinedTo" type="date" defaultValue={params.joinedTo ?? ""} style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6 }} />
-        </div>
-        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
-          Filter
-        </button>
+          <select name="status" defaultValue={params.status ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+            <option value="">Status: All</option>
+            <option value="ACTIVE">Available</option>
+            <option value="INJURED">Injured</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <input name="age" type="number" min={1} defaultValue={params.age ?? ""} placeholder="Age (e.g. 16)" style={{ width: 96, padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }} />
+          <button type="submit" style={{ padding: "6px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+            Filter
+          </button>
+          <a href="/squad" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--secondary)", textDecoration: "none" }}>
+            Clear
+          </a>
         </form>
-      </details>
+      </div>
 
       {filtered.length === 0 ? (
         <EmptyState

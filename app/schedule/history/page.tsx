@@ -53,7 +53,7 @@ export default async function SessionHistoryPage() {
           message="Historical sessions will appear here once the season gets going."
         />
       ) : (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}>
           {sessions.map((s) => (
             <div
               key={s.id}

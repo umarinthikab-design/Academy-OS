@@ -23,6 +23,26 @@ export default async function AcademySettingsPage({
 
   const settings = await getAcademySettings();
 
+  const card = {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    boxShadow: "var(--shadow-sm)",
+    padding: 24,
+  };
+
+  const sectionTitle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: 20,
+    fontWeight: 600,
+    color: "var(--primary)",
+    paddingBottom: 12,
+    borderBottom: "1px solid var(--border)",
+    marginBottom: 20,
+  };
+
   return (
     <>
       <PageHeader
@@ -37,68 +57,28 @@ export default async function AcademySettingsPage({
 
       <form
         action={updateAcademySettings}
-        style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", boxShadow: "var(--shadow-sm)", padding: 18 }}
+        style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 900 }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            paddingBottom: 12,
-            borderBottom: "1px solid var(--border)",
-            marginBottom: 16,
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 800 }}>Academy branding</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-              Shown prominently on the login screen, sidebar, mobile app, and dashboard. Touchline stays as the small "Powered by" line.
-            </div>
+        <section style={card}>
+          <h2 style={sectionTitle}>Identity &amp; Branding</h2>
+          <div className="form-grid-2col" style={{ gap: 20 }}>
+            <Field
+              label="Academy Name"
+              hint="Displayed as the dominant wordmark across the app."
+            >
+              <Input name="academyName" maxLength={60} defaultValue={settings.academyName} required />
+            </Field>
+            <Field
+              label="Club Logo (optional)"
+              hint="Uploaded at up to 1024px with transparency kept for crisp display. Falls back to the academy name when empty."
+            >
+              <LogoUpload name="logoUrl" current={settings.logoUrl} />
+            </Field>
           </div>
-        </div>
+        </section>
 
-        <div className="form-grid-2col" style={{ gap: 16, marginBottom: 16 }}>
-          <Field
-            label="Academy name"
-            hint="Displayed as the dominant wordmark across the app."
-          >
-            <Input name="academyName" maxLength={60} defaultValue={settings.academyName} required />
-          </Field>
-          <Field
-            label="Club logo (optional)"
-            hint="Uploaded at up to 1024px with transparency kept for crisp display. Falls back to the academy name when empty."
-          >
-            <LogoUpload name="logoUrl" current={settings.logoUrl} />
-          </Field>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            paddingBottom: 12,
-            borderBottom: "1px solid var(--border)",
-            marginBottom: 16,
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 800 }}>Pre-session coach confirmation</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-              Coaches RSVP "will I attend" before each session. Self-service - no approval needed.
-            </div>
-          </div>
-          <input
-            type="checkbox"
-            name="preSessionConfirmationEnabled"
-            defaultChecked={settings.preSessionConfirmationEnabled}
-            style={{ width: 20, height: 20, flexShrink: 0 }}
-          />
-        </div>
-
-        {perms.isAdmin && (
+        <section style={card}>
+          <h2 style={sectionTitle}>Session Workflow</h2>
           <div
             style={{
               display: "flex",
@@ -111,58 +91,85 @@ export default async function AcademySettingsPage({
             }}
           >
             <div>
-              <div style={{ fontSize: 15, fontWeight: 800 }}>Club managers can author drills</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                When on, club managers can add drills to the library like coaches. They can always edit, archive, and delete drills.
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Pre-session coach confirmation</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                Coaches RSVP "will I attend" before each session. Self-service - no approval needed.
               </div>
             </div>
             <input
               type="checkbox"
-              name="clubManagersCanAuthorDrills"
-              defaultChecked={settings.clubManagersCanAuthorDrills}
-              style={{ width: 20, height: 20, flexShrink: 0 }}
+              name="preSessionConfirmationEnabled"
+              defaultChecked={settings.preSessionConfirmationEnabled}
+              style={{ width: 20, height: 20, flexShrink: 0, accentColor: "var(--secondary)" }}
             />
           </div>
-        )}
 
-        <div className="form-grid-2col" style={{ gap: 16 }}>
-          <Field
-            label="Confirmation window (hours before session)"
-            hint="How far ahead a session appears in each coach's 'Confirm your upcoming sessions' list."
-          >
-            <Input
-              name="confirmationWindowHours"
-              type="number"
-              min={1}
-              max={720}
-              defaultValue={settings.confirmationWindowHours}
-              required
-            />
-          </Field>
-          <Field
-            label="Priority window (hours before session)"
-            hint="Within this window, an unanswered confirmation escalates to the priority treatment. Must be shorter than the confirmation window."
-          >
-            <Input
-              name="priorityWindowHours"
-              type="number"
-              min={1}
-              max={720}
-              defaultValue={settings.priorityWindowHours}
-              required
-            />
-          </Field>
-        </div>
+          {perms.isAdmin && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                paddingBottom: 16,
+                borderBottom: "1px solid var(--border)",
+                marginBottom: 16,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Club managers can author drills</div>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                  When on, club managers can add drills to the library like coaches. They can always edit, archive, and delete drills.
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                name="clubManagersCanAuthorDrills"
+                defaultChecked={settings.clubManagersCanAuthorDrills}
+                style={{ width: 20, height: 20, flexShrink: 0, accentColor: "var(--secondary)" }}
+              />
+            </div>
+          )}
 
-        <div style={{ marginTop: 16, fontSize: 12, color: "var(--text-faint)" }}>
+          <div className="form-grid-2col" style={{ gap: 20 }}>
+            <Field
+              label="Confirmation window (hours before session)"
+              hint="How far ahead a session appears in each coach's 'Confirm your upcoming sessions' list."
+            >
+              <Input
+                name="confirmationWindowHours"
+                type="number"
+                min={1}
+                max={720}
+                defaultValue={settings.confirmationWindowHours}
+                required
+              />
+            </Field>
+            <Field
+              label="Priority window (hours before session)"
+              hint="Within this window, an unanswered confirmation escalates to the priority treatment. Must be shorter than the confirmation window."
+            >
+              <Input
+                name="priorityWindowHours"
+                type="number"
+                min={1}
+                max={720}
+                defaultValue={settings.priorityWindowHours}
+                required
+              />
+            </Field>
+          </div>
+        </section>
+
+        <div style={{ fontSize: 12, color: "var(--text-faint)" }}>
           A coach declining or failing to confirm appears in the "Needs attention" section on admin and head-coach
           dashboards so the session can be re-staffed in time.
         </div>
 
-        <div style={{ marginTop: 18, display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             type="submit"
-            style={{ padding: "9px 20px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+            style={{ padding: "9px 24px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}
           >
             Save club settings
           </button>

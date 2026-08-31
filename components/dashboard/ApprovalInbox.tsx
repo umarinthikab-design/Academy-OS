@@ -13,16 +13,8 @@ import { getApprovalInbox, REQUEST_CATEGORIES, requestCategory } from "@/lib/app
 import type { Permissions } from "@/lib/permissions";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { approveRequest, rejectRequest, addApprovalMessage } from "./actions";
-
-const TYPE_LABEL: Record<string, string> = {
-  ATTENDANCE_CONFIRM: "Attendance proposal",
-  SESSION_SHARE: "Session plan share",
-  DRILL_ADD: "Drill suggestion",
-  DRILL_EDIT: "Drill edit",
-  SCHEDULE_CREATE: "Schedule change",
-  SKILL_UPDATE: "Skill update",
-};
 
 const TYPE_ICON: Record<string, string> = {
   ATTENDANCE_CONFIRM: "attendance",
@@ -45,28 +37,32 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
   const total = requests.length;
 
   return (
-    <section style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "4px 0", boxShadow: "var(--shadow-sm)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px" }}>
-        <h2 style={{ fontSize: 17, fontWeight: 700 }}>Requests awaiting approval</h2>
-        <Badge tone="warning">{total} pending</Badge>
+    <section style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "18px 20px", borderBottom: "1px solid var(--border)" }}>
+        <div>
+          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--primary)" }}>Requests awaiting approval</h2>
+          <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--text-muted)" }}>Review and manage academy requests.</p>
+        </div>
+        <StatusPill tone="pending">{total} pending</StatusPill>
       </div>
       {groups.map((group) => (
         <div key={group.label} style={{ borderTop: "1px solid var(--border)" }}>
-          <div style={{ padding: "10px 18px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-faint)", background: "var(--surface-muted)" }}>
+          <div style={{ padding: "10px 20px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-faint)", background: "var(--surface-muted)" }}>
             {group.label} <span style={{ fontWeight: 600 }}>({group.items.length})</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {group.items.map((r) => (
-              <div key={r.id} style={{ padding: "12px 18px", borderTop: "1px solid var(--border)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+              <div key={r.id} style={{ padding: "14px 20px", borderTop: "1px solid var(--border)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 14, minWidth: 0, flex: "1 1 280px" }}>
                     <div
                       style={{
-                        width: 38,
-                        height: 38,
+                        width: 42,
+                        height: 42,
                         borderRadius: 10,
-                        background: "var(--warning-bg)",
-                        color: "#92400e",
+                        background: "var(--surface-muted)",
+                        color: "var(--secondary)",
+                        border: "1px solid var(--border)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -77,18 +73,39 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontWeight: 700, fontSize: 14 }}>{TYPE_LABEL[r.type] ?? requestCategory(r.type)}</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                          {requestCategory(r.type)}
+                        </span>
                       </div>
-                      <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                        <strong style={{ color: "var(--text)" }}>{r.detail}</strong>
-                        {r.summary ? <span> · {r.summary}</span> : null}
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", marginTop: 2 }}>{r.detail}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                        <span
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            background: "var(--primary)",
+                            color: "#fff",
+                            fontSize: 9,
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {(r.requesterName.match(/\b\w/g) ?? []).slice(0, 2).join("").toUpperCase()}
+                        </span>
+                        <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{r.requesterName}</span>
+                        <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
+                          · {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        </span>
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 2 }}>
-                        Requested by {r.requesterName} · {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                      </div>
+                      {r.summary ? <div style={{ fontSize: 12.5, color: "var(--text-faint)", marginTop: 4 }}>{r.summary}</div> : null}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <StatusPill tone="pending">Pending</StatusPill>
                     <form action={approveRequest.bind(null, r.id)}>
                       <button
                         type="submit"
@@ -97,11 +114,11 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                           alignItems: "center",
                           gap: 6,
                           padding: "7px 14px",
-                          background: "var(--primary)",
+                          background: "var(--secondary)",
                           color: "#fff",
                           borderRadius: 8,
-                          fontWeight: 700,
-                          fontSize: 13,
+                          fontWeight: 600,
+                          fontSize: 12.5,
                           border: "none",
                           cursor: "pointer",
                         }}
@@ -118,23 +135,22 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                           gap: 6,
                           padding: "7px 14px",
                           background: "var(--surface-muted)",
-                          color: "var(--text-muted)",
+                          color: "var(--error)",
                           borderRadius: 8,
-                          fontWeight: 700,
-                          fontSize: 13,
-                          border: "none",
+                          fontWeight: 600,
+                          fontSize: 12.5,
+                          border: "1px solid var(--border)",
                           cursor: "pointer",
                         }}
                       >
-                        Reject
+                        <Icon name="x" size={14} /> Reject
                       </button>
                     </form>
                   </div>
                 </div>
 
-                {/* Expandable detail + conversation */}
                 {r.full && (
-                  <details style={{ marginTop: 10, borderRadius: 8, background: "var(--surface-muted)", padding: "0 12px" }}>
+                  <details style={{ marginTop: 12, borderRadius: 8, background: "var(--surface-muted)", padding: "0 12px" }}>
                     <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--secondary)", padding: "9px 0", outline: "none" }}>
                       View content & conversation {r.full.messages.length > 0 ? `(${r.full.messages.length})` : ""}
                     </summary>
@@ -164,7 +180,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
 
                       <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
                         <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 12.5, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                        <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>
+                        <button type="submit" style={{ padding: "8px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: "pointer" }}>
                           Send
                         </button>
                       </form>

@@ -34,34 +34,55 @@ export default async function AgeGroupsPage({
   function groupSection(title: string, groups: typeof ageGroups) {
     return (
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>{title}</div>
+        <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", marginBottom: 12 }}>{title}</div>
         {groups.length === 0 ? (
           <p style={{ color: "var(--text-faint)", fontSize: 13 }}>None yet.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {groups.map((ag) => {
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
+            {groups.map((ag, idx) => {
               const inUse = ag._count.batches > 0 || ag._count.scheduledSessions > 0;
               return (
                 <div
                   key={ag.id}
                   style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius)",
-                    padding: "12px 16px",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     gap: 10,
+                    padding: "14px 16px",
+                    ...(idx > 0 ? { borderTop: "1px solid var(--border)" } : {}),
+                    background: idx % 2 === 1 ? "var(--surface-muted)" : "var(--surface)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <strong style={{ fontSize: 14 }}>{ag.name}</strong>
-                    {inUse && (
-                      <Badge tone="warning">
-                        In use · {ag._count.batches} batch{ag._count.batches === 1 ? "" : "es"}, {ag._count.scheduledSessions} session{ag._count.scheduledSessions === 1 ? "" : "s"}
-                      </Badge>
-                    )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: "50%",
+                        background: "var(--surface-container)",
+                        color: "var(--primary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 800,
+                        fontSize: 12,
+                        fontFamily: "var(--font-headline)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {ag.name.toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--primary)" }}>{ag.name}</div>
+                      {inUse ? (
+                        <Badge tone="warning" style={{ marginTop: 4 }}>
+                          In use · {ag._count.batches} batch{ag._count.batches === 1 ? "" : "es"}, {ag._count.scheduledSessions} session{ag._count.scheduledSessions === 1 ? "" : "s"}
+                        </Badge>
+                      ) : (
+                        <Badge tone="muted" style={{ marginTop: 4 }}>Not in use</Badge>
+                      )}
+                    </div>
                   </div>
                   {canEdit && !inUse && (
                     <ConfirmDeleteButton

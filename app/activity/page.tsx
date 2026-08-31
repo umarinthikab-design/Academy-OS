@@ -87,16 +87,25 @@ export default async function ActivityPage({
     return s ? `/activity?${s}` : "/activity";
   };
 
+  const labelCaps: React.CSSProperties = {
+    fontFamily: "var(--font-mono-label)",
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    color: "var(--text-muted)",
+  };
+
   return (
     <>
       <PageHeader
         title="Activity"
-        subtitle={perms.isAdmin || perms.isClubManager ? "Everything, newest first." : "Your activity, newest first."}
+        subtitle="System-wide activity log, reverse-chronological order."
       />
 
       {/* Filters - the real use case is "find who deleted this specific thing,"
           which is much faster with type + date filtering than by scrolling. */}
-      <form method="GET" action="/activity" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 16, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+      <form method="GET" action="/activity" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 16, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", boxShadow: "var(--shadow-sm)", padding: 14 }}>
         <div>
           <label style={fieldLabel}>Entity type</label>
           <select name="entityType" defaultValue={entityType ?? ""} style={inputBase}>
@@ -114,7 +123,7 @@ export default async function ActivityPage({
           <label style={fieldLabel}>To</label>
           <input name="to" type="date" defaultValue={params.to ?? ""} style={inputBase} />
         </div>
-        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "var(--shadow-sm)" }}>
           Filter
         </button>
         {(entityType || from || to) && (
@@ -131,55 +140,67 @@ export default async function ActivityPage({
           message={total === 0 ? "Actions across the academy will show up here as they happen." : "Try removing a filter to see more results."}
         />
       ) : (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", overflow: "hidden" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(150px, 200px) minmax(160px, 1fr) auto",
+              gap: 12,
+              alignItems: "center",
+              padding: "10px 16px",
+              background: "var(--surface-muted)",
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            <span style={labelCaps}>Actor</span>
+            <span style={labelCaps}>Action</span>
+            <span style={{ ...labelCaps, textAlign: "right" }}>Entity</span>
+          </div>
           {logs.map((l) => (
             <div
               key={l.id}
               className="activity-row"
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
+                display: "grid",
+                gridTemplateColumns: "minmax(150px, 200px) minmax(160px, 1fr) auto",
                 gap: 12,
-                padding: "11px 16px",
+                alignItems: "center",
+                padding: "12px 16px",
                 fontSize: 13,
                 borderBottom: "1px solid var(--border)",
+                transition: "background var(--transition)",
               }}
             >
-              <div className="activity-row-main" style={{ minWidth: 0 }}>
-                <strong>{actionLabel(l.action)}</strong>{" "}
+              <div className="activity-row-meta" style={{ display: "flex", flexDirection: "column", gap: 1, fontSize: 11 }}>
+                <span style={{ fontWeight: 700, color: "var(--primary)" }}>{l.user.name}</span>
                 <span style={{ color: "var(--text-muted)" }}>
-                  · {ENTITY_LABELS[l.entityType] ?? l.entityType}
-                  {l.details ? ` · ${l.details}` : ""}
+                  {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                  <span style={{ color: "var(--text-faint)" }}>{" · "}{l.createdAt.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</span>
                 </span>
               </div>
-              <div className="activity-row-meta" style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)" }}>
-                <div>{l.user.name}</div>
-                <div>{l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+              <div className="activity-row-main" style={{ minWidth: 0, display: "flex", alignItems: "baseline", gap: 6 }}>
+                <strong style={{ fontWeight: 600 }}>{actionLabel(l.action)}</strong>
+                {l.details && <span style={{ color: "var(--text-muted)" }}>{l.details}</span>}
+              </div>
+              <div style={{ textAlign: "right", color: "var(--text-muted)" }}>
+                {ENTITY_LABELS[l.entityType] ?? l.entityType}
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Offset pagination - simple Prev/Next, sufficient for one academy's
-          data volume. */}
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginTop: 16 }}>
-          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-            Page {page} of {totalPages} · {total} {total === 1 ? "entry" : "entries"}
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {page > 1 && (
-              <a href={buildHref({ page: String(page - 1) })} style={{ padding: "7px 14px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                ← Prev
-              </a>
-            )}
-            {page < totalPages && (
-              <a href={buildHref({ page: String(page + 1) })} style={{ padding: "7px 14px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                Next →
-              </a>
-            )}
+          <div style={{ background: "var(--surface-muted)", borderTop: "1px solid var(--border)", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13, color: "var(--text-muted)" }}>
+            <span>Showing {total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, total)} of {total} {total === 1 ? "log" : "logs"}</span>
+            <div style={{ display: "flex", gap: 4 }}>
+              {page > 1 && (
+                <a href={buildHref({ page: String(page - 1) })} aria-label="Previous page" style={{ width: 32, height: 32, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", textDecoration: "none", transition: "background var(--transition)" }}>
+                  ←
+                </a>
+              )}
+              {page < totalPages && (
+                <a href={buildHref({ page: String(page + 1) })} aria-label="Next page" style={{ width: 32, height: 32, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", textDecoration: "none", transition: "background var(--transition)" }}>
+                  →
+                </a>
+              )}
+            </div>
           </div>
         </div>
       )}

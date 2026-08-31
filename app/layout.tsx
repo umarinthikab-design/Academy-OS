@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Inter, Archivo_Narrow } from "next/font/google";
 import { getSession } from "@/lib/getSession";
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
@@ -15,6 +16,11 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import Link from "next/link";
 import type { Metadata, Viewport } from "next";
+
+// Body/data: Inter. Headlines: Archivo Narrow (condensed "scoreboard" feel).
+// Variables feed the --font-body / --font-headline tokens in globals.css.
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const archivoNarrow = Archivo_Narrow({ subsets: ["latin"], variable: "--font-archivo-narrow", display: "swap" });
 
 export async function generateMetadata(): Promise<Metadata> {
   const { academyName } = await getAcademyBranding();
@@ -40,64 +46,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0b3d2e" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a1813" },
+    { media: "(prefers-color-scheme: light)", color: "#00261b" },
+    { media: "(prefers-color-scheme: dark)", color: "#000f0a" },
   ],
 };
-
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
-
-// Top header: page-context breadcrumb handled per-page; this shell provides
-// the consistent header strip with the Touchline wordmark, date/greeting, and
-// the user's profile chip linking to Settings.
-function TopHeader({ name, role, photoUrl }: { name: string; role: string; photoUrl: string | null }) {
-  return (
-    <header
-      style={{
-        height: 60,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 16,
-        padding: "0 28px",
-        background: "var(--surface)",
-        borderBottom: "1px solid var(--border)",
-        position: "sticky",
-        top: 0,
-        zIndex: 20,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--text-muted)" }}>
-        <Icon name="calendar" size={16} style={{ color: "var(--secondary)" }} />
-        {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-      </div>
-      <Link
-        href="/settings"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          textDecoration: "none",
-          color: "var(--text)",
-          padding: "5px 10px",
-          borderRadius: 8,
-          transition: "background var(--transition)",
-        }}
-      >
-        <Avatar name={name} src={photoUrl} size={32} />
-        <div style={{ lineHeight: 1.2 }}>
-          <div style={{ fontSize: 13, fontWeight: 700 }}>{name}</div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{greeting()}, {roleLabel(role)}</div>
-        </div>
-      </Link>
-    </header>
-  );
-}
 
 export default async function RootLayout({
   children,
@@ -124,7 +76,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" data-theme={theme}>
+    <html lang="en" data-theme={theme} className={`${inter.variable} ${archivoNarrow.variable}`}>
       <body>
         <ServiceWorkerRegister />
         {session ? <InstallPrompt /> : null}
@@ -141,67 +93,73 @@ export default async function RootLayout({
               logoUrl={branding.logoUrl}
             />
             <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+              {/* Desktop sidebar — the single source of navigation (no top
+                  bar), styled per the Stitch exports: deep pitch background,
+                  primary-container border, profile + sign-out pinned bottom. */}
               <aside
                 className="desktop-sidebar"
                 style={{
-                  width: 236,
+                  width: 256,
                   flexShrink: 0,
-                  background: "var(--primary-dark)",
+                  background: "var(--primary)",
                   color: "#fff",
                   flexDirection: "column",
                   position: "sticky",
                   top: 0,
                   height: "100vh",
+                  borderRight: "1px solid var(--primary-container)",
                 }}
               >
-                <div style={{ padding: "20px 20px 16px" }}>
+                <div style={{ padding: "24px 16px 24px", display: "flex", alignItems: "center", gap: 12 }}>
                   {branding.logoUrl ? (
                     <img
                       src={branding.logoUrl}
-                      alt={branding.academyName}
-                      style={{ maxWidth: 180, maxHeight: 40, objectFit: "contain", display: "block", marginBottom: 6 }}
+                      alt=""
+                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "contain", background: "var(--surface)", flexShrink: 0 }}
                     />
                   ) : (
-                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <Icon name="football" size={22} style={{ color: "var(--accent)", flexShrink: 0 }} />
-                      <div
-                        style={{
-                          fontSize: 21,
-                          fontWeight: 800,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {branding.academyName}
-                      </div>
-                    </div>
-                  )}
-                  {branding.logoUrl && (
                     <div
                       style={{
-                        fontSize: 15,
-                        fontWeight: 800,
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "var(--primary-container)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon name="football" size={20} style={{ color: "var(--accent)" }} />
+                    </div>
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-headline)",
+                        fontSize: 20,
+                        fontWeight: 700,
+                        lineHeight: 1.15,
+                        color: "#fff",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        marginTop: 6,
                       }}
                     >
                       {branding.academyName}
                     </div>
-                  )}
-                  <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.6, marginTop: 4 }}>Powered by Touchline</div>
+                    <div style={{ fontSize: 12, color: "var(--primary-fixed-dim)", marginTop: 1 }}>Powered by Touchline</div>
+                  </div>
                 </div>
 
                 <SidebarNav items={navItems} />
 
-                <div style={{ padding: "16px 20px 20px", borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <div style={{ padding: "16px 16px 20px", borderTop: "1px solid var(--primary-container)", marginTop: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "0 8px" }}>
                     <Avatar name={session.name} src={photoUrl} size={36} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
-                      <div style={{ fontSize: 11, opacity: 0.65 }}>{roleLabel(session.role)}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--primary-fixed-dim)" }}>{roleLabel(session.role)}</div>
                     </div>
                   </div>
                   <form action={logout}>
@@ -213,15 +171,15 @@ export default async function RootLayout({
                         alignItems: "center",
                         justifyContent: "center",
                         gap: 8,
-                        padding: "8px 10px",
-                        background: "rgba(255,255,255,0.07)",
-                        color: "#fff",
-                        border: "1px solid rgba(255,255,255,0.18)",
+                        padding: "9px 10px",
+                        background: "transparent",
+                        color: "var(--primary-fixed-dim)",
+                        border: "1px solid var(--primary-container)",
                         borderRadius: 8,
                         cursor: "pointer",
                         fontSize: 12.5,
                         fontWeight: 600,
-                        transition: "background var(--transition)",
+                        transition: "background var(--transition), color var(--transition)",
                       }}
                     >
                       <Icon name="logout" size={15} />
@@ -232,8 +190,7 @@ export default async function RootLayout({
               </aside>
 
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <TopHeader name={session.name} role={session.role} photoUrl={photoUrl} />
-                <main style={{ flex: 1, padding: "28px 28px 48px", width: "100%", maxWidth: 1060, margin: "0 auto" }}>{children}</main>
+                <main style={{ flex: 1, padding: "28px 32px 48px", width: "100%", maxWidth: 1100, margin: "0 auto" }}>{children}</main>
               </div>
             </div>
           </div>

@@ -5,27 +5,17 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import type { NavItem } from "@/lib/navItems";
 
-// Desktop sidebar. Active item gets a soft highlight pill - the football
-// accent stays subtle via the pitch-green palette and amber active marker.
-// Items are resolved server-side (permission-aware) and passed in.
+// Desktop sidebar nav, styled per the Stitch exports: deep pitch background
+// (owned by the aside in layout.tsx), inactive items in primary-fixed-dim,
+// active item marked by a 4px secondary-fixed right bar on a
+// primary-container surface. Items are resolved server-side
+// (permission-aware) and passed in — never hardcoded per screen.
 
 export function SidebarNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
     <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: "0 12px", overflowY: "auto" }}>
-      <div
-        style={{
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          opacity: 0.55,
-          padding: "4px 10px 8px",
-        }}
-      >
-        Menu
-      </div>
       {items.map((item) => {
         const active = pathname === item.href;
         return (
@@ -35,14 +25,15 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 11,
-              padding: "9px 10px",
-              color: active ? "#fff" : "#d9e6df",
+              gap: 12,
+              padding: "10px 14px",
+              color: active ? "var(--secondary-fixed)" : "var(--primary-fixed-dim)",
               textDecoration: "none",
               fontSize: 13.5,
               fontWeight: active ? 700 : 500,
               borderRadius: 8,
-              background: active ? "var(--secondary)" : "transparent",
+              borderRight: active ? "4px solid var(--secondary-fixed)" : "4px solid transparent",
+              background: active ? "var(--primary-container)" : "transparent",
               transition: "background var(--transition), color var(--transition)",
             }}
           >
@@ -50,6 +41,7 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
             <span style={{ flex: 1, minWidth: 0 }}>{item.label}</span>
             {item.badge ? (
               <span
+                className="label-caps"
                 style={{
                   minWidth: 18,
                   height: 18,
@@ -57,8 +49,6 @@ export function SidebarNav({ items }: { items: NavItem[] }) {
                   borderRadius: "var(--radius-pill)",
                   background: "var(--accent)",
                   color: "var(--primary-dark)",
-                  fontSize: 11,
-                  fontWeight: 800,
                   lineHeight: "18px",
                   textAlign: "center",
                   flexShrink: 0,

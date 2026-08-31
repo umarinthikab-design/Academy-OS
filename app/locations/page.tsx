@@ -5,6 +5,7 @@ import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Badge } from "@/components/ui/Badge";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 
@@ -59,25 +60,29 @@ export default async function LocationsPage({
           message="Add your first training ground above to get started."
         />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {locations.map((l) => (
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-muted)", display: "flex", alignItems: "center", gap: 8 }}>
+            <Icon name="pin" size={16} style={{ color: "var(--secondary)" }} />
+            <span style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>Locations</span>
+            <Badge tone="muted" style={{ marginLeft: "auto" }}>{locations.length}</Badge>
+          </div>
+          {locations.map((l, idx) => (
             <div
               key={l.id}
               style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                padding: "12px 16px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                padding: "12px 16px",
+                ...(idx > 0 ? { borderTop: "1px solid var(--border)" } : {}),
+                background: idx % 2 === 1 ? "var(--surface-muted)" : "var(--surface)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--surface-muted)", color: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--surface-container)", color: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name="pin" size={16} />
                 </span>
-                <span style={{ fontWeight: 700, fontSize: 14 }}>{l.name}</span>
+                <span style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--primary)" }}>{l.name}</span>
               </div>
               {canEdit && (
                 <ConfirmDeleteButton

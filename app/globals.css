@@ -1,35 +1,46 @@
-/* Touchline design system
+/* Touchline design system — mapped from the Stitch export (touchline/DESIGN.md).
    Tokens live here; pages/components reference these variables so the whole
    app shares one visual language. Keep legacy aliases (--pitch, --turf,
    --chalk, --amber, --clay) so nothing breaks mid-migration. */
 
 :root {
-  /* Brand */
-  --primary: #0b3d2e;
-  --primary-dark: #06271e;
-  --primary-light: #0f4d3a;
-  --secondary: #16a34a;
-  --accent: #a3e635;
+  /* Brand — Deep Pitch Green primary, Live Grass secondary, Chalk/Lime accent */
+  --primary: #00261b;
+  --primary-dark: #00150f;
+  --primary-light: #214f3f;
+  --primary-container: #0b3d2e;
+  --secondary: #006e2d;
+  --accent: #b2f746;
 
-  /* Surfaces */
-  --bg: #f5f7f6;
+  /* Surfaces — Chalk white background, tonal containers (Level 0 → 4) */
+  --bg: #f1fcf6;
   --surface: #ffffff;
-  --surface-muted: #f3f5f4;
+  --surface-muted: #ebf6f1;
+  --surface-container: #e5f1eb;
+  --surface-high: #dfebe5;
+  --surface-highest: #dae5e0;
 
   /* Text */
-  --text: #111827;
-  --text-muted: #6b7280;
-  --text-faint: #9ca3af;
+  --text: #141e1a;
+  --text-muted: #414944;
+  --text-faint: #717974;
 
-  /* Lines & states */
-  --border: #e5e7eb;
+  /* Lines & states — "chalk lines" plus yellow/red card status colors */
+  --border: #c0c8c3;
+  --surface-tint: #396756;
+  --primary-fixed-dim: #a0d1bc;
+  --secondary-fixed: #7ffc97;
+  --secondary-fixed-dim: #62df7d;
   --warning: #f59e0b;
-  --warning-bg: #fffbeb;
+  --warning-bg: #fef3c7;
   --error: #ef4444;
-  --error-bg: #fef2f2;
+  --error-bg: #fee2e2;
   --success: #22c55e;
-  --success-bg: #f0fdf4;
+  --success-bg: #dcfce7;
   --info-bg: #eff6ff;
+
+  /* Pitch-line watermark strokes (login/hero surfaces only) */
+  --pitch-line: #e2e8f0;
 
   /* Legacy aliases */
   --pitch: var(--primary);
@@ -38,13 +49,18 @@
   --amber: var(--warning);
   --clay: var(--error);
 
-  /* Radius */
+  /* Typography — Archivo Narrow headlines, Inter body/data (next/font) */
+  --font-headline: var(--font-archivo-narrow), "Arial Narrow", sans-serif;
+  --font-body: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  --font-mono-label: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, monospace;
+
+  /* Radius — soft-modular: cards 16px, inputs/buttons 8px, badges pill */
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 16px;
   --radius-pill: 999px;
 
-  /* Shadows */
+  /* Shadows — tonal layers first; diffused shadow only for floating UI */
   --shadow-sm: 0 1px 2px rgba(6, 39, 30, 0.06);
   --shadow: 0 1px 3px rgba(6, 39, 30, 0.08), 0 1px 2px rgba(6, 39, 30, 0.04);
   --shadow-md: 0 4px 12px -2px rgba(6, 39, 30, 0.12), 0 2px 4px -2px rgba(6, 39, 30, 0.08);
@@ -56,25 +72,34 @@
 
 /* ── Dark theme ─────────────────────────────────────────────
    data-theme="dark" on <html> overrides the same tokens so every
-   component that uses var() picks up the dark palette automatically. */
+   component that uses var() picks up the dark palette automatically.
+   Level 0 is Deep Pitch Green in dark mode; cards sit on elevated
+   dark-green containers (#132019 stroke tone from DESIGN.md). */
 
 :root[data-theme="dark"] {
-  --primary: #2e7d57;
-  --primary-dark: #0a1813;
+  --primary: #00261b;
+  --primary-dark: #000f0a;
   --primary-light: #3b9469;
-  --secondary: #22c55e;
-  --accent: #a3e635;
+  --primary-container: #0b3d2e;
+  --secondary: #62df7d;
+  --accent: #b2f746;
 
-  --bg: #0b1512;
+  --bg: #0b1410;
   --surface: #132019;
   --surface-muted: #1a2a21;
+  --surface-container: #1e2b24;
+  --surface-high: #24332b;
+  --surface-highest: #2a3b31;
 
-  --text: #e5e7eb;
-  --text-muted: #9ca3af;
-  --text-faint: #6b7280;
+  --text: #e8f3ee;
+  --text-muted: #9fb3a9;
+  --text-faint: #6d7f76;
 
-  --border: #2a3d33;
-
+  --border: #26362e;
+  --surface-tint: #396756;
+  --primary-fixed-dim: #a0d1bc;
+  --secondary-fixed: #7ffc97;
+  --secondary-fixed-dim: #62df7d;
   --warning: #fbbf24;
   --warning-bg: #3a2f14;
   --error: #f87171;
@@ -82,6 +107,8 @@
   --success: #4ade80;
   --success-bg: #143324;
   --info-bg: #14283d;
+
+  --pitch-line: #132019;
 
   --pitch: var(--primary);
   --turf: var(--secondary);
@@ -108,25 +135,68 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Condensed "scoreboard" headlines (DESIGN.md typography) */
 h1,
 h2,
 h3,
 h4 {
   margin: 0;
+  font-family: var(--font-headline);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.15;
   letter-spacing: -0.01em;
   color: var(--text);
 }
 
 a {
   color: var(--secondary);
+}
+
+/* Technical label style — IDs, timestamps, table headers (label-caps) */
+.label-caps {
+  font-family: var(--font-mono-label);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mono-data {
+  font-family: var(--font-mono-label);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Pitch-line watermark (login + hero surfaces only) ──────
+   1px chalk strokes: halfway line + center circle + penalty-box corner.
+   Stroke color flips with the theme via --pitch-line (light #e2e8f0 /
+   dark #132019), always rendered at low opacity per the design notes. */
+
+.pitch-lines {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.55;
+}
+
+.pitch-lines svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pitch-lines .stroke {
+  stroke: var(--pitch-line);
+  fill: none;
+  stroke-width: 1;
 }
 
 /* ── Layout shell ─────────────────────────────────────────── */
@@ -148,7 +218,7 @@ a {
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    background: var(--primary-dark);
+    background: var(--primary);
     color: #fff;
     position: sticky;
     top: 0;
@@ -176,6 +246,22 @@ a {
 
 @media (max-width: 700px) {
   .rollup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Player detail two-column layout ──────────────────────
+   5:3 split on desktop matching the Stitch 8/4 grid proportion.
+   Stacks vertically on narrow screens. */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 5fr 3fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -248,7 +334,7 @@ a {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--border);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;

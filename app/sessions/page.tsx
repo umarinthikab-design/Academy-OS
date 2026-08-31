@@ -77,40 +77,45 @@ export default async function SessionsPage({
       <StatusBanner error={params.error} success={params.success} />
 
       {canSuggest && (
-        <CollapsibleCreate title="Create a session plan">
-          <form action={createSession}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Plan name</label>
-            <input name="name" required placeholder="e.g. Passing patterns - warmup" style={{ ...inputBase, marginBottom: 12 }} />
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+          <CollapsibleCreate title="Create a session plan" style={{ width: "100%", maxWidth: 640, marginBottom: 0 }}>
+            <form action={createSession}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 5 }}>Plan name</label>
+              <input name="name" required placeholder="e.g. Passing patterns - warmup" style={{ ...inputBase, marginBottom: 14 }} />
 
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Drills (in order)</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginBottom: 12 }}>
-              {approvedDrills.map((d) => (
-                <label key={d.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category} · {d.duration}m</span>
-                </label>
-              ))}
-              {approvedDrills.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
-            </div>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 5 }}>Drills (in order)</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginBottom: 12, background: "var(--surface-muted)" }}>
+                {approvedDrills.map((d) => (
+                  <label key={d.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category} · {d.duration}m</span>
+                  </label>
+                ))}
+                {approvedDrills.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
+              </div>
 
-            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-              Create Plan
-            </button>
-            <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
-          </form>
-        </CollapsibleCreate>
+              <button type="submit" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
+                <Icon name="plus" size={15} /> Create Plan
+              </button>
+              <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
+            </form>
+          </CollapsibleCreate>
+        </div>
       )}
 
       {/* Pending share approvals */}
       {pendingShares.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
-            Share requests pending review <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({pendingShares.length})</span>
-          </h3>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
+            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+              Share requests pending review
+            </h3>
+            <span style={{ fontSize: 13, color: "var(--text-faint)", fontWeight: 600 }}>({pendingShares.length})</span>
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {pendingShares.map(({ request: r, detail }) => {
               if (!detail) return null;
               return (
-                <div key={r.id} style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: "var(--radius)", padding: "12px 16px" }}>
+                <div key={r.id} style={{ background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: "var(--radius-lg)", padding: "14px 16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 13 }}>
                       <strong>{detail.detail}</strong> <span style={{ color: "var(--text-muted)" }}>· shared by {r.requestedBy.user.name}</span>
@@ -174,9 +179,12 @@ export default async function SessionsPage({
       )}
 
       {/* My plans */}
-      <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
-        My plans <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({mySessions.length})</span>
-      </h3>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+          My plans
+        </h3>
+        <span style={{ fontSize: 13, color: "var(--text-faint)", fontWeight: 600 }}>({mySessions.length})</span>
+      </div>
 
       {mySessions.length === 0 ? (
         <div style={{ marginBottom: 28 }}>
@@ -187,14 +195,14 @@ export default async function SessionsPage({
           />
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
-          {mySessions.map((s) => (
-            <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <strong style={{ fontSize: 15 }}>{s.name}</strong>
-                  {statusBadge(s)}
-                </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16, marginBottom: 28 }}>
+          {mySessions.map((s) => {
+            const totalMins = s.drills.reduce((sum, sd) => sum + sd.drill.duration, 0);
+            return (
+            <div key={s.id} style={{ position: "relative", overflow: "hidden", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 18, boxShadow: "var(--shadow-sm)", display: "flex", flexDirection: "column" }}>
+              <div style={{ position: "absolute", top: 0, right: 0, width: 96, height: 96, background: "var(--surface-muted)", borderBottomLeftRadius: Math.round(96 / 2), opacity: 0.6 }} aria-hidden="true" />
+              <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                <div>{statusBadge(s)}</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {s.shareStatus === null && (
                     <form action={shareSession.bind(null, s.id)}>
@@ -218,10 +226,31 @@ export default async function SessionsPage({
                 </div>
               </div>
 
-              <div style={{ marginTop: 10 }}>
+              <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", lineHeight: 1.2, marginBottom: 6, position: "relative" }}>{s.name}</h4>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 16, color: "var(--text-muted)", marginBottom: 12, position: "relative", fontSize: 13 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <Icon name="clock" size={15} /> {totalMins}m
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <Icon name="drills" size={15} /> {s.drills.length} Drill{s.drills.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              <div style={{ width: "100%", height: 6, background: "var(--surface-high)", borderRadius: 999, overflow: "hidden", display: "flex", gap: 4, marginBottom: 12, position: "relative" }}>
+                {s.drills.length > 0 ? (
+                  s.drills.map((sd, i) => (
+                    <div key={sd.id} style={{ flex: 1, background: i % 3 === 1 ? "var(--secondary-fixed-dim)" : "var(--surface-tint)", height: "100%", borderRadius: 999 }} />
+                  ))
+                ) : (
+                  <div style={{ flex: 1, background: "var(--surface-highest)", height: "100%" }} />
+                )}
+              </div>
+
+              <div style={{ marginTop: "auto", borderTop: "1px solid var(--border)", paddingTop: 10, position: "relative" }}>
                 {s.drills.map((sd, i) => (
-                  <div key={sd.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "3px 0" }}>
-                    <span style={{ color: "var(--text-faint)", width: 18 }}>{i + 1}.</span>
+                  <div key={sd.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0" }}>
+                    <span style={{ color: "var(--text-faint)", width: 18, fontFamily: "var(--font-mono-label)", fontWeight: 700 }}>{i + 1}.</span>
                     <span style={{ flex: 1 }}>{sd.drill.name}</span>
                     <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{sd.drill.category} · {sd.drill.duration}m</span>
                     <div style={{ display: "flex", gap: 4 }}>
@@ -236,25 +265,33 @@ export default async function SessionsPage({
                 ))}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Team-shared plans (view-only) */}
       {teamSessions.length > 0 && (
         <div>
-          <h3 style={{ fontSize: 16, margin: "0 0 12px" }}>
-            Team plans <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({teamSessions.length})</span>
-          </h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
+            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+              Team plans
+            </h3>
+            <span style={{ fontSize: 13, color: "var(--text-faint)", fontWeight: 600 }}>({teamSessions.length})</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
             {teamSessions.map((s) => (
-              <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "12px 16px" }}>
-                <strong>{s.name}</strong>
-                <span style={{ fontSize: 11, color: "var(--text-muted)", marginLeft: 8 }}>· by {s.createdBy.user.name}</span>
-                <div style={{ marginTop: 6, fontSize: 13 }}>
+              <div key={s.id} style={{ position: "relative", overflow: "hidden", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 18, boxShadow: "var(--shadow-sm)", display: "flex", flexDirection: "column" }}>
+                <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, background: "var(--surface-muted)", borderBottomLeftRadius: 40, opacity: 0.6 }} aria-hidden="true" />
+                <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
+                  <Badge tone="green">Team</Badge>
+                  <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>by {s.createdBy.user.name}</span>
+                </div>
+                <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", lineHeight: 1.2, marginBottom: 8, position: "relative" }}>{s.name}</h4>
+                <div style={{ marginTop: "auto", borderTop: "1px solid var(--border)", paddingTop: 10, position: "relative" }}>
                   {s.drills.map((sd, i) => (
-                    <div key={sd.id} style={{ padding: "2px 0" }}>
-                      <span style={{ color: "var(--text-faint)", marginRight: 4 }}>{i + 1}.</span> {sd.drill.name}
+                    <div key={sd.id} style={{ padding: "3px 0", fontSize: 13 }}>
+                      <span style={{ color: "var(--text-faint)", marginRight: 6, fontFamily: "var(--font-mono-label)", fontWeight: 700 }}>{i + 1}.</span> {sd.drill.name}
                     </div>
                   ))}
                 </div>

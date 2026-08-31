@@ -74,7 +74,7 @@ export function MobileNav({
               position: "relative",
               width: 280,
               maxWidth: "84vw",
-              background: "var(--primary-dark)",
+              background: "var(--primary)",
               color: "#fff",
               height: "100%",
               display: "flex",
@@ -149,12 +149,13 @@ export function MobileNav({
                       alignItems: "center",
                       gap: 11,
                       padding: "11px 10px",
-                      color: active ? "#fff" : "#d9e6df",
                       textDecoration: "none",
                       fontSize: 14,
                       fontWeight: active ? 700 : 500,
                       borderRadius: 8,
-                      background: active ? "var(--secondary)" : "transparent",
+                      background: active ? "var(--primary-container)" : "transparent",
+                      borderRight: active ? "4px solid var(--secondary-fixed)" : "4px solid transparent",
+                      color: active ? "var(--secondary-fixed)" : "var(--primary-fixed-dim)",
                     }}
                   >
                     <Icon name={item.icon} size={18} />

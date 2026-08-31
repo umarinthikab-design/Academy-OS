@@ -1,21 +1,13 @@
-// CoachDashboard - everything is scoped to the logged-in coach's CURRENT
-// database assignments (primary focus age groups + main batches, derived in
-// lib/assignments.ts). Reassign the coach in the DB and this dashboard
-// changes on the next render — no hardcoded teams anywhere.
-
 import { prisma } from "@/lib/prisma";
-import { DashboardHero } from "./DashboardHero";
-import { TeamSelector } from "./TeamSelector";
-import { QuickActions } from "./QuickActions";
+import { SessionConfirmations } from "./SessionConfirmations";
 import { ApprovalInbox } from "./ApprovalInbox";
 import { MyRequests } from "./MyRequests";
-import { SessionConfirmations } from "./SessionConfirmations";
 import { StaffingAlerts } from "./StaffingAlerts";
-import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Badge } from "@/components/ui/Badge";
+import { StatusPill } from "@/components/ui/StatusPill";
 import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
+import { CoachDashboardClient } from "./CoachDashboardClient";
 import type { DashboardScope } from "@/lib/assignments";
 import type { Permissions } from "@/lib/permissions";
 
@@ -45,32 +37,21 @@ export async function CoachDashboard({
 
   const activeTeam = scope.teams.find((t) => t.id === team) ?? null;
 
-  // ── Empty assignment state ───────────────────────────────────
   if (scope.ageGroupIds.length === 0 && scope.batchIds.length === 0) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <DashboardHero
-          name={userName}
-          subtitle={<span>Welcome to {academyName}{userName ? ", coach." : "."}</span>}
-        />
         <EmptyState
           icon="squad"
           title="No squad or batch assignments yet"
-          message="You don't currently have any squad or batch assignments. Once an administrator assigns you to a team, your sessions, players and schedule will appear here. Contact your club administrator if this is unexpected."
+          message="You don't currently have any squad or batch assignments. Once an administrator assigns you to a team, your sessions, players and schedule will appear here."
         />
         <SessionConfirmations perms={perms} />
         <ApprovalInbox perms={perms} />
         <MyRequests perms={perms} />
-        {(perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId)) && (
-          <StaffingAlerts perms={perms} />
-        )}
       </div>
     );
   }
 
-  // ── Scoped where clauses ─────────────────────────────────────
-  // Sessions relevant to this coach: belongs to one of their assigned age
-  // groups/batches, OR they're explicitly assigned as head/assistant.
   const teamScopedAgeGroups = activeTeam && activeTeam.kind === "ageGroup" ? [activeTeam.id] : scope.ageGroupIds;
   const teamScopedBatches = activeTeam && activeTeam.kind === "batch" ? [activeTeam.id] : scope.batchIds;
 
@@ -85,8 +66,6 @@ export async function CoachDashboard({
     ],
   };
 
-  // Players this coach is responsible for: members of any batch under their
-  // assigned age groups, or members of their main batches.
   const playerWhere = {
     OR: [
       { batches: { some: { ageGroupId: { in: teamScopedAgeGroups } } } },
@@ -127,172 +106,295 @@ export async function CoachDashboard({
   const attended = monthAttendance.filter((a) => a.status === "ATTENDED").length;
   const attendanceRate = monthAttendance.length > 0 ? Math.round((attended / monthAttendance.length) * 100) : 0;
 
-  // Today's sessions for the "what do I need to do right now" card.
-  const todaysSessions = mySessions.filter((s) => sessionStart(s.date, s.startTime) >= todayStart && s.date < new Date(todayStart.getTime() + 86400000));
+  const todaysSessions = mySessions.filter(
+    (s) => sessionStart(s.date, s.startTime) >= todayStart && s.date < new Date(todayStart.getTime() + 86400000)
+  );
   const nextSession = mySessions.find((s) => sessionStart(s.date, s.startTime) > now) ?? todaysSessions[0] ?? null;
   const priority = todaysSessions[0] ?? nextSession;
 
-  // Per-team attendance (for My Squads cards).
-  const teamStats = scope.teams.map((t) => {
-    const rows = monthAttendance.filter((a) =>
-      t.kind === "ageGroup" ? a.scheduledSession.ageGroupId === t.id : a.scheduledSession.batchId === t.id
-    );
-    const att = rows.filter((a) => a.status === "ATTENDED").length;
-    return {
-      team: t,
-      attended: att,
-      total: rows.length,
-      rate: rows.length > 0 ? Math.round((att / rows.length) * 100) : null,
-      players: myPlayers.filter((p) => t.kind === "ageGroup" ? p.batches.some((b) => b.ageGroupId === t.id) : true).length,
-    };
-  });
+  const cardStyle: React.CSSProperties = {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    borderRadius: "var(--radius-lg)",
+    padding: 16,
+    position: "relative",
+    overflow: "hidden",
+  };
 
-  const heroActions = (
-    <a
-      href="/schedule"
-      style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 16px", background: "#fff", color: "var(--primary)", borderRadius: 9, fontWeight: 700, fontSize: 13, textDecoration: "none" }}
-    >
-      <Icon name="calendar" size={16} /> View Schedule
-    </a>
-  );
+  const sectionHeadingStyle: React.CSSProperties = {
+    fontFamily: "var(--font-headline)",
+    fontSize: 20,
+    fontWeight: 600,
+    color: "var(--primary)",
+    marginBottom: 12,
+  };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      <DashboardHero
-        name={userName}
-        subtitle={
-          <span>
-            {priority
-              ? `${priority.ageGroup.name} training ${priority.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${priority.startTime}.`
-              : "No upcoming sessions for your teams right now."}
-          </span>
-        }
-        actions={heroActions}
-      />
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 80 }}>
+      {priority && (
+        <section style={cardStyle}>
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 4,
+              height: "100%",
+              background: "var(--error)",
+              borderRadius: "var(--radius-lg) 0 0 var(--radius-lg)",
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 16, paddingLeft: 4 }}>
+            <div
+              style={{
+                background: "var(--error-bg)",
+                padding: 8,
+                borderRadius: "50%",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name="alert" size={20} style={{ color: "var(--error)" }} />
+            </div>
+            <div>
+              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+                Action Required
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "4px 0 0" }}>
+                {todaysSessions.includes(priority)
+                  ? `Confirm you're coaching today's ${priority.ageGroup.name} session (${priority.startTime}).`
+                  : `Next session: ${priority.ageGroup.name} on ${priority.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${priority.startTime}.`}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12, paddingLeft: 4 }}>
+            <a
+              href="/attendance"
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "12px 16px",
+                background: "var(--secondary)",
+                color: "var(--on-secondary)",
+                borderRadius: "var(--radius)",
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: "none",
+                transition: "opacity var(--transition)",
+              }}
+            >
+              <Icon name="check" size={18} />
+              Confirm
+            </a>
+            <button
+              type="button"
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "12px 16px",
+                background: "var(--surface)",
+                color: "var(--error)",
+                border: "1px solid var(--error)",
+                borderRadius: "var(--radius)",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                transition: "background var(--transition)",
+              }}
+            >
+              <Icon name="x" size={18} />
+              Can&apos;t Attend
+            </button>
+          </div>
+        </section>
+      )}
 
-      {/* My Teams selector */}
       <section>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>
-            My Teams <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({scope.teams.length})</span>
-          </h2>
-          <TeamSelector teams={scope.teams} current={team} />
-        </div>
-        {teamStats.length === 0 && (
-          <p style={{ fontSize: 12, color: "var(--text-faint)" }}>No assigned teams yet.</p>
+        <h2 style={sectionHeadingStyle}>Today&apos;s Sessions</h2>
+        {todaysSessions.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {todaysSessions.map((s) => (
+              <div key={s.id} style={cardStyle}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                      <span className="label-caps" style={{ background: "var(--surface-muted)", color: "var(--text-muted)", padding: "3px 8px", borderRadius: 4 }}>
+                        {s.ageGroup.name}{s.batch ? ` ${s.batch.name}` : ""}
+                      </span>
+                      <StatusPill tone="approved">UPCOMING</StatusPill>
+                    </div>
+                    <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+                      {s.session?.name ?? "Training Session"}
+                    </h4>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gap: 8,
+                    marginTop: 12,
+                    paddingTop: 12,
+                    borderTop: "1px solid var(--border)",
+                    fontSize: 13,
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Icon name="clock" size={16} style={{ flexShrink: 0 }} />
+                    {s.startTime} – {endTime(s.startTime, s.durationMinutes)}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Icon name="pin" size={16} style={{ flexShrink: 0 }} />
+                    {s.location.name}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, gridColumn: "span 2" }}>
+                    <Icon name="users" size={16} style={{ flexShrink: 0 }} />
+                    {s._count.playerAttendance} Players Expected
+                  </div>
+                </div>
+                <a
+                  href="/attendance"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    width: "100%",
+                    padding: "12px 16px",
+                    marginTop: 12,
+                    background: "var(--surface-muted)",
+                    color: "var(--primary)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius)",
+                    fontWeight: 600,
+                    fontSize: 14,
+                    textDecoration: "none",
+                    transition: "background var(--transition)",
+                  }}
+                >
+                  <Icon name="attendance" size={16} />
+                  Mark Attendance
+                </a>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ ...cardStyle, textAlign: "center", padding: 24 }}>
+            <Icon name="calendar" size={24} style={{ color: "var(--text-faint)", marginBottom: 8 }} />
+            <p style={{ fontSize: 13, color: "var(--text-faint)" }}>No sessions scheduled for today.</p>
+          </div>
         )}
       </section>
 
-      {/* Pre-session RSVP - confirm/decline your upcoming sessions */}
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 }}>
+        <div
+          style={{
+            ...cardStyle,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            minHeight: 128,
+            cursor: "pointer",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <Icon name="drills" size={22} style={{ color: "var(--secondary)" }} />
+            <span
+              style={{
+                background: "var(--error)",
+                color: "#fff",
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "var(--radius-pill)",
+                lineHeight: "18px",
+              }}
+            >
+              3
+            </span>
+          </div>
+          <div>
+            <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>
+              Drill Suggestions
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            ...cardStyle,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            minHeight: 128,
+            cursor: "pointer",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <Icon name="user" size={22} style={{ color: "var(--primary-container)" }} />
+            <span
+              style={{
+                background: "var(--surface-muted)",
+                color: "var(--text-muted)",
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: "var(--radius-pill)",
+                lineHeight: "18px",
+              }}
+            >
+              0
+            </span>
+          </div>
+          <div>
+            <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>
+              Leave Requests
+            </div>
+          </div>
+        </div>
+      </section>
+
       <SessionConfirmations perms={perms} />
-
-      {/* Approvals */}
       <ApprovalInbox perms={perms} />
-
-      {/* My requests */}
       <MyRequests perms={perms} />
-
-      {/* Staffing alerts - sessions where a coach hasn't confirmed / declined */}
       {(perms.isAdmin || perms.isClubManager || (perms.canApproveRequests && !!perms.coachId)) && (
         <StaffingAlerts perms={perms} />
       )}
 
-      {/* Priority card - today's / next session */}
-      {priority && (
-        <section style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", padding: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--secondary)", marginBottom: 10 }}>
-            {todaysSessions.includes(priority) ? "Today" : "Next session"}
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 20, fontWeight: 800 }}>{priority.ageGroup.name}</span>
-                {priority.batch && <Badge tone="blue">{priority.batch.name}</Badge>}
-                {priority.session && <Badge tone="green">{priority.session.name}</Badge>}
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
-                {priority.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} ·{" "}
-                {priority.startTime}–{endTime(priority.startTime, priority.durationMinutes)} · {priority.location.name}
-              </div>
-              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                <Icon name="whistle" size={13} style={{ verticalAlign: "-2px", marginRight: 4 }} />
-                {[...priority.headCoaches, ...priority.assistantCoaches].map((c) => c.user.name).join(", ") || "—"}
-              </div>
-              <div style={{ fontSize: 13, marginTop: 8 }}>
-                <Icon name="squad" size={13} style={{ verticalAlign: "-2px", marginRight: 4 }} />
-                <strong>{priority._count.playerAttendance}</strong> <span style={{ color: "var(--text-muted)" }}>players expected</span>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-start" }}>
-              <a href="/attendance" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", background: "var(--primary)", color: "#fff", borderRadius: 9, fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
-                <Icon name="attendance" size={15} /> Take Attendance
-              </a>
-              <a href="/schedule" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", background: "var(--surface)", color: "var(--secondary)", border: "1px solid var(--secondary)", borderRadius: 9, fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
-                View Session
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Stats */}
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
-        <StatCard label="My Players" value={myPlayers.length} icon="squad" tint="pitch" sub={team ? `filtered: ${activeTeam?.name}` : "across all my teams"} />
-        <StatCard label="Attendance This Month" value={`${attendanceRate}%`} icon="attendance" tint="green" sub={`${attended} of ${monthAttendance.length}`} />
-        <StatCard label="Upcoming Sessions" value={mySessions.length} icon="sessions" tint="accent" sub="for my teams" />
-        <StatCard label="Teams Assigned" value={scope.teams.length} icon="batches" tint="blue" />
-      </section>
-
-      {/* My Squads */}
-      {teamStats.length > 0 && (
+      {mySessions.length > 1 && (
         <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700 }}>My Squads</h2>
-            <a href="/squad" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
-              View squad →
-            </a>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
-            {teamStats.map(({ team: t, players, rate, attended, total }) => (
-              <div key={t.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ fontSize: 15, fontWeight: 800 }}>{t.name}</span>
-                  {t.ageGroupName && <Badge tone="blue">{t.ageGroupName}</Badge>}
-                </div>
-                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>
-                  {players} {players === 1 ? "player" : "players"}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
-                  <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--surface-muted)", overflow: "hidden" }}>
-                    <div style={{ height: "100%", borderRadius: 3, background: "var(--secondary)", width: `${rate ?? 0}%` }} />
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>
-                    {rate === null ? "—" : `${rate}%`}
-                  </span>
-                </div>
-                {rate !== null && (
-                  <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 4 }}>{attended} of {total} attended this month</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Upcoming */}
-      {mySessions.length > 0 && (
-        <section>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h2 style={{ fontSize: 17, fontWeight: 700 }}>Upcoming for your teams</h2>
+            <h2 style={sectionHeadingStyle}>Upcoming Sessions</h2>
             <a href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
-              View all →
+              View all
             </a>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {mySessions.slice(0, 5).map((s) => (
-              <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--primary)", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {mySessions.slice(1, 5).map((s) => (
+              <div key={s.id} style={{ ...cardStyle, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      background: "var(--primary)",
+                      color: "#fff",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
                     <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
                       {s.date.toLocaleDateString(undefined, { month: "short" })}
                     </span>
@@ -304,27 +406,18 @@ export async function CoachDashboard({
                       {s.batch && <span style={{ color: "var(--text-muted)", fontWeight: 500 }}> · {s.batch.name}</span>}
                     </div>
                     <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {s.date.toLocaleDateString(undefined, { weekday: "long" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.location.name}
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {s.headCoaches.map((c) => c.user.name).join(", ")}
-                      {s.assistantCoaches.length > 0 && ` + ${s.assistantCoaches.length} assistant`}
+                      {s.startTime} – {endTime(s.startTime, s.durationMinutes)} · {s.location.name}
                     </div>
                   </div>
                 </div>
-                {s.session && (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--secondary)", background: "var(--success-bg)", padding: "4px 10px", borderRadius: 20 }}>
-                    {s.session.name}
-                  </span>
-                )}
+                {s.session && <StatusPill tone="approved">{s.session.name}</StatusPill>}
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Quick actions */}
-      <QuickActions perms={perms} hasTeams={scope.teams.length > 0} />
+      <CoachDashboardClient />
     </div>
   );
 }

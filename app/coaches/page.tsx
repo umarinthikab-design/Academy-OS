@@ -71,8 +71,8 @@ export default async function CoachesPage({
   return (
     <>
       <PageHeader
-        title="Coach Roster"
-        subtitle={canEdit ? "Add coaches, set designations, and manage permissions." : "View only — you don't have edit access to the roster. Ask an administrator if you need it."}
+        title="Coaches Roster"
+        subtitle={canEdit ? "Manage technical staff, designations, and system permissions." : "View only — you don't have edit access to the roster. Ask an administrator if you need it."}
       />
 
       <StatusBanner error={params.error} success={params.success} />
@@ -96,12 +96,19 @@ export default async function CoachesPage({
         />
       ) : (
         <>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {active.length === 0 && (
-              <EmptyState icon="coaches" title="No active coaches" message="Archived coaches are listed below." />
-            )}
-            {active.map((c) => (
-              <div key={c.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {active.length === 0 && (
+                <EmptyState icon="coaches" title="No active coaches" message="Archived coaches are listed below." />
+              )}
+              {active.map((c, idx) => (
+                <div
+                  key={c.id}
+                  style={{
+                    padding: 14,
+                    ...(idx > 0 ? { borderTop: "1px solid var(--border)" } : {}),
+                  }}
+                >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <EntityHero
                     name={c.user.name}
@@ -112,6 +119,7 @@ export default async function CoachesPage({
                         <Badge tone={c.designation === "HEAD" ? "green" : "blue"}>
                           {c.designation === "HEAD" ? "Head Coach" : "Assistant Coach"}
                         </Badge>
+                        <Badge tone="green">Active</Badge>
                         {c.gender && <Badge tone="accent">{c.gender === "MALE" ? "Male" : c.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       </>
                     }
@@ -243,6 +251,7 @@ export default async function CoachesPage({
                 )}
               </div>
             ))}
+          </div>
           </div>
 
           {archived.length > 0 && (

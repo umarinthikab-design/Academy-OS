@@ -53,7 +53,7 @@ export default async function PromotePlayersPage({
                 href={`/squad/promote?batch=${b.id}`}
                 style={{
                   padding: "6px 12px",
-                  borderRadius: 20,
+                  borderRadius: "var(--radius-pill)",
                   border: `1px solid ${b.id === sourceBatch.id ? "var(--secondary)" : "var(--border)"}`,
                   background: b.id === sourceBatch.id ? "var(--secondary)" : "var(--surface)",
                   color: b.id === sourceBatch.id ? "#fff" : "var(--text)",
@@ -67,7 +67,7 @@ export default async function PromotePlayersPage({
             ))}
           </div>
 
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 18, boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 24, boxShadow: "var(--shadow-sm)" }}>
             <PromoteForm
               sourceBatch={{ id: sourceBatch.id, name: `${sourceBatch.name} (${sourceBatch.ageGroup.name})` }}
               targetBatchId={targetBatches[0]?.id ?? sourceBatch.id}
