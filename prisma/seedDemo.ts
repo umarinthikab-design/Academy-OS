@@ -1,6 +1,6 @@
-import { PrismaClient, Designation, AgeGroupCategory, PlayerAttendanceStatus, CoachAttendanceStatus } from "@prisma/client";
+import { PrismaClient, Designation, PlayerAttendanceStatus, CoachAttendanceStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { calculateAge, defaultSkillsForAge } from "../lib/skills";
+import { calculateAge, getSkillBandForAge, SKILL_BAND_META, type SkillBand } from "../lib/skills";
 
 // Demo data generator. Run with `npm run seed:demo`. Safe to re-run: it first
 // deletes everything it created previously (identified by the @demo.touchline.local
@@ -86,6 +86,12 @@ async function main() {
   const byName = Object.fromEntries(ageGroups.map((ag) => [ag.name, ag.id]));
   const locId = (await prisma.location.findUnique({ where: { name: "CR7, Colombo 03" } }))?.id;
 
+  const skillDefs = await prisma.skillDefinition.findMany({ orderBy: { sortOrder: "asc" } });
+  const skillBands: SkillBand[] = SKILL_BAND_META.map((meta) => ({
+    ...meta,
+    skills: skillDefs.filter((d) => d.band === meta.label).map((d) => d.name),
+  }));
+
   console.log("Creating demo users...");
   const hashed = await bcrypt.hash(DEMO_PASSWORD, 10);
 
@@ -141,7 +147,7 @@ async function main() {
   const mkPlayer = async (name: string, dob: Date, batchId: string, opts: { joinedDaysAgo?: number; emergency?: [string, string]; medical?: string; position?: string; skills?: [string, number][] } = {}) => {
     // Skills default to the player's age band, matching the createPlayer
     // action so the demo roster behaves like a real one.
-    const skills = opts.skills ?? defaultSkillsForAge(calculateAge(dob)).map((skillName) => [skillName, 2] as [string, number]);
+    const skills = opts.skills ?? getSkillBandForAge(skillBands, calculateAge(dob)).skills.map((skillName) => [skillName, 2] as [string, number]);
     return await prisma.player.create({
       data: {
         name,
@@ -192,11 +198,13 @@ async function main() {
   const players = [pU6a, pU6b, pU8a, pU8b, pU10a, pU10b, pU10c, pU10d, pU12a, pU12b, pU12c, pU14a, pU14b];
 
   console.log("Creating demo drills...");
-  const mkDrill = (name: string, category: string, duration: number, ageNames: string[], createdById: string, extra: { status?: "APPROVED" | "PENDING"; playerRange?: string; description?: string } = {}) => {
+  const drillCategories = await prisma.drillCategory.findMany();
+  const drillCategoryIdByName = Object.fromEntries(drillCategories.map((c) => [c.name, c.id]));
+  const mkDrill = (name: string, categoryName: string, duration: number, ageNames: string[], createdById: string, extra: { status?: "APPROVED" | "PENDING"; playerRange?: string; description?: string } = {}) => {
     return prisma.drill.create({
       data: {
         name,
-        category,
+        categoryId: drillCategoryIdByName[categoryName],
         duration,
         playerRange: extra.playerRange,
         description: extra.description,

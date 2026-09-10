@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PLAYER_POSITIONS, SKILL_BANDS, ALL_SKILLS, calculateAge, getSkillBandForAge } from "@/lib/skills";
+import { PLAYER_POSITIONS, calculateAge, getSkillBandForAge, type SkillBand } from "@/lib/skills";
 import { updateSkill, updatePlayerPosition, updatePlayerSkills } from "@/app/squad/actions";
 
 type SkillRow = { skillName: string; value: number; active: boolean };
@@ -11,18 +11,24 @@ type SkillRow = { skillName: string; value: number; active: boolean };
 // position selector, the 1-5 bars for active skills in a 2-column grid, the
 // average rating, and an "edit / customize skills" toggle that shows a
 // checklist of every skill in the taxonomy grouped by age band.
+//
+// This is a client component, so it can't hit the database itself - the
+// skill taxonomy (admin-managed via SkillDefinition) is fetched server-side
+// by the page that renders this card and passed down as `skillBands`.
 export function PlayerRatingCard({
   playerId,
   dateOfBirth,
   position,
   skills,
   canEdit,
+  skillBands,
 }: {
   playerId: string;
   dateOfBirth: string;
   position: string;
   skills: SkillRow[];
   canEdit: boolean;
+  skillBands: SkillBand[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -30,7 +36,8 @@ export function PlayerRatingCard({
   const [draft, setDraft] = useState<string[]>([]);
 
   const age = calculateAge(new Date(dateOfBirth));
-  const band = getSkillBandForAge(age);
+  const band = getSkillBandForAge(skillBands, age);
+  const allSkillNames = [...new Set(skillBands.flatMap((b) => b.skills))];
 
   const activeSkills = skills.filter((s) => s.active);
   // Legacy players (created before the taxonomy) may have no rows for their
@@ -43,8 +50,8 @@ export function PlayerRatingCard({
       // Unknown/legacy skill names go last so they never jump to the front.
       .slice()
       .sort((a, b) => {
-        const ia = ALL_SKILLS.indexOf(a.skillName);
-        const ib = ALL_SKILLS.indexOf(b.skillName);
+        const ia = allSkillNames.indexOf(a.skillName);
+        const ib = allSkillNames.indexOf(b.skillName);
         if (ia === -1 && ib === -1) return 0;
         if (ia === -1) return 1;
         if (ib === -1) return -1;
@@ -166,7 +173,7 @@ export function PlayerRatingCard({
             Select skills to show for this player
             <span style={{ fontWeight: 500, color: "var(--text-faint)" }}> — age band: {band.ageLabel} {band.label}</span>
           </div>
-          {SKILL_BANDS.map((b) => (
+          {skillBands.map((b) => (
             <div key={b.label} style={{ marginBottom: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
                 {b.ageLabel} · {b.label}

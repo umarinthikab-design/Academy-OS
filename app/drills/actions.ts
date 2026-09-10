@@ -30,13 +30,13 @@ export async function createDrill(formData: FormData) {
   if (!perms.canAuthorDrills) redirect("/drills?error=no_permission");
 
   const name = formData.get("name") as string;
-  const category = formData.get("category") as string;
+  const categoryId = formData.get("categoryId") as string;
   const duration = Number(formData.get("duration"));
   const playerRange = formData.get("playerRange") as string;
   const description = formData.get("description") as string;
   const ageGroupIds = formData.getAll("ageGroups") as string[];
 
-  if (!name || !category || !duration) redirect("/drills?error=missing_fields");
+  if (!name || !categoryId || !duration) redirect("/drills?error=missing_fields");
 
   // Coaches who can approve requests publish straight into the library (no
   // approval round-trip on their own suggestion). Everyone else submits a
@@ -45,7 +45,7 @@ export async function createDrill(formData: FormData) {
   const drill = await prisma.drill.create({
     data: {
       name,
-      category,
+      categoryId,
       duration,
       playerRange,
       description,
@@ -72,19 +72,19 @@ export async function updateDrill(drillId: string, formData: FormData) {
   if (!perms.canEditDrills) redirect("/drills?error=no_permission");
 
   const name = formData.get("name") as string;
-  const category = formData.get("category") as string;
+  const categoryId = formData.get("categoryId") as string;
   const duration = Number(formData.get("duration"));
   const playerRange = formData.get("playerRange") as string;
   const description = formData.get("description") as string;
   const ageGroupIds = formData.getAll("ageGroups") as string[];
 
-  if (!name || !category || !duration) redirect("/drills?error=missing_fields");
+  if (!name || !categoryId || !duration) redirect("/drills?error=missing_fields");
 
   await prisma.drill.update({
     where: { id: drillId },
     data: {
       name,
-      category,
+      categoryId,
       duration,
       playerRange,
       description,
@@ -182,12 +182,71 @@ export async function deleteDrill(id: string) {
   const drill = await prisma.drill.findUnique({ where: { id }, select: { name: true } });
   if (!drill) redirect("/drills");
 
+  // "drill_in_use", not the generic "in_use" - deleteDrillCategory below
+  // uses a different code (category_in_use) for the same reason: StatusBanner
+  // resolves each code to its own specific message, and these two blocks
+  // mean different things to the person reading the banner.
   const inUse = await prisma.sessionDrill.count({ where: { drillId: id } });
-  if (inUse > 0) redirect("/drills?error=in_use");
+  if (inUse > 0) redirect("/drills?error=drill_in_use");
 
   await prisma.drill.delete({ where: { id } });
   if (perms.userId) await logActivity(perms.userId, "deleted_drill", "Drill", id, drill.name);
   revalidatePath("/drills");
   revalidatePath("/sessions");
   redirect("/drills?success=Drill deleted permanently.");
+}
+
+// Category management (add/rename/delete the DrillCategory rows themselves)
+// is a structural, academy-wide decision - gated to isAdmin/isClubManager
+// only, not the canSuggestDrills/canAuthorDrills rules that govern day-to-day
+// drill creation above.
+export async function createDrillCategory(formData: FormData) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/drills?error=no_permission");
+
+  const name = formData.get("name") as string;
+  if (!name?.trim()) redirect("/drills?error=missing_fields");
+
+  const count = await prisma.drillCategory.count();
+  try {
+    const category = await prisma.drillCategory.create({ data: { name: name.trim(), sortOrder: count } });
+    if (perms.userId) await logActivity(perms.userId, "created_drill_category", "DrillCategory", category.id, category.name);
+  } catch {
+    redirect("/drills?error=duplicate_name");
+  }
+  revalidatePath("/drills");
+  redirect(`/drills?success=${encodeURIComponent(`${name.trim()} category added.`)}`);
+}
+
+export async function renameDrillCategory(id: string, formData: FormData) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/drills?error=no_permission");
+
+  const name = formData.get("name") as string;
+  if (!name?.trim()) redirect("/drills?error=missing_fields");
+
+  try {
+    await prisma.drillCategory.update({ where: { id }, data: { name: name.trim() } });
+  } catch {
+    redirect("/drills?error=duplicate_name");
+  }
+  if (perms.userId) await logActivity(perms.userId, "renamed_drill_category", "DrillCategory", id, name.trim());
+  revalidatePath("/drills");
+  redirect("/drills?success=Category renamed.");
+}
+
+export async function deleteDrillCategory(id: string) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/drills?error=no_permission");
+
+  // Distinct error code from deleteDrill's "in_use" - drills/page.tsx maps
+  // that one to a drill-specific message ("used in a session plan"), which
+  // would be wrong here.
+  const inUse = await prisma.drill.count({ where: { categoryId: id } });
+  if (inUse > 0) redirect("/drills?error=category_in_use");
+
+  await prisma.drillCategory.delete({ where: { id } });
+  if (perms.userId) await logActivity(perms.userId, "deleted_drill_category", "DrillCategory", id);
+  revalidatePath("/drills");
+  redirect("/drills?success=Category removed.");
 }

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill, archiveDrill, reactivateDrill, deleteDrill } from "./actions";
+import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill, archiveDrill, reactivateDrill, deleteDrill, createDrillCategory, renameDrillCategory, deleteDrillCategory } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -11,14 +11,6 @@ import { DrillPhotoUpload } from "@/components/ui/DrillPhotoUpload";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
-
-const ERROR_MESSAGES: Record<string, string> = {
-  no_permission: "You don't have permission to do that.",
-  missing_fields: "Please fill in all required fields.",
-  in_use: "This drill is used in a session plan, so it can't be deleted. Archive it instead.",
-};
-
-const CATEGORIES = ["Warm-up", "Passing", "Dribbling", "Shooting", "Defending", "Fun Game"];
 
 export default async function DrillsPage({
   searchParams,
@@ -32,19 +24,25 @@ export default async function DrillsPage({
   const canApprove = perms.isAdmin || perms.canApproveRequests;
   const canPublishEdit = perms.canEditDrills;
   const canManage = perms.isAdmin || perms.isClubManager;
+  // Managing categories themselves (add/rename/delete) is a structural,
+  // academy-wide decision - gated the same as canManage here, since both
+  // are isAdmin/isClubManager only. Kept as its own flag for clarity at the
+  // call sites below.
+  const canManageCategories = canManage;
 
-  const [drills, archivedDrills, ageGroups] = await Promise.all([
+  const [drills, archivedDrills, ageGroups, categories] = await Promise.all([
     prisma.drill.findMany({
       where: { archivedAt: null },
-      include: { createdBy: { include: { user: true } }, ageGroups: true, photos: { orderBy: { sortOrder: "asc" } }, feedback: { include: { author: { include: { user: true } } }, orderBy: { createdAt: "asc" } } },
+      include: { createdBy: { include: { user: true } }, category: true, ageGroups: true, photos: { orderBy: { sortOrder: "asc" } }, feedback: { include: { author: { include: { user: true } } }, orderBy: { createdAt: "asc" } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.drill.findMany({
       where: { archivedAt: { not: null } },
-      include: { createdBy: { include: { user: true } }, ageGroups: true },
+      include: { createdBy: { include: { user: true } }, category: true, ageGroups: true },
       orderBy: { archivedAt: "desc" },
     }),
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.drillCategory.findMany({ orderBy: { sortOrder: "asc" }, include: { _count: { select: { drills: true } } } }),
   ]);
 
   const approved = drills.filter((d) => d.status === "APPROVED");
@@ -73,9 +71,76 @@ export default async function DrillsPage({
         subtitle={canPublishEdit ? "Add drills, edit existing ones, and manage the library." : canSuggest ? "Suggest drills for the team library." : "Only coaches can suggest drills. You can still view the library and pending queue below."}
       />
 
-      <StatusBanner error={params.error ? ERROR_MESSAGES[params.error] ?? params.error : undefined} success={params.success} />
+      <StatusBanner error={params.error} success={params.success} />
 
-      {canCreate && (
+      {canManageCategories && (
+        <CollapsibleCreate title="Manage categories" subtitle={`${categories.length}`}>
+          <form
+            action={createDrillCategory}
+            style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16 }}
+          >
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <label style={fieldLabel}>New category name</label>
+              <input name="name" placeholder="e.g. Set Pieces" required style={inputBase} />
+            </div>
+            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Add Category
+            </button>
+          </form>
+
+          {categories.length === 0 ? (
+            <p style={{ color: "var(--text-faint)", fontSize: 13 }}>No categories yet.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {categories.map((c) => {
+                const inUse = c._count.drills > 0;
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      background: "var(--surface-muted)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{c.name}</span>
+                      <Badge tone={inUse ? "warning" : "muted"}>
+                        {inUse ? `In use · ${c._count.drills} drill${c._count.drills === 1 ? "" : "s"}` : "Not in use"}
+                      </Badge>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <details>
+                        <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
+                        <form action={renameDrillCategory.bind(null, c.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                          <input name="name" defaultValue={c.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 180 }} />
+                          <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                            Save
+                          </button>
+                        </form>
+                      </details>
+                      {!inUse && (
+                        <ConfirmDeleteButton
+                          action={deleteDrillCategory.bind(null, c.id)}
+                          confirmMessage={`Remove the "${c.name}" category? This can't be undone.`}
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CollapsibleCreate>
+      )}
+
+      {canCreate && categories.length > 0 && (
         <CollapsibleCreate title={canPublishEdit ? "Add a drill" : "Suggest a drill"}>
           <form action={createDrill}>
             <div className="form-grid-2col" style={{ gap: 12 }}>
@@ -85,9 +150,9 @@ export default async function DrillsPage({
               </div>
               <div>
                 <label style={fieldLabel}>Category</label>
-                <select name="category" required style={inputBase}>
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                <select name="categoryId" required style={inputBase}>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -147,7 +212,7 @@ export default async function DrillsPage({
                     <StatusPill tone="pending">Pending</StatusPill>
                   </div>
                   <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 4 }}>
-                    {d.category} · {d.duration}m · submitted by {d.createdBy?.user.name ?? "Staff"}
+                    {d.category.name} · {d.duration}m · submitted by {d.createdBy?.user.name ?? "Staff"}
                     {d.ageGroups.length > 0 && ` · ${d.ageGroups.map((a) => a.name).join(", ")}`}
                   </div>
                   {d.description && <p style={{ fontSize: 13, margin: "8px 0 0", color: "var(--text)" }}>{d.description}</p>}
@@ -226,7 +291,7 @@ export default async function DrillsPage({
               </div>
               <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.category}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.category.name}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.duration}m</span>
                 </div>
                 <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--primary)", margin: "0 0 6px" }}>{d.name}</h3>
@@ -270,9 +335,9 @@ export default async function DrillsPage({
                       <form action={updateDrill.bind(null, d.id)} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
                         <input name="name" defaultValue={d.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px" }} />
                         <div style={{ display: "flex", gap: 6 }}>
-                          <select name="category" defaultValue={d.category} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", flex: 1 }}>
-                            {CATEGORIES.map((c) => (
-                              <option key={c} value={c}>{c}</option>
+                          <select name="categoryId" defaultValue={d.categoryId} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", flex: 1 }}>
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                           </select>
                           <input name="duration" type="number" defaultValue={d.duration} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 70 }} />
@@ -330,7 +395,7 @@ export default async function DrillsPage({
                       <Badge tone="muted">Archived</Badge>
                     </div>
                     <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                      {d.category} · {d.duration}m · archived {d.archivedAt!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      {d.category.name} · {d.duration}m · archived {d.archivedAt!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>

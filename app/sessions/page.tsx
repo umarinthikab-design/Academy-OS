@@ -30,13 +30,14 @@ export default async function SessionsPage({
       : { shareStatus: "APPROVED" },
     include: {
       createdBy: { include: { user: true } },
-      drills: { include: { drill: true }, orderBy: { order: "asc" } },
+      drills: { include: { drill: { include: { category: true } } }, orderBy: { order: "asc" } },
     },
     orderBy: { createdAt: "desc" },
   });
 
   const approvedDrills = await prisma.drill.findMany({
     where: { status: "APPROVED", archivedAt: null },
+    include: { category: true },
     orderBy: { name: "asc" },
   });
 
@@ -87,7 +88,7 @@ export default async function SessionsPage({
               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginBottom: 12, background: "var(--surface-muted)" }}>
                 {approvedDrills.map((d) => (
                   <label key={d.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                    <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category} · {d.duration}m</span>
+                    <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category.name} · {d.duration}m</span>
                   </label>
                 ))}
                 {approvedDrills.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
@@ -252,7 +253,7 @@ export default async function SessionsPage({
                   <div key={sd.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0" }}>
                     <span style={{ color: "var(--text-faint)", width: 18, fontFamily: "var(--font-mono-label)", fontWeight: 700 }}>{i + 1}.</span>
                     <span style={{ flex: 1 }}>{sd.drill.name}</span>
-                    <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{sd.drill.category} · {sd.drill.duration}m</span>
+                    <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{sd.drill.category.name} · {sd.drill.duration}m</span>
                     <div style={{ display: "flex", gap: 4 }}>
                       <form action={reorderSessionDrill.bind(null, s.id, sd.drillId, "up")}>
                         <button type="submit" disabled={i === 0} style={{ padding: "2px 8px", fontSize: 12, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}>↑</button>

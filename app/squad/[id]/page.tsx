@@ -5,6 +5,7 @@ import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
 import { calculateAge, getSkillBandForAge } from "@/lib/skills";
+import { getSkillBands } from "@/lib/skillDefinitions";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
@@ -39,7 +40,7 @@ export default async function PlayerDetailPage({
             include: {
               ageGroup: true,
               location: true,
-              session: { include: { drills: { include: { drill: true }, orderBy: { order: "asc" } } } },
+              session: { include: { drills: { include: { drill: { include: { category: true } } }, orderBy: { order: "asc" } } } },
             },
           },
         },
@@ -55,13 +56,14 @@ export default async function PlayerDetailPage({
     const plan = att.scheduledSession.session;
     if (!plan) continue;
     for (const sd of plan.drills) {
-      categoryCounts.set(sd.drill.category, (categoryCounts.get(sd.drill.category) ?? 0) + 1);
+      categoryCounts.set(sd.drill.category.name, (categoryCounts.get(sd.drill.category.name) ?? 0) + 1);
     }
   }
   const topAreas = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
+  const skillBands = await getSkillBands();
   const age = calculateAge(player.dateOfBirth);
-  const band = getSkillBandForAge(age);
+  const band = getSkillBandForAge(skillBands, age);
 
   const activeSkills = player.skills.filter((s) => s.active);
   const visibleSkillNames = activeSkills.length > 0 ? activeSkills.map((s) => s.skillName) : band.skills;
@@ -145,6 +147,7 @@ export default async function PlayerDetailPage({
             position={player.position}
             skills={player.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
             canEdit={canEdit}
+            skillBands={skillBands}
           />
           <div style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
             {skillTrend.map(({ skillName, current, history }) => (

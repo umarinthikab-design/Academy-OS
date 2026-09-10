@@ -1,7 +1,14 @@
-// Single source of truth for the player rating system: playing positions and
-// the age-band skill taxonomy. The schema stores Player.position and
-// PlayerSkill.skillName as plain strings; these lists constrain what the UI
-// offers, so nothing gets scattered across the DB.
+// Single source of truth for the player rating system's fixed structure:
+// playing positions and the age-band boundaries. The skill dimensions
+// within each band are admin-managed (see the SkillDefinition model in
+// prisma/schema.prisma, and lib/skillDefinitions.ts for the DB-backed
+// lookups that combine them with this metadata) - only the age ranges and
+// band labels stay code-defined here.
+//
+// This file has no Prisma/DB import and stays that way: it's imported
+// directly by the client component PlayerRatingCard, which can't hit the
+// database itself and instead receives the resolved skill bands as a prop
+// from its server-rendered parent page.
 
 export const PLAYER_POSITIONS = [
   "Unassigned (Default)",
@@ -13,56 +20,34 @@ export const PLAYER_POSITIONS = [
 
 export type PlayerPosition = (typeof PLAYER_POSITIONS)[number];
 
-export type SkillBand = {
+export type SkillBandMeta = {
   label: string;
   ageLabel: string;
   minAge: number;
   maxAge: number;
-  skills: string[];
 };
 
-// Age-band skill categories. `minAge`/`maxAge` are inclusive ages used to
-// map a player's date of birth onto a band. Every player starts with the
-// skills of their band active on their card; the "customize skills" toggle
-// lets a coach add or remove skills from there.
-export const SKILL_BANDS: SkillBand[] = [
-  {
-    label: "Foundation",
-    ageLabel: "U4–U6",
-    minAge: 3,
-    maxAge: 6,
-    skills: ["Movement & Agility", "Ball Comfort", "Focus & Energy", "Social Sharing"],
-  },
-  {
-    label: "Skill Acquisition",
-    ageLabel: "U7–U10",
-    minAge: 7,
-    maxAge: 10,
-    skills: ["Dribbling & 1v1", "First Touch", "Short Passing", "Shooting", "Coachability"],
-  },
-  {
-    label: "Youth Development",
-    ageLabel: "U11–U16",
-    minAge: 11,
-    maxAge: 16,
-    skills: ["First Touch", "Passing Range", "Decision Making", "Tactical Awareness", "Physical Stamina", "Defending", "Shooting"],
-  },
+export type SkillBand = SkillBandMeta & { skills: string[] };
+
+// Age-band boundaries. `minAge`/`maxAge` are inclusive ages used to map a
+// player's date of birth onto a band; `label` is the value stored in
+// SkillDefinition.band. Order matters - it's the display/customize order.
+export const SKILL_BAND_META: SkillBandMeta[] = [
+  { label: "Foundation", ageLabel: "U4–U6", minAge: 3, maxAge: 6 },
+  { label: "Skill Acquisition", ageLabel: "U7–U10", minAge: 7, maxAge: 10 },
+  { label: "Youth Development", ageLabel: "U11–U16", minAge: 11, maxAge: 16 },
 ];
 
-// Every skill across all bands, deduplicated (First Touch and Shooting appear
-// in two bands). Used for the customize-skills checklist and for validating
-// submitted skill names server-side.
-export const ALL_SKILLS = [...new Set(SKILL_BANDS.flatMap((band) => band.skills))];
-
-// The default active skill set for a player of a given birth date - the
-// skills of their age band. Falls back to the youngest band for under-3s and
-// the oldest for over-16s (which covers odd birth dates in demo data).
-export function getSkillBandForAge(age: number): SkillBand {
-  return SKILL_BANDS.find((band) => age >= band.minAge && age <= band.maxAge) ?? SKILL_BANDS[SKILL_BANDS.length - 1];
+export function getSkillBandMetaForAge(age: number): SkillBandMeta {
+  return SKILL_BAND_META.find((band) => age >= band.minAge && age <= band.maxAge) ?? SKILL_BAND_META[SKILL_BAND_META.length - 1];
 }
 
-export function defaultSkillsForAge(age: number): string[] {
-  return getSkillBandForAge(age).skills;
+// Resolves the full band (metadata + its current admin-managed skill list)
+// for an age, given an already-fetched `bands` array - see
+// lib/skillDefinitions.ts's getSkillBands(). Kept pure/DB-free so client
+// components can call it with server-fetched data passed down as a prop.
+export function getSkillBandForAge(bands: SkillBand[], age: number): SkillBand {
+  return bands.find((band) => age >= band.minAge && age <= band.maxAge) ?? bands[bands.length - 1];
 }
 
 export function calculateAge(dob: Date): number {

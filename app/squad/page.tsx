@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { createPlayer, deletePlayer, updatePlayerStatus, promotePlayers } from "./actions";
+import { createPlayer, deletePlayer, updatePlayerStatus, promotePlayers, createSkillDefinition, renameSkillDefinition, deleteSkillDefinition } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
-import { calculateAge } from "@/lib/skills";
+import { calculateAge, SKILL_BAND_META } from "@/lib/skills";
+import { getSkillBands } from "@/lib/skillDefinitions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
@@ -28,6 +29,11 @@ export default async function SquadPage({
   const params = await searchParams;
   const perms = await getPermissions();
   const canEdit = perms.isAdmin || perms.canEditSquad;
+  // Managing skill dimensions themselves (add/rename/delete) is a
+  // structural, academy-wide decision - gated to isAdmin/isClubManager only,
+  // not the canEditSquad rule that governs day-to-day rating above.
+  const canManageSkills = perms.isAdmin || perms.isClubManager;
+  const skillBands = await getSkillBands();
 
   const ageFilter = params.age ? Number(params.age) : null;
   const batchFilter = params.batch || null;
@@ -54,6 +60,20 @@ export default async function SquadPage({
   });
 
   const batches = await prisma.batch.findMany({ orderBy: { name: "asc" }, include: { ageGroup: true } });
+
+  // No foreign key from PlayerSkill/PlayerSkillHistory to SkillDefinition
+  // (see the model comment), so "in use" for the manager below is computed
+  // by matching the string value rather than a relation count. Only fetched
+  // when the manager is actually visible.
+  const [skillDefinitions, skillRatingCounts, historyNames] = canManageSkills
+    ? await Promise.all([
+        prisma.skillDefinition.findMany({ orderBy: [{ band: "asc" }, { sortOrder: "asc" }] }),
+        prisma.playerSkill.groupBy({ by: ["skillName"], _count: { _all: true } }),
+        prisma.playerSkillHistory.findMany({ select: { skillName: true }, distinct: ["skillName"] }),
+      ])
+    : [[], [], []];
+  const skillRatingCountByName = new Map(skillRatingCounts.map((s) => [s.skillName, s._count._all]));
+  const skillInUseNames = new Set([...skillRatingCounts.map((s) => s.skillName), ...historyNames.map((h) => h.skillName)]);
 
   const hasFilters = !!params.age || !!params.batch || !!params.status || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
 
@@ -84,6 +104,92 @@ export default async function SquadPage({
       />
 
       <StatusBanner error={params.error} success={params.success} />
+
+      {canManageSkills && (
+        <CollapsibleCreate title="Manage skill dimensions" subtitle={`${skillDefinitions.length}`}>
+          <form
+            action={createSkillDefinition}
+            style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}
+          >
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <label style={fieldLabel}>New skill name</label>
+              <input name="name" placeholder="e.g. Heading" required style={inputBase} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Age band</label>
+              <select name="band" required defaultValue={SKILL_BAND_META[0].label} style={inputBase}>
+                {SKILL_BAND_META.map((b) => (
+                  <option key={b.label} value={b.label}>{b.ageLabel} · {b.label}</option>
+                ))}
+              </select>
+            </div>
+            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Add Skill
+            </button>
+          </form>
+
+          {SKILL_BAND_META.map((bandMeta) => {
+            const bandSkills = skillDefinitions.filter((s) => s.band === bandMeta.label);
+            return (
+              <div key={bandMeta.label} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                  {bandMeta.ageLabel} · {bandMeta.label}
+                </div>
+                {bandSkills.length === 0 ? (
+                  <p style={{ color: "var(--text-faint)", fontSize: 13 }}>No skills yet.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {bandSkills.map((s) => {
+                      const inUse = skillInUseNames.has(s.name);
+                      const ratingCount = skillRatingCountByName.get(s.name) ?? 0;
+                      return (
+                        <div
+                          key={s.id}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 12px",
+                            background: "var(--surface-muted)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontWeight: 700, fontSize: 13 }}>{s.name}</span>
+                            <Badge tone={inUse ? "warning" : "muted"}>
+                              {inUse ? `In use · ${ratingCount} player${ratingCount === 1 ? "" : "s"}` : "Not in use"}
+                            </Badge>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <details>
+                              <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
+                              <form action={renameSkillDefinition.bind(null, s.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                                <input name="name" defaultValue={s.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 180 }} />
+                                <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                                  Save
+                                </button>
+                              </form>
+                            </details>
+                            {!inUse && (
+                              <ConfirmDeleteButton
+                                action={deleteSkillDefinition.bind(null, s.id)}
+                                confirmMessage={`Remove "${s.name}"? This can't be undone.`}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </CollapsibleCreate>
+      )}
 
       {canEdit && (
         <CollapsibleCreate title="Add a player">
@@ -229,6 +335,7 @@ export default async function SquadPage({
                   position={p.position}
                   skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
                   canEdit={canEdit}
+                  skillBands={skillBands}
                 />
               </div>
             </div>

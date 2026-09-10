@@ -1,4 +1,4 @@
-import { PrismaClient, Designation, AgeGroupCategory } from "@prisma/client";
+import { PrismaClient, Designation } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -6,25 +6,38 @@ const prisma = new PrismaClient();
 // Default academy structure: Little League is the young/foundation groups
 // (U4, U6), Junior Varsity the competitive ones (U8-U16). Even-numbered per
 // the club's age-band split.
-const AGE_GROUPS: { name: string; category: AgeGroupCategory }[] = [
-  { name: "U4", category: AgeGroupCategory.LITTLE_LEAGUE },
-  { name: "U6", category: AgeGroupCategory.LITTLE_LEAGUE },
-  { name: "U8", category: AgeGroupCategory.JUNIOR_VARSITY },
-  { name: "U10", category: AgeGroupCategory.JUNIOR_VARSITY },
-  { name: "U12", category: AgeGroupCategory.JUNIOR_VARSITY },
-  { name: "U14", category: AgeGroupCategory.JUNIOR_VARSITY },
-  { name: "U16", category: AgeGroupCategory.JUNIOR_VARSITY },
+const AGE_GROUPS: { name: string; categoryName: string }[] = [
+  { name: "U4", categoryName: "Little League" },
+  { name: "U6", categoryName: "Little League" },
+  { name: "U8", categoryName: "Junior Varsity" },
+  { name: "U10", categoryName: "Junior Varsity" },
+  { name: "U12", categoryName: "Junior Varsity" },
+  { name: "U14", categoryName: "Junior Varsity" },
+  { name: "U16", categoryName: "Junior Varsity" },
 ];
 const SEED_PASSWORD = "touchline123"; // change this after first login
 
 async function main() {
+  console.log("Seeding age group categories...");
+  const categoryNames = [...new Set(AGE_GROUPS.map((g) => g.categoryName))];
+  const categoryIdByName: Record<string, string> = {};
+  for (let i = 0; i < categoryNames.length; i++) {
+    const c = await prisma.ageGroupCategoryOption.upsert({
+      where: { name: categoryNames[i] },
+      update: {},
+      create: { name: categoryNames[i], sortOrder: i },
+    });
+    categoryIdByName[c.name] = c.id;
+  }
+
   console.log("Seeding age groups...");
   const ageGroups: Record<string, string> = {};
   for (let i = 0; i < AGE_GROUPS.length; i++) {
+    const categoryId = categoryIdByName[AGE_GROUPS[i].categoryName];
     const ag = await prisma.ageGroup.upsert({
       where: { name: AGE_GROUPS[i].name },
-      update: { category: AGE_GROUPS[i].category },
-      create: { name: AGE_GROUPS[i].name, category: AGE_GROUPS[i].category, sortOrder: i },
+      update: { categoryId },
+      create: { name: AGE_GROUPS[i].name, categoryId, sortOrder: i },
     });
     ageGroups[ag.name] = ag.id;
   }

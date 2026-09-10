@@ -25,11 +25,6 @@ enum Designation {
   ASSISTANT
 }
 
-enum AgeGroupCategory {
-  LITTLE_LEAGUE
-  JUNIOR_VARSITY
-}
-
 enum DrillStatus {
   PENDING
   APPROVED
@@ -176,11 +171,22 @@ model Parent {
 
 // ── Structure (admin-managed rosters) ───────────────────
 
+// Admin-managed category options for AgeGroup (e.g. "Little League",
+// "Junior Varsity"). Was a fixed enum; converted to a real model so an
+// admin can rename, add, or remove categories without a code change.
+model AgeGroupCategoryOption {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  sortOrder Int        @default(0)
+  ageGroups AgeGroup[]
+}
+
 model AgeGroup {
-  id        String           @id @default(cuid())
-  name      String           @unique // e.g. "U9"
-  category  AgeGroupCategory @default(JUNIOR_VARSITY)
-  sortOrder Int              @default(0)
+  id         String                 @id @default(cuid())
+  name       String                 @unique // e.g. "U9"
+  categoryId String
+  category   AgeGroupCategoryOption @relation(fields: [categoryId], references: [id])
+  sortOrder  Int                    @default(0)
 
   coaches           Coach[]            @relation("CoachPrimaryFocus")
   batches           Batch[]
@@ -257,6 +263,28 @@ model Player {
   notes         Note[]
 }
 
+// Admin-managed skill rating dimensions, grouped by age band. `band` matches
+// one of the three fixed band labels in lib/skills.ts (SKILL_BAND_META) -
+// the band age ranges themselves stay code-defined, only the skill lists
+// within each band are admin-editable here. A skill name can appear in more
+// than one band as separate rows (e.g. "Shooting" is both a Skill
+// Acquisition and a Youth Development skill today) - hence the unique
+// constraint is on (name, band), not name alone.
+//
+// Deliberately NOT a foreign key from PlayerSkill/PlayerSkillHistory -
+// skill history is append-only, and forcing a rename here to cascade
+// through years of history would be more disruptive than useful. This
+// table only drives what's offered as an editable dimension and what a
+// newly-created (or newly in-band) player gets a baseline row for.
+model SkillDefinition {
+  id        String @id @default(cuid())
+  name      String
+  band      String
+  sortOrder Int    @default(0)
+
+  @@unique([name, band])
+}
+
 model PlayerSkill {
   id        String   @id @default(cuid())
   playerId  String
@@ -299,10 +327,22 @@ model Note {
 
 // ── Drills & Sessions ────────────────────────────────────
 
+// Admin-managed drill categories (e.g. "Passing", "Shooting"). Was a
+// hardcoded constant in app/drills/page.tsx; converted to a real model so
+// an admin can rename, add, or remove categories without a code change and
+// so category names can't drift into typo'd duplicates.
+model DrillCategory {
+  id        String  @id @default(cuid())
+  name      String  @unique
+  sortOrder Int     @default(0)
+  drills    Drill[]
+}
+
 model Drill {
-  id          String      @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  category    String
+  categoryId  String
+  category    DrillCategory @relation(fields: [categoryId], references: [id])
   duration    Int // minutes
   playerRange String? // e.g. "4-12"
   description String?

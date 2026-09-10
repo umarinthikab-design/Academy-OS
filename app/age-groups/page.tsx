@@ -1,17 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { createAgeGroup, deleteAgeGroup } from "./actions";
+import { createAgeGroup, deleteAgeGroup, createAgeGroupCategory, renameAgeGroupCategory, deleteAgeGroupCategory } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  LITTLE_LEAGUE: "Little League",
-  JUNIOR_VARSITY: "Junior Varsity",
-};
 
 export default async function AgeGroupsPage({
   searchParams,
@@ -21,19 +17,28 @@ export default async function AgeGroupsPage({
   const params = await searchParams;
   const perms = await getPermissions();
   const canEdit = perms.isAdmin || perms.canEditAgeGroups;
-  const ageGroups = await prisma.ageGroup.findMany({
-    orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
-    include: {
-      _count: { select: { batches: true, scheduledSessions: true } },
-    },
-  });
+  // Managing the categories themselves (add/rename/delete) is a structural,
+  // academy-wide decision - gated to isAdmin/isClubManager, separate from
+  // canEditAgeGroups which governs day-to-day age group creation below.
+  const canManageCategories = perms.isAdmin || perms.isClubManager;
 
-  const littleLeague = ageGroups.filter((ag) => ag.category === "LITTLE_LEAGUE");
-  const juniorVarsity = ageGroups.filter((ag) => ag.category === "JUNIOR_VARSITY");
+  const [ageGroups, categories] = await Promise.all([
+    prisma.ageGroup.findMany({
+      orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+      include: {
+        category: true,
+        _count: { select: { batches: true, scheduledSessions: true } },
+      },
+    }),
+    prisma.ageGroupCategoryOption.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { ageGroups: true } } },
+    }),
+  ]);
 
-  function groupSection(title: string, groups: typeof ageGroups) {
+  function groupSection(key: string, title: string, groups: typeof ageGroups) {
     return (
-      <div style={{ marginBottom: 20 }}>
+      <div key={key} style={{ marginBottom: 20 }}>
         <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", marginBottom: 12 }}>{title}</div>
         {groups.length === 0 ? (
           <p style={{ color: "var(--text-faint)", fontSize: 13 }}>None yet.</p>
@@ -108,7 +113,74 @@ export default async function AgeGroupsPage({
 
       <StatusBanner error={params.error} success={params.success} />
 
-      {canEdit && (
+      {canManageCategories && (
+        <CollapsibleCreate title="Manage categories" subtitle={`${categories.length}`}>
+          <form
+            action={createAgeGroupCategory}
+            style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16 }}
+          >
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>New category name</label>
+              <input name="name" placeholder="e.g. Elite Academy" required style={inputBase} />
+            </div>
+            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Add Category
+            </button>
+          </form>
+
+          {categories.length === 0 ? (
+            <p style={{ color: "var(--text-faint)", fontSize: 13 }}>No categories yet.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {categories.map((c) => {
+                const inUse = c._count.ageGroups > 0;
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "10px 12px",
+                      background: "var(--surface-muted)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 700, fontSize: 13 }}>{c.name}</span>
+                      <Badge tone={inUse ? "warning" : "muted"}>
+                        {inUse ? `In use · ${c._count.ageGroups} age group${c._count.ageGroups === 1 ? "" : "s"}` : "Not in use"}
+                      </Badge>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <details>
+                        <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
+                        <form action={renameAgeGroupCategory.bind(null, c.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                          <input name="name" defaultValue={c.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 180 }} />
+                          <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                            Save
+                          </button>
+                        </form>
+                      </details>
+                      {!inUse && (
+                        <ConfirmDeleteButton
+                          action={deleteAgeGroupCategory.bind(null, c.id)}
+                          confirmMessage={`Remove the "${c.name}" category? This can't be undone.`}
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CollapsibleCreate>
+      )}
+
+      {canEdit && categories.length > 0 && (
         <form
           action={createAgeGroup}
           style={{
@@ -130,9 +202,10 @@ export default async function AgeGroupsPage({
           </div>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Category</label>
-            <select name="category" required defaultValue="JUNIOR_VARSITY" style={inputBase}>
-              <option value="LITTLE_LEAGUE">Little League</option>
-              <option value="JUNIOR_VARSITY">Junior Varsity</option>
+            <select name="categoryId" required defaultValue={categories[0]?.id ?? ""} style={inputBase}>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
             </select>
           </div>
           <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
@@ -141,9 +214,18 @@ export default async function AgeGroupsPage({
         </form>
       )}
 
-      {groupSection("Little League", littleLeague)}
-      {groupSection("Junior Varsity", juniorVarsity)}
-      {ageGroups.length === 0 && <p style={{ color: "var(--text-muted)" }}>No age groups yet.</p>}
+      {categories.length === 0 ? (
+        <EmptyState
+          icon="calendar"
+          title="No categories yet"
+          message={canManageCategories ? "Add a category above before creating age groups." : "Ask an administrator to set up age group categories."}
+        />
+      ) : (
+        <>
+          {categories.map((c) => groupSection(c.id, c.name, ageGroups.filter((ag) => ag.categoryId === c.id)))}
+          {ageGroups.length === 0 && <p style={{ color: "var(--text-muted)" }}>No age groups yet.</p>}
+        </>
+      )}
     </>
   );
 }

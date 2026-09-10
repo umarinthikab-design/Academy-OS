@@ -12,6 +12,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   attach_window_closed: "The 72-hour window to attach or edit a session plan has closed.",
   account_archived: "This account has been deactivated - contact your administrator.",
   invalid_status: "That player status isn't valid.",
+  drill_in_use: "This drill is used in a session plan, so it can't be deleted. Archive it instead.",
+  category_in_use: "This category is still assigned to a drill, so it can't be deleted.",
+  skill_in_use: "This skill still has ratings recorded for a player, so it can't be deleted.",
 };
 
 export function StatusBanner({ error, success }: { error?: string; success?: string }) {
