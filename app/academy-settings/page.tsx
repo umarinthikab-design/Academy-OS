@@ -7,11 +7,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Field, Input } from "@/components/ui/Form";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 
-const ERROR_MESSAGES: Record<string, string> = {
-  no_permission: "You don't have permission to do that.",
-  priority_window: "The priority window must be shorter than the confirmation window.",
-};
-
 export default async function AcademySettingsPage({
   searchParams,
 }: {
@@ -50,10 +45,7 @@ export default async function AcademySettingsPage({
         subtitle="Academy-wide configuration - how sessions and confirmations work for the whole club."
       />
 
-      <StatusBanner
-        error={params.error ? ERROR_MESSAGES[params.error] ?? params.error : undefined}
-        success={params.success}
-      />
+      <StatusBanner error={params.error} success={params.success} />
 
       <form
         action={updateAcademySettings}
