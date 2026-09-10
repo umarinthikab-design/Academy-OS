@@ -531,11 +531,18 @@ model ActivityLog {
 // rate limiting on the login form - a DB-backed counter because the app
 // runs on Vercel serverless, where in-memory state doesn't survive between
 // cold starts (and multiple instances would each have their own counter).
+//
+// ipAddress backs a second, broader rate-limit layer keyed by source IP
+// instead of email - the per-email limiter alone doesn't stop someone
+// spraying one guessed password across many different email addresses,
+// since no single email ever crosses its own failure threshold.
 model LoginAttempt {
   id        String   @id @default(cuid())
   email     String
+  ipAddress String?
   success   Boolean
   createdAt DateTime @default(now())
 
   @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
 }

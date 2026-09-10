@@ -1,8 +1,10 @@
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createCoach, deleteCoach, updateCoachPermission, revokeSessions, promoteCoach, resetCoachPassword, archiveCoach, reactivateCoach, archiveStaffMember, reactivateStaffMember } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
+import { TempPasswordReveal } from "@/components/TempPasswordReveal";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
@@ -28,6 +30,16 @@ export default async function CoachesPage({
   const params = await searchParams;
   const perms = await getPermissions();
   const canManageStaff = perms.isAdmin || perms.isClubManager;
+
+  const tempPwdCookie = (await cookies()).get("tl_temp_pwd")?.value;
+  let tempPwd: { email: string; password: string } | null = null;
+  if (tempPwdCookie) {
+    try {
+      tempPwd = JSON.parse(tempPwdCookie);
+    } catch {
+      tempPwd = null;
+    }
+  }
   const [coaches, staff, ageGroups] = await Promise.all([
     prisma.coach.findMany({
       include: { user: true, primaryFocus: true },
@@ -76,6 +88,7 @@ export default async function CoachesPage({
       />
 
       <StatusBanner error={params.error} success={params.success} />
+      {tempPwd && <TempPasswordReveal email={tempPwd.email} password={tempPwd.password} />}
 
       {canEdit && (
         <CollapsibleCreate title="Add a coach">

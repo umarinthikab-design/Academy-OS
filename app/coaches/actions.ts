@@ -3,10 +3,20 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { Designation, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
+
+// Carries a freshly-generated temporary password from resetCoachPassword to
+// the coaches page for one-time display. httpOnly so client JS can't read it
+// off document.cookie, short-lived, and explicitly cleared once the page has
+// rendered it (see clearTempPassword) - never put through the URL, since
+// query strings end up in browser history, the Referer header, and most
+// server/proxy access logs.
+const TEMP_PASSWORD_COOKIE = "tl_temp_pwd";
 
 export async function createCoach(formData: FormData) {
   const perms = await getPermissions();
@@ -267,7 +277,9 @@ export async function promoteCoach(coachId: string, formData: FormData) {
 
 // Admin-only password reset. Generates a fresh temporary password, forces a
 // change on next login, and invalidates any existing sessions. The temporary
-// password is shown to the admin in the success banner so they can pass it on.
+// password is handed to the admin via a short-lived httpOnly cookie (see
+// TEMP_PASSWORD_COOKIE) rather than the redirect URL, and the success banner
+// carries no secret.
 export async function resetCoachPassword(coachId: string) {
   const perms = await getPermissions();
   if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
@@ -278,7 +290,10 @@ export async function resetCoachPassword(coachId: string) {
   });
   if (!coach) redirect("/coaches");
 
-  const temporary = `tl-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(10).slice(2, 6)}`;
+  // crypto.randomBytes, not Math.random() - Math.random() is not a
+  // cryptographically secure source and its output is predictable enough to
+  // brute-force the generator state from a few samples.
+  const temporary = `tl-${crypto.randomBytes(9).toString("base64url")}`;
   const hashed = await bcrypt.hash(temporary, 10);
   await prisma.user.update({
     where: { id: coach.userId },
@@ -289,7 +304,28 @@ export async function resetCoachPassword(coachId: string) {
     },
   });
 
+  const cookieStore = await cookies();
+  cookieStore.set(TEMP_PASSWORD_COOKIE, JSON.stringify({ email: coach.user.email, password: temporary }), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/coaches",
+    maxAge: 60,
+  });
+
   if (perms.userId) await logActivity(perms.userId, "reset_password", "User", coach.userId);
   revalidatePath("/coaches");
-  redirect(`/coaches?success=${encodeURIComponent(`Password reset for ${coach.user.email} — temporary password: ${temporary} (must change on next login).`)}`);
+  redirect(`/coaches?success=${encodeURIComponent(`Password reset for ${coach.user.email} — see the temporary password below (must change on next login).`)}`);
+}
+
+// Deletes the one-time temporary-password cookie once the coaches page has
+// displayed it, so a page refresh (or the 60s expiry) doesn't leave it
+// sitting in the browser's cookie jar any longer than necessary.
+export async function clearTempPassword() {
+  const cookieStore = await cookies();
+  // delete() defaults to path "/" - since the cookie was set with path
+  // "/coaches", an unqualified delete() writes a *different* expired cookie
+  // at "/" and leaves the real one at "/coaches" untouched. The path must
+  // match exactly for the browser to treat it as the same cookie.
+  cookieStore.delete({ name: TEMP_PASSWORD_COOKIE, path: "/coaches" });
 }
