@@ -97,3 +97,36 @@ export async function changePassword(formData: FormData) {
   if (session.userId) await logActivity(session.userId, "changed_password", "User", user.id);
   redirect("/settings?success=Password changed. Other devices signed out.");
 }
+
+// Called directly from NotificationToggle (not a <form> action) right after
+// the browser hands back a fresh PushSubscription. No redirect/revalidate -
+// this fires from client state, not a page navigation; the component
+// manages its own "enabled" UI state locally.
+export async function subscribeToPush(subscription: { endpoint: string; keys: { p256dh: string; auth: string } }) {
+  const session = await getSession();
+  if (!session) return;
+
+  // endpoint is the natural upsert key: a device re-subscribing (cleared
+  // site data, browser reinstall) gets its keys refreshed in place rather
+  // than piling up a duplicate row for the same physical device.
+  await prisma.pushSubscription.upsert({
+    where: { endpoint: subscription.endpoint },
+    update: { userId: session.userId, p256dh: subscription.keys.p256dh, auth: subscription.keys.auth },
+    create: {
+      userId: session.userId,
+      endpoint: subscription.endpoint,
+      p256dh: subscription.keys.p256dh,
+      auth: subscription.keys.auth,
+    },
+  });
+}
+
+// Called when the user turns the toggle off. Only deletes the row for this
+// specific device's endpoint - other devices this user subscribed on are
+// untouched.
+export async function unsubscribeFromPush(endpoint: string) {
+  const session = await getSession();
+  if (!session) return;
+
+  await prisma.pushSubscription.deleteMany({ where: { endpoint, userId: session.userId } });
+}

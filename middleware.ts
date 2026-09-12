@@ -41,5 +41,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon\\.(?:ico|png)|sw.js|manifest.webmanifest|icon-.*\\.png|apple-touch-icon\\.png|api/upload-photo).*)"],
+  // api/cron/* is excluded the same way api/upload-photo already is: it has
+  // its own auth (the Vercel Cron secret header, checked inside the route),
+  // not the session cookie this middleware enforces - a Vercel Cron
+  // invocation carries no session cookie and would otherwise get redirected
+  // to /login instead of ever running.
+  matcher: ["/((?!_next/static|_next/image|favicon\\.(?:ico|png)|sw.js|manifest.webmanifest|icon-.*\\.png|apple-touch-icon\\.png|api/upload-photo|api/cron).*)"],
 };

@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { sanitizePhotoUrl } from "@/lib/photo";
+import { sendPushToUser } from "@/lib/pushNotifications";
+import { notifyApprovers } from "@/lib/notifyApprovers";
 
 // Coaches who approve requests can also attach photos. URLs come through as
 // downscaled data URLs from DrillPhotoUpload (one hidden input per photo).
@@ -57,6 +59,21 @@ export async function createDrill(formData: FormData) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "created_drill", "Drill", drill.id, name);
+
+  // Only worth notifying anyone when this actually needs someone's approval -
+  // a drill published straight to the library (by someone who can already
+  // approve, or an admin/CM) has nothing pending. Awaited (not
+  // fire-and-forget) because a serverless function invocation can end as
+  // soon as redirect() responds, which would abandon an un-awaited promise
+  // mid-flight; wrapped in try/catch so a push failure never breaks drill
+  // creation itself.
+  if (status === "PENDING") {
+    try {
+      await notifyApprovers({ type: "DRILL" }, "New drill suggestion", `"${name}" is waiting for approval.`, "/drills");
+    } catch {
+      // See above - notification delivery is best-effort.
+    }
+  }
 
   revalidatePath("/drills");
   redirect(`/drills?success=${encodeURIComponent(status === "APPROVED" ? `${name} published to the library.` : `${name} submitted for approval.`)}`);
@@ -125,8 +142,15 @@ export async function approveDrill(id: string) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canApproveRequests)) redirect("/drills?error=no_permission");
 
-  await prisma.drill.update({ where: { id }, data: { status: "APPROVED" } });
+  const drill = await prisma.drill.update({
+    where: { id },
+    data: { status: "APPROVED" },
+    select: { name: true, createdBy: { select: { userId: true } } },
+  });
   if (perms.userId) await logActivity(perms.userId, "approved_drill", "Drill", id);
+  if (drill.createdBy) {
+    await sendPushToUser(drill.createdBy.userId, "Drill suggestion approved", `"${drill.name}" was approved and added to the library.`, "/drills").catch(() => {});
+  }
   revalidatePath("/drills");
   redirect("/drills?success=Drill approved and added to the library.");
 }
@@ -135,9 +159,16 @@ export async function rejectDrill(id: string) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canApproveRequests)) redirect("/drills?error=no_permission");
 
-  // DrillFeedback cascades on delete, so this cleanly removes the thread too.
+  // Read the submitter before deleting - DrillFeedback cascades on delete,
+  // so this cleanly removes the thread too, but the drill's own row (and
+  // its createdBy) is gone after this, so there'd be nothing left to
+  // notify from.
+  const drill = await prisma.drill.findUnique({ where: { id }, select: { name: true, createdBy: { select: { userId: true } } } });
   await prisma.drill.delete({ where: { id } });
   if (perms.userId) await logActivity(perms.userId, "rejected_drill", "Drill", id);
+  if (drill?.createdBy) {
+    await sendPushToUser(drill.createdBy.userId, "Drill suggestion rejected", `"${drill.name}" was not approved.`, "/drills").catch(() => {});
+  }
   revalidatePath("/drills");
   redirect("/drills?success=Drill rejected.");
 }

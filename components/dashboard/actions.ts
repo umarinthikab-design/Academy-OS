@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
 import { applyDecision } from "@/lib/approvals";
 import { logActivity } from "@/lib/logActivity";
+import { sendPushToUser } from "@/lib/pushNotifications";
 
 export async function approveRequest(requestId: string) {
   const perms = await getPermissions();
@@ -66,8 +67,9 @@ export async function addApprovalMessage(requestId: string, formData: FormData) 
 // Self-service pre-session RSVP. The coach confirms or declines their own
 // attendance row - no approval chain, no admin/head gate. Only the coach who
 // owns the row can act on it. A DECLINED answer is surfaced to admins/heads
-// via the dashboard "Needs attention" section (real notifications are out of
-// scope - no provider wired up yet).
+// via the dashboard "Needs attention" section AND an immediate push (the
+// session may now be short-staffed) - event-driven, not the 72h/48h
+// reminder cron, since this can't wait for the next hourly sweep.
 export async function confirmSessionParticipation(
   confirmationId: string,
   status: "CONFIRMED" | "DECLINED"
@@ -75,7 +77,13 @@ export async function confirmSessionParticipation(
   const perms = await getPermissions();
   if (!perms.coachId) redirect("/?error=no_permission");
 
-  const row = await prisma.sessionCoachConfirmation.findUnique({ where: { id: confirmationId } });
+  const row = await prisma.sessionCoachConfirmation.findUnique({
+    where: { id: confirmationId },
+    include: {
+      coach: { select: { user: { select: { name: true } } } },
+      scheduledSession: { select: { date: true, startTime: true, ageGroup: { select: { name: true } }, headCoaches: { select: { id: true, userId: true } } } },
+    },
+  });
   if (!row || row.coachId !== perms.coachId || row.status !== "PENDING") {
     redirect("/?error=no_permission");
   }
@@ -88,6 +96,27 @@ export async function confirmSessionParticipation(
   if (perms.userId) {
     await logActivity(perms.userId, status === "CONFIRMED" ? "confirmed_session_participation" : "declined_session_participation", "SessionCoachConfirmation", confirmationId, row.scheduledSessionId);
   }
+
+  if (status === "DECLINED") {
+    const admins = await prisma.user.findMany({ where: { role: { in: ["ADMIN", "CLUB_MANAGER"] }, archivedAt: null }, select: { id: true } });
+    // The session's head coach(es), excluding the coach who just declined
+    // (relevant if a head coach declines their own session).
+    const headUserIds = row.scheduledSession.headCoaches.filter((c) => c.id !== perms.coachId).map((c) => c.userId);
+    const recipientUserIds = [...new Set([...admins.map((u) => u.id), ...headUserIds])];
+
+    const when = `${row.scheduledSession.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${row.scheduledSession.startTime}`;
+    await Promise.all(
+      recipientUserIds.map((userId) =>
+        sendPushToUser(
+          userId,
+          "Coach declined a session",
+          `${row.coach.user.name} declined ${row.scheduledSession.ageGroup.name} on ${when} - may need re-staffing.`,
+          "/"
+        )
+      )
+    ).catch(() => {});
+  }
+
   revalidatePath("/");
   revalidatePath("/schedule");
   redirect(status === "CONFIRMED" ? "/?success=You're confirmed for this session." : "/?success=You declined - the club has been notified.");

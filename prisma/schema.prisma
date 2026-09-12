@@ -120,6 +120,22 @@ model User {
   parent       Parent?
   activityLogs ActivityLog[]
   approvalMessages ApprovalMessage[]
+  pushSubscriptions PushSubscription[]
+}
+
+// One row per subscribed browser/device (a user can have several - phone,
+// laptop, etc). `endpoint` is the push service's unique URL for that
+// subscription, so it's the natural upsert key: a device re-subscribing
+// (e.g. after clearing site data) gets its keys refreshed in place rather
+// than accumulating a duplicate row.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
 }
 
 model Coach {
@@ -494,6 +510,10 @@ model SessionCoachConfirmation {
   status             CoachConfirmationStatus  @default(PENDING)
   confirmedAt        DateTime?
   createdAt          DateTime                 @default(now())
+  // Last time a push reminder was sent for this specific still-pending
+  // confirmation. Lets the reminder cron (hourly) skip anyone it already
+  // nudged recently instead of re-notifying every single run.
+  lastRemindedAt     DateTime?
 
   @@unique([scheduledSessionId, coachId])
 }

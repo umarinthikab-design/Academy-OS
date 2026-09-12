@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
+import { notifyApprovers } from "@/lib/notifyApprovers";
+import { sendPushToUser } from "@/lib/pushNotifications";
 
 // A Session is a reusable drill PLAN (name + an ordered list of drills) -
 // distinct from ScheduledSession, the calendar slot. All coaches can create
@@ -88,6 +90,12 @@ export async function shareSession(id: string) {
     },
   });
 
+  try {
+    await notifyApprovers({ type: "SESSION_SHARE" }, "Session plan share request", `"${session.name}" is waiting for approval.`, "/requests");
+  } catch {
+    // Notification delivery is best-effort - never break the actual request.
+  }
+
   if (perms.userId) await logActivity(perms.userId, "requested_session_share", "Session", id);
   revalidatePath("/sessions");
   redirect("/sessions?success=Share request sent for approval.");
@@ -97,7 +105,7 @@ export async function approveSessionShare(requestId: string) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canApproveRequests)) redirect("/sessions?error=no_permission");
 
-  const request = await prisma.approvalRequest.findUnique({ where: { id: requestId } });
+  const request = await prisma.approvalRequest.findUnique({ where: { id: requestId }, include: { requestedBy: true } });
   if (!request || request.type !== "SESSION_SHARE" || request.status !== "PENDING") redirect("/sessions");
 
   const payload = request.payload as { sessionId?: string };
@@ -113,6 +121,7 @@ export async function approveSessionShare(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "approved_request", "ApprovalRequest", requestId, "session_share");
+  await sendPushToUser(request.requestedBy.userId, "Session plan share approved", "Your session plan is now visible to the team.", "/sessions").catch(() => {});
   revalidatePath("/sessions");
   redirect("/sessions?success=Session plan shared with the team.");
 }
@@ -121,7 +130,7 @@ export async function rejectSessionShare(requestId: string) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canApproveRequests)) redirect("/sessions?error=no_permission");
 
-  const request = await prisma.approvalRequest.findUnique({ where: { id: requestId } });
+  const request = await prisma.approvalRequest.findUnique({ where: { id: requestId }, include: { requestedBy: true } });
   if (!request || request.type !== "SESSION_SHARE" || request.status !== "PENDING") redirect("/sessions");
 
   const payload = request.payload as { sessionId?: string };
@@ -137,6 +146,7 @@ export async function rejectSessionShare(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "rejected_request", "ApprovalRequest", requestId, "session_share");
+  await sendPushToUser(request.requestedBy.userId, "Session plan share rejected", "Your session plan share request was rejected.", "/sessions").catch(() => {});
   revalidatePath("/sessions");
   redirect("/sessions?success=Share request rejected - the plan stays private.");
 }

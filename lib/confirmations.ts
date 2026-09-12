@@ -9,11 +9,21 @@
 import { prisma } from "./prisma";
 import type { Permissions } from "./permissions";
 
-function sessionStart(session: { date: Date; startTime: string }): Date {
+export function sessionStart(session: { date: Date; startTime: string }): Date {
   const [h, m] = session.startTime.split(":").map(Number);
   const start = new Date(session.date);
   start.setHours(h, m, 0, 0);
   return start;
+}
+
+// The confirmation/priority window edges, shared by every reader of these
+// thresholds (dashboard sections and the reminder cron) so the math only
+// lives in one place.
+function getConfirmationWindows(settings: { confirmationWindowHours: number; priorityWindowHours: number }, now: Date) {
+  return {
+    windowEnd: new Date(now.getTime() + settings.confirmationWindowHours * 60 * 60 * 1000),
+    priorityEnd: new Date(now.getTime() + settings.priorityWindowHours * 60 * 60 * 1000),
+  };
 }
 
 // The AcademySettings singleton. Prisma has no "exactly one row" constraint,
@@ -50,8 +60,7 @@ export async function getMyConfirmations(perms: Permissions): Promise<MyConfirma
   if (!settings.preSessionConfirmationEnabled) return [];
 
   const now = new Date();
-  const windowEnd = new Date(now.getTime() + settings.confirmationWindowHours * 60 * 60 * 1000);
-  const priorityEnd = new Date(now.getTime() + settings.priorityWindowHours * 60 * 60 * 1000);
+  const { windowEnd, priorityEnd } = getConfirmationWindows(settings, now);
 
   const rows = await prisma.sessionCoachConfirmation.findMany({
     where: {
@@ -105,7 +114,7 @@ export async function getStaffingAlerts(perms: Permissions): Promise<StaffingAle
   if (!settings.preSessionConfirmationEnabled) return [];
 
   const now = new Date();
-  const windowEnd = new Date(now.getTime() + settings.confirmationWindowHours * 60 * 60 * 1000);
+  const { windowEnd } = getConfirmationWindows(settings, now);
 
   const sessionWhere = {
     date: { gte: now, lte: windowEnd },
@@ -155,4 +164,62 @@ export async function getStaffingAlerts(perms: Permissions): Promise<StaffingAle
 
 export function confirmationsEnabled(): Promise<boolean> {
   return getAcademySettings().then((s) => s.preSessionConfirmationEnabled);
+}
+
+// A reminder isn't re-sent to the same still-pending confirmation more
+// often than this, regardless of how frequently the cron runs.
+const REMINDER_COOLDOWN_HOURS = 6;
+
+export type ReminderTarget = {
+  confirmationId: string;
+  userId: string;
+  priority: boolean;
+  session: {
+    id: string;
+    date: Date;
+    startTime: string;
+    durationMinutes: number;
+    ageGroupName: string;
+    locationName: string;
+  };
+};
+
+// Every still-PENDING confirmation inside the confirmation window that
+// hasn't been reminded (or was reminded too long ago) - the set the
+// reminder cron should push a notification for. Same window math as
+// getMyConfirmations/getStaffingAlerts above, just unscoped by coach since
+// the cron needs to sweep every coach, not one logged-in user's view.
+export async function getConfirmationsNeedingReminder(): Promise<ReminderTarget[]> {
+  const settings = await getAcademySettings();
+  if (!settings.preSessionConfirmationEnabled) return [];
+
+  const now = new Date();
+  const { windowEnd, priorityEnd } = getConfirmationWindows(settings, now);
+  const cooldownCutoff = new Date(now.getTime() - REMINDER_COOLDOWN_HOURS * 60 * 60 * 1000);
+
+  const rows = await prisma.sessionCoachConfirmation.findMany({
+    where: {
+      status: "PENDING",
+      scheduledSession: { date: { gte: now, lte: windowEnd }, status: "scheduled" },
+      OR: [{ lastRemindedAt: null }, { lastRemindedAt: { lt: cooldownCutoff } }],
+    },
+    include: {
+      scheduledSession: { include: { ageGroup: true, location: true } },
+      coach: { select: { userId: true } },
+    },
+  });
+
+  return rows.map((r) => ({
+    confirmationId: r.id,
+    userId: r.coach.userId,
+    priority: sessionStart(r.scheduledSession) <= priorityEnd,
+    session: {
+      id: r.scheduledSession.id,
+      date: r.scheduledSession.date,
+      startTime: r.scheduledSession.startTime,
+      durationMinutes: r.scheduledSession.durationMinutes,
+      ageGroupName: r.scheduledSession.ageGroup.name,
+      locationName: r.scheduledSession.location.name,
+    },
+  }));
 }

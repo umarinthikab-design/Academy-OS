@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
+import { notifyApprovers } from "@/lib/notifyApprovers";
+import { sendPushToUser } from "@/lib/pushNotifications";
 import {
   CoachAttendanceStatus,
   PlayerAttendanceStatus,
@@ -44,7 +46,7 @@ export async function submitAttendance(formData: FormData) {
 
   const session = await prisma.scheduledSession.findUnique({
     where: { id: scheduledSessionId },
-    include: { headCoaches: true, assistantCoaches: true },
+    include: { headCoaches: true, assistantCoaches: true, ageGroup: true },
   });
   if (!session) redirect("/attendance");
   if (session.resolvedAt) redirect("/attendance?error=already_resolved");
@@ -121,6 +123,17 @@ export async function submitAttendance(formData: FormData) {
     },
   });
 
+  try {
+    await notifyApprovers(
+      { type: "ATTENDANCE_CONFIRM", requestedByCoachId: perms.coachId!, scheduledSessionId },
+      "Attendance needs your approval",
+      `${pairs.length} player${pairs.length === 1 ? "" : "s"} proposed for ${session.ageGroup.name}.`,
+      "/requests"
+    );
+  } catch {
+    // Notification delivery is best-effort - never break the actual proposal.
+  }
+
   if (perms.userId) await logActivity(perms.userId, "proposed_attendance", "ScheduledSession", scheduledSessionId, `${pairs.length} players`);
   revalidatePath("/attendance");
   redirect("/attendance?success=Attendance proposal submitted for approval.");
@@ -179,6 +192,7 @@ export async function approveAttendanceRequest(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "approved_request", "ApprovalRequest", requestId, "attendance");
+  await sendPushToUser(request.requestedBy.userId, "Attendance proposal approved", "Your attendance proposal was approved.", "/requests").catch(() => {});
   revalidatePath("/attendance");
   redirect("/attendance?success=Attendance approved.");
 }
@@ -221,6 +235,7 @@ export async function rejectAttendanceRequest(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "rejected_request", "ApprovalRequest", requestId, "attendance");
+  await sendPushToUser(request.requestedBy.userId, "Attendance proposal rejected", "Your attendance proposal was rejected - you can resubmit.", "/requests").catch(() => {});
   revalidatePath("/attendance");
   redirect(`/attendance?success=${encodeURIComponent("Attendance proposal rejected — the assistant can resubmit.")}`);
 }

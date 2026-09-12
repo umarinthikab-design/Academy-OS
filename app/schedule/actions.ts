@@ -6,6 +6,55 @@ import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
+import { sendPushToUser } from "@/lib/pushNotifications";
+
+// Pushes the same message to every one of the given coaches (by Coach.id,
+// not User.id - the callers below all work in Coach ids since that's what
+// ScheduledSession.headCoaches/assistantCoaches are keyed by). Best-effort:
+// a push failure must never break the schedule change that triggered it.
+async function notifyCoaches(coachIds: string[], title: string, body: string, url: string) {
+  if (coachIds.length === 0) return;
+  try {
+    const coaches = await prisma.coach.findMany({ where: { id: { in: coachIds } }, select: { userId: true } });
+    await Promise.all(coaches.map((c) => sendPushToUser(c.userId, title, body, url)));
+  } catch {
+    // Best-effort - see above.
+  }
+}
+
+function formatSessionWhen(date: Date, startTime: string): string {
+  return `${date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${startTime}`;
+}
+
+function sameCoachSet(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const setB = new Set(b);
+  return a.every((id) => setB.has(id));
+}
+
+// Only notify when something a coach would actually care about changed -
+// date, time, location, or who's assigned. Editing an unrelated field
+// (duration, age group) doesn't fire this. Notifies the NEW (post-edit)
+// coach list - the people who need to know their session just changed.
+async function notifySessionChangeIfRelevant(
+  before: { date: Date; startTime: string; locationId: string; headCoaches: { id: string }[]; assistantCoaches: { id: string }[] },
+  after: { date: Date; startTime: string; locationId: string; coachIds: string[] }
+) {
+  const beforeCoachIds = [...before.headCoaches.map((c) => c.id), ...before.assistantCoaches.map((c) => c.id)];
+  const changed =
+    before.date.getTime() !== after.date.getTime() ||
+    before.startTime !== after.startTime ||
+    before.locationId !== after.locationId ||
+    !sameCoachSet(beforeCoachIds, after.coachIds);
+  if (!changed) return;
+
+  await notifyCoaches(
+    after.coachIds,
+    "Session details changed",
+    `Your session on ${formatSessionWhen(after.date, after.startTime)} was updated - check the schedule for details.`,
+    "/schedule"
+  );
+}
 
 export async function createScheduledSession(formData: FormData) {
   const perms = await getPermissions();
@@ -69,6 +118,13 @@ export async function createScheduledSession(formData: FormData) {
         });
       }
     }
+
+    await notifyCoaches(
+      [...headCoachIds, ...assistantCoachIds],
+      "You've been added to a session",
+      `A session on ${formatSessionWhen(d, time)} has been scheduled with you.`,
+      "/schedule"
+    );
   }
 
   if (perms.userId) await logActivity(perms.userId, "scheduled_session", "ScheduledSession", undefined, `${weeks} x ${date} ${time}`);
@@ -81,10 +137,27 @@ export async function deleteScheduledSession(id: string) {
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.canEditSchedule)) redirect("/schedule?error=no_permission");
 
+  // Read who was assigned before deleting - there's nothing left to read
+  // from afterward.
+  const existing = await prisma.scheduledSession.findUnique({
+    where: { id },
+    select: { date: true, startTime: true, headCoaches: { select: { id: true } }, assistantCoaches: { select: { id: true } } },
+  });
+
   // Deletes only this one instance, not the whole recurring series.
   // Deleting an entire recurring series at once isn't built yet.
   await prisma.scheduledSession.delete({ where: { id } });
   if (perms.userId) await logActivity(perms.userId, "deleted_scheduled_session", "ScheduledSession", id);
+
+  if (existing) {
+    await notifyCoaches(
+      [...existing.headCoaches.map((c) => c.id), ...existing.assistantCoaches.map((c) => c.id)],
+      "Session cancelled",
+      `A session you were assigned to on ${formatSessionWhen(existing.date, existing.startTime)} was cancelled.`,
+      "/schedule"
+    );
+  }
+
   revalidatePath("/schedule");
   redirect("/schedule?success=Session removed.");
 }
@@ -114,6 +187,7 @@ export async function updateScheduledSession(scheduledSessionId: string, formDat
 
   const session = await prisma.scheduledSession.findUnique({
     where: { id: scheduledSessionId },
+    include: { headCoaches: { select: { id: true } }, assistantCoaches: { select: { id: true } } },
   });
   if (!session) redirect("/schedule");
 
@@ -135,17 +209,21 @@ export async function updateScheduledSession(scheduledSessionId: string, formDat
     const delta = data.date.getTime() - session.date.getTime();
     const siblings = await prisma.scheduledSession.findMany({
       where: { recurrenceGroupId: session.recurrenceGroupId, date: { gte: session.date } },
+      include: { headCoaches: { select: { id: true } }, assistantCoaches: { select: { id: true } } },
     });
     for (const s of siblings) {
+      const newDate = new Date(s.date.getTime() + delta);
       await prisma.scheduledSession.update({
         where: { id: s.id },
-        data: { ...data, date: new Date(s.date.getTime() + delta) },
+        data: { ...data, date: newDate },
       });
       await syncConfirmations(s.id, coachIds);
+      await notifySessionChangeIfRelevant(s, { date: newDate, startTime: time, locationId, coachIds });
     }
   } else {
     await prisma.scheduledSession.update({ where: { id: scheduledSessionId }, data });
     await syncConfirmations(scheduledSessionId, coachIds);
+    await notifySessionChangeIfRelevant(session, { date: data.date, startTime: time, locationId, coachIds });
   }
 
   if (perms.userId) await logActivity(perms.userId, "updated_scheduled_session", "ScheduledSession", scheduledSessionId, `${date} ${time}`);

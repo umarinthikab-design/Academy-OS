@@ -46,3 +46,26 @@ self.addEventListener("fetch", (event) => {
   // Everything else: straight passthrough, never intercepted, never cached.
   return;
 });
+
+// Web Push - a subscribed device receives an encrypted push message from
+// the browser's push service; this decrypts (handled by the browser before
+// firing the event) and shows it as a native notification. Payload shape is
+// { title, body, url } - see lib/pushNotifications.ts, the only place that
+// sends these.
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : {};
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Touchline", {
+      body: data.body,
+      icon: "/icon-192.png",
+      data: { url: data.url || "/" },
+    })
+  );
+});
+
+// Focus/open the relevant page on tap. Closing the notification first is
+// what makes it disappear from the tray on both Android and iOS.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data.url));
+});

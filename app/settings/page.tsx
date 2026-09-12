@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { inputBase } from "@/components/ui/Form";
 import { roleLabel } from "@/lib/roleLabel";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { NotificationToggle } from "@/components/NotificationToggle";
 import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import { PasswordField } from "@/components/ui/PasswordField";
 
@@ -87,6 +88,14 @@ export default async function SettingsPage({
             <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 16px", lineHeight: 1.5 }}>Select your preferred viewing mode. Saved to your account.</p>
           </div>
           <ThemeToggle theme={user.theme} />
+        </section>
+
+        <section style={{ ...card, gridColumn: "span 12", display: "flex", flexDirection: "column", gap: 4 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>Notifications</h2>
+          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 10px", lineHeight: 1.5 }}>
+            Push notifications for drill suggestions awaiting your approval and session confirmations you haven't answered yet.
+          </p>
+          <NotificationToggle />
         </section>
 
         <section style={{ ...card, gridColumn: "span 12" }}>

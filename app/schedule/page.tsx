@@ -11,6 +11,22 @@ import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 
+// A date <input> needs "YYYY-MM-DD". `.toISOString().slice(0, 10)` looks
+// right but silently shifts the date by a day for any timezone east of UTC:
+// createScheduledSession/updateScheduledSession build the stored Date from
+// "YYYY-MM-DDT00:00:00" in the SERVER's local timezone, so e.g. local
+// midnight Sep 20 in UTC+5:30 is stored as 2026-09-19T18:30:00Z - and
+// .toISOString() reads that back as the UTC calendar date, "2026-09-19",
+// one day early. Re-submitting that "unchanged" value then saves the wrong
+// date. Extracting the date via local getters (matching how it was built)
+// round-trips correctly regardless of server timezone.
+function toDateInputValue(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export default async function SchedulePage({
   searchParams,
 }: {
@@ -305,7 +321,7 @@ export default async function SchedulePage({
                                 <div className="form-grid-2col" style={{ gap: 10 }}>
                                   <div>
                                     <label style={fieldLabel}>Date</label>
-                                    <input name="date" type="date" defaultValue={s.date.toISOString().slice(0, 10)} required style={inputBase} />
+                                    <input name="date" type="date" defaultValue={toDateInputValue(s.date)} required style={inputBase} />
                                   </div>
                                   <div>
                                     <label style={fieldLabel}>Start time</label>
