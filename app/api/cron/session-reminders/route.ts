@@ -4,6 +4,12 @@
 // user action, which is exactly why it has to be time-based/cron rather than
 // event-driven like the drill-suggestion trigger.
 //
+// Runs once daily (Vercel's Hobby plan doesn't allow a tighter cron
+// schedule) - this trades reminder precision for cost. A coach may not be
+// nudged until well into the 72h/48h window rather than within an hour of
+// crossing it, but getConfirmationsNeedingReminder's 6h cooldown still
+// prevents a double-send if the schedule is ever tightened later.
+//
 // Public route by necessity (Vercel Cron can't send a session cookie), so it
 // must verify the request came from Vercel Cron before touching anything -
 // Vercel sends `Authorization: Bearer $CRON_SECRET` on scheduled invocations
@@ -34,7 +40,7 @@ export async function GET(request: Request) {
   }
 
   // Stamp lastRemindedAt on everything just notified, in one batch, so the
-  // next run (an hour from now) skips these until the cooldown passes.
+  // next run (a day from now) skips these until the cooldown passes.
   if (targets.length > 0) {
     await prisma.sessionCoachConfirmation.updateMany({
       where: { id: { in: targets.map((t) => t.confirmationId) } },
