@@ -189,6 +189,81 @@ export default async function RootLayout({
                 </div>
               </aside>
 
+              {/* Tablet rail — persistent but icon-only, between the phone's
+                  hidden hamburger drawer and the desktop's full labeled
+                  sidebar (see .tablet-sidebar in globals.css). Same
+                  SidebarNav component/data as desktop, just `compact`. */}
+              <aside
+                className="tablet-sidebar"
+                style={{
+                  width: 72,
+                  flexShrink: 0,
+                  background: "var(--primary)",
+                  color: "#fff",
+                  flexDirection: "column",
+                  position: "sticky",
+                  top: 0,
+                  height: "100vh",
+                  borderRight: "1px solid var(--primary-container)",
+                }}
+              >
+                <div style={{ padding: "20px 0", display: "flex", justifyContent: "center" }}>
+                  {branding.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt={branding.academyName}
+                      title={branding.academyName}
+                      style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "contain", background: "var(--surface)", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div
+                      title={branding.academyName}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        background: "var(--primary-container)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon name="football" size={18} style={{ color: "var(--accent)" }} />
+                    </div>
+                  )}
+                </div>
+
+                <SidebarNav items={navItems} compact />
+
+                <div style={{ padding: "12px 8px 16px", borderTop: "1px solid var(--primary-container)", marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                  <Link href="/settings" title={`${session.name} · ${roleLabel(session.role)}`}>
+                    <Avatar name={session.name} src={photoUrl} size={32} />
+                  </Link>
+                  <form action={logout}>
+                    <button
+                      type="submit"
+                      title="Sign out"
+                      aria-label="Sign out"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 8,
+                        background: "transparent",
+                        color: "var(--primary-fixed-dim)",
+                        border: "1px solid var(--primary-container)",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        transition: "background var(--transition), color var(--transition)",
+                      }}
+                    >
+                      <Icon name="logout" size={15} />
+                    </button>
+                  </form>
+                </div>
+              </aside>
+
               <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
                 <main style={{ flex: 1, padding: "28px 32px 48px", width: "100%", maxWidth: 1100, margin: "0 auto" }}>{children}</main>
               </div>

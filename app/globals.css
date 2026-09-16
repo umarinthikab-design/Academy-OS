@@ -201,16 +201,37 @@ a {
 
 /* ── Layout shell ─────────────────────────────────────────── */
 
+/* Three nav tiers, not two: phones don't have room for a persistent
+   sidebar even a compact one, but tablets do - collapsing straight from
+   the full 256px labeled sidebar to a hidden hamburger drawer at 900px
+   meant most real tablets (iPad portrait is 768-834px) got the phone
+   treatment, hiding navigation behind a tap for no reason other than not
+   having a middle tier. Tablet now gets its own persistent icon-only rail
+   (.tablet-sidebar, see SidebarNav's `compact` prop) instead. */
+
 .desktop-sidebar {
   display: flex;
+}
+
+.tablet-sidebar {
+  display: none;
 }
 
 .mobile-topbar {
   display: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .desktop-sidebar {
+    display: none;
+  }
+  .tablet-sidebar {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .tablet-sidebar {
     display: none;
   }
   .mobile-topbar {
@@ -247,6 +268,43 @@ a {
 @media (max-width: 700px) {
   .rollup-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── Settings profile/appearance split ─────────────────────
+   8:4 columns on desktop; stacks to full-width once the tablet nav rail
+   (see .tablet-sidebar above) eats into the available content width. */
+
+.settings-col-profile {
+  grid-column: span 8;
+}
+
+.settings-col-appearance {
+  grid-column: span 4;
+}
+
+@media (max-width: 900px) {
+  .settings-col-profile,
+  .settings-col-appearance {
+    grid-column: span 12;
+  }
+}
+
+/* ── Schedule filters + list bento ─────────────────────────
+   Fixed 260px filter rail beside the schedule list on desktop; stacks
+   above the list on narrower tablets and phones rather than squeezing the
+   list into whatever's left. */
+
+.schedule-bento {
+  grid-template-columns: 260px 1fr;
+}
+
+@media (max-width: 820px) {
+  .schedule-bento {
+    grid-template-columns: 1fr;
+  }
+  .schedule-bento > aside {
+    position: static;
   }
 }
 

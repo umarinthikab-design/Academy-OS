@@ -57,7 +57,7 @@ export default async function SettingsPage({
       <StatusBanner error={p.error ? ERROR_MESSAGES[p.error] ?? p.error : undefined} success={p.success} />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 16, alignItems: "start" }}>
-        <section style={{ ...card, gridColumn: "span 8", display: "flex", flexDirection: "column", gap: 16 }}>
+        <section className="settings-col-profile" style={{ ...card, display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <Avatar name={user.name} src={user.photoUrl} size={72} style={{ border: "2px solid var(--border)" }} />
             <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
@@ -82,7 +82,7 @@ export default async function SettingsPage({
           </form>
         </section>
 
-        <section style={{ ...card, gridColumn: "span 4", display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 180 }}>
+        <section className="settings-col-appearance" style={{ ...card, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 180 }}>
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>Appearance</h2>
             <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 16px", lineHeight: 1.5 }}>Select your preferred viewing mode. Saved to your account.</p>

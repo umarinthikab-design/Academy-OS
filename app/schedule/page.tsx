@@ -191,7 +191,7 @@ export default async function SchedulePage({
       )}
 
       {/* Bento layout: Filters sidebar + Schedule list */}
-      <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 20, alignItems: "start" }}>
+      <div className="schedule-bento" style={{ display: "grid", gap: 20, alignItems: "start" }}>
         {/* Filters sidebar */}
         <aside style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16, display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
