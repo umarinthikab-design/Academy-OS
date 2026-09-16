@@ -73,6 +73,12 @@ enum PlayerStatus {
   INACTIVE
 }
 
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // Self-service pre-session RSVP. This is separate from CoachAttendance
 // ("did you attend" - checked in after the session) - this answers "will you
 // attend" ahead of time, with no approval chain.
@@ -122,6 +128,7 @@ model User {
   activityLogs ActivityLog[]
   approvalMessages ApprovalMessage[]
   pushSubscriptions PushSubscription[]
+  reviewedRegistrations PendingRegistration[]
 }
 
 // One row per subscribed browser/device (a user can have several - phone,
@@ -184,6 +191,28 @@ model Parent {
   userId  String   @unique
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   players Player[] @relation("ParentPlayers")
+}
+
+// A player registration submitted through the public JotForm webhook
+// (app/api/webhooks/jotform/route.ts), awaiting admin review before it
+// becomes a real Player. rawPayload keeps the entire original submission
+// regardless of how well the mapped fields below came through, so nothing
+// is lost if a field fails to map and an admin needs to read the source
+// data directly. reviewedBy references User (not Coach) because Admins and
+// Club Managers - who have no Coach record - are the ones reviewing these,
+// per the isAdmin || isClubManager gate on the review page.
+model PendingRegistration {
+  id                    String              @id @default(cuid())
+  rawPayload            Json
+  playerName            String?
+  dateOfBirth           DateTime?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  status                RegistrationStatus  @default(PENDING)
+  createdAt             DateTime            @default(now())
+  reviewedAt            DateTime?
+  reviewedById          String?
+  reviewedBy            User?               @relation(fields: [reviewedById], references: [id])
 }
 
 // ── Structure (admin-managed rosters) ───────────────────

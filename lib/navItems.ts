@@ -7,7 +7,7 @@ import type { Permissions } from "./permissions";
 
 export type NavItem = { href: string; label: string; icon: string; badge?: number };
 
-export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
+export function getNavItems(perms: Permissions, requestsBadge = 0, registrationsBadge = 0): NavItem[] {
   const items: NavItem[] = [{ href: "/", label: "Dashboard", icon: "dashboard" }];
 
   if (perms.role === "PARENT") {
@@ -54,6 +54,12 @@ export function getNavItems(perms: Permissions, requestsBadge = 0): NavItem[] {
 
   if (perms.canSuggestDrills) {
     items.push({ href: "/drills", label: "Drill Library", icon: "drills" });
+  }
+
+  // Registration review - admin/club-manager only, matching every other
+  // admin-management page built since Club Manager was introduced.
+  if (perms.isAdmin || perms.isClubManager) {
+    items.push({ href: "/registrations", label: "Registrations", icon: "squad", badge: registrationsBadge || undefined });
   }
 
   // Club-wide (academy) configuration - admin and club manager only.

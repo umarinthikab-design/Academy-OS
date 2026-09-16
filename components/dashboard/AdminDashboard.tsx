@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { DashboardHero } from "./DashboardHero";
 import { QuickActions } from "./QuickActions";
 import { ApprovalInbox } from "./ApprovalInbox";
+import { RegistrationsInbox } from "./RegistrationsInbox";
 import { StaffingAlerts } from "./StaffingAlerts";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -76,6 +77,9 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
 
       {/* Approvals */}
       <ApprovalInbox perms={perms} />
+
+      {/* Registrations awaiting review */}
+      <RegistrationsInbox perms={perms} />
 
       {/* Staffing alerts - sessions where a coach hasn't confirmed / declined */}
       <StaffingAlerts perms={perms} />

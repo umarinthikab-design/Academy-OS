@@ -53,5 +53,8 @@ export const config = {
   // it slipped through as an unmatched app route and got redirected to
   // /login for every logged-out request - which is exactly when a tab icon
   // matters most (the login page itself, pre-auth PWA install, etc).
-  matcher: ["/((?!_next/static|_next/image|favicon\\.(?:ico|png)|sw.js|manifest.webmanifest|icon\\.png|icon-.*\\.png|apple-touch-icon\\.png|api/upload-photo|api/cron).*)"],
+  // api/webhooks/jotform is excluded the same way: it's a public endpoint by
+  // necessity (JotForm can't send our session cookie), authenticated instead
+  // by its own shared-secret query param, checked inside the route itself.
+  matcher: ["/((?!_next/static|_next/image|favicon\\.(?:ico|png)|sw.js|manifest.webmanifest|icon\\.png|icon-.*\\.png|apple-touch-icon\\.png|api/upload-photo|api/cron|api/webhooks/jotform).*)"],
 };

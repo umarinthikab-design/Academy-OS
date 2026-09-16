@@ -64,7 +64,8 @@ export default async function RootLayout({
   const currentEmail = user?.email ?? "";
   const perms = await getPermissions();
   const requestsBadge = await getRequestsBadge(perms);
-  const navItems = getNavItems(perms, requestsBadge);
+  const registrationsBadge = perms.isAdmin || perms.isClubManager ? await prisma.pendingRegistration.count({ where: { status: "PENDING" } }) : 0;
+  const navItems = getNavItems(perms, requestsBadge, registrationsBadge);
 
   // Dev-only convenience switcher. The dynamic import sits behind a
   // build-time-inlined NODE_ENV check, so in production builds neither the
