@@ -30,6 +30,11 @@ export type Permissions = {
   // can (they have no Coach row, so they don't show up in canSuggestDrills).
   // Club managers can unless the admin turns it off in Club Settings.
   canAuthorDrills: boolean;
+  // Who may compose and send a club-wide broadcast from /notifications/new.
+  // Deliberately not a coach permission - broadcasting to the whole club is a
+  // management action, so it's gated on role here rather than on a schema
+  // toggle. Everyone with an account can *receive* notifications regardless.
+  canSendNotifications: boolean;
 };
 
 const EMPTY: Permissions = {
@@ -50,6 +55,7 @@ const EMPTY: Permissions = {
   canEditBatches: false,
   canSuggestDrills: false,
   canAuthorDrills: false,
+  canSendNotifications: false,
 };
 
 // The single source of truth for "what can the logged-in user do." Every
@@ -75,6 +81,7 @@ export async function getPermissions(): Promise<Permissions> {
       canEditBatches: true,
       canSuggestDrills: true,
       canAuthorDrills: true,
+      canSendNotifications: true,
     };
   }
 
@@ -101,6 +108,7 @@ export async function getPermissions(): Promise<Permissions> {
       canSuggestDrills: true,
       // Admins decide whether club managers can author drills (Club Settings).
       canAuthorDrills: settings?.clubManagersCanAuthorDrills ?? true,
+      canSendNotifications: true,
     };
   }
 

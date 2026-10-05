@@ -129,6 +129,7 @@ model User {
   approvalMessages ApprovalMessage[]
   pushSubscriptions PushSubscription[]
   reviewedRegistrations PendingRegistration[]
+  notifications Notification[]
 }
 
 // One row per subscribed browser/device (a user can have several - phone,
@@ -144,6 +145,40 @@ model PushSubscription {
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
+}
+
+// The durable, in-app counterpart to a web push. sendPushToUser in
+// lib/pushNotifications.ts only reaches devices that explicitly subscribed - a
+// user who dismissed the permission prompt (or whose browser blocked it)
+// never hears anything, and there's no history of what was sent. A row here
+// fixes both: every notification is persisted per recipient so it can be
+// listed in /notifications and badged as unread.
+//
+// `category` drives the icon/accent in the inbox (see
+// CATEGORY_ICONS in lib/notifications.ts) and is a free-form String rather
+// than an enum so a new kind of event doesn't need a migration.
+// `sentById` records the author of a manual broadcast (null for automatic
+// notifications triggered by an action) - it's a plain String, not a User
+// relation, so archiving a user can never break these rows; the name is
+// snapshotted into `senderName` for display.
+// `link` is an in-app route to send the user to when they open it.
+model Notification {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  body       String
+  category   String    @default("GENERAL")
+  link       String?
+  readAt     DateTime?
+  sentById   String?
+  senderName String?
+  createdAt  DateTime  @default(now())
+
+  // Unread counts filter on readAt and order by recency per user, so the
+  // (userId, readAt) index serves both the badge query and the inbox list.
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
 }
 
 model Coach {
