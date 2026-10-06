@@ -103,7 +103,7 @@ export default async function RootLayout({
                   width: 256,
                   flexShrink: 0,
                   background: "var(--primary)",
-                  color: "#fff",
+                  color: "var(--text)",
                   flexDirection: "column",
                   position: "sticky",
                   top: 0,
@@ -141,7 +141,7 @@ export default async function RootLayout({
                         fontSize: 20,
                         fontWeight: 700,
                         lineHeight: 1.15,
-                        color: "#fff",
+color: "var(--text)",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -159,7 +159,7 @@ export default async function RootLayout({
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "0 8px" }}>
                     <Avatar name={session.name} src={photoUrl} size={36} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
                       <div style={{ fontSize: 11, color: "var(--primary-fixed-dim)" }}>{roleLabel(session.role)}</div>
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export default async function RootLayout({
                   width: 72,
                   flexShrink: 0,
                   background: "var(--primary)",
-                  color: "#fff",
+color: "var(--text)",
                   flexDirection: "column",
                   position: "sticky",
                   top: 0,
