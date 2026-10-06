@@ -1,122 +1,114 @@
-# Touchline — setup guide (Windows)
+# Academy OS — Football Academy Management Platform
 
-## 🌐 Live app
+## Touchline — Current Branding
+This application is branded as **Touchline**, a football academy management platform. The system handles scheduling, roster management, attendance, and administrative workflows for youth academies.
 
+## Overview
+Academy administrators and coaches need a centralized system to manage player registrations, track attendance, schedule sessions, and manage academy operations — without the complexity of enterprise software or the risk of scattered spreadsheets.
+
+## Verified Features
+
+### User Roles
+- **Admin** — Full access to all pages and administration features
+- **Club Manager** — Administrative oversight without account-management privileges
+- **Head Coach** — Session scheduling, squad management, drill creation
+- **Assistant Coach** — Session execution, attendance taking
+- **Parent** — View own child's sessions and attendance; limited profile access
+
+### Core Features (code-review verified)
+- Player registration and roster management
+- Session scheduling and planning
+- Attendance tracking and status management
+- Drill library and creation
+- Session confirmation requests to players/parents
+- Attendance proposal and approval workflow
+- Squad management and player profiles
+- Age group and batch organization
+- Attendance and session logging
+- Note-taking on players
+- Notification system for broadcast messages (admin/club manager only)
+
+### Authentication & Access
+- Session-based authentication with JWT
+- Role-based page access controls
+- Password reset and forced-change flow
+- Session revocation capability
+- Demo accounts available via `npm run seed:demo`
+
+## Technology Stack
+
+### Frontend
+- **Next.js 15** — App Router framework with Server Components
+- **React 19** — UI library
+- **Tailwind CSS** — Utility-first styling framework
+
+### Backend & Database
+- **Prisma ORM** — Type-safe database client
+- **PostgreSQL** — Relational database (Neon.tech or Supabase)
+- **Node.js** — Runtime environment
+
+### Infrastructure
+- **Vercel** — Deployment and hosting platform
+- **Web Push** — Push notification service (VAPID keys)
+- **JotForm webhook** — Registration form integration
+
+## Architecture
+The application uses a **Server Components** architecture where data-fetching happens on the server, and interactive elements use Client Components. Authentication state flows through JWT tokens signed with a session secret. Database operations go through Prisma Client with Row-Level Security concepts implemented via permission checks in API routes.
+
+## Live Application
 **https://touchline-app-exp.vercel.app**
 
-This is the real, public version of the app, backed by the same database as
-your local setup. Anyone with a coach or admin account can log in here from
-any device — no local setup needed on their end.
+Authentication is required to access the application. Demo accounts can be created via `npm run seed:demo`.
 
-## Deploying updates
+## Local Development Setup
 
-The live app is connected to your GitHub repository
-(`umarinthikab-design/touchline-app`) and Vercel's `main` branch. Whenever
-you want to push a code change live:
+### Prerequisites
+- Node.js LTS version
+- PostgreSQL database (Neon.tech or Supabase recommended)
 
-```
-git add .
-git commit -m "describe what changed"
-git push
-```
+### Environment Variables
+Copy `.env.example` to `.env` and set:
 
-Vercel automatically detects the push and redeploys within a minute or two
-— no manual redeploy needed. You can watch it happen under the
-**Deployments** tab on your Vercel dashboard.
+- `DATABASE_URL` — PostgreSQL connection string (recommended: separate dev and prod databases)
+- `SESSION_SECRET` — Random string for JWT signing
+- `VAPID_PUBLIC_KEY` — Push notification public key
+- `VAPID_PRIVATE_KEY` — Push notification private key
+- `VAPID_SUBJECT` — VAPID subject identifier
+- `CRON_SECRET` — Webhook verification secret
+- `JOTFORM_WEBHOOK_SECRET` — JotForm integration secret
 
-If a deploy fails, check **Deployments → (the failed one) → Runtime Logs**
-for the real error — the site itself only shows a generic "Application
-error" message.
-
----
-
-## Local development setup
-
-This gets the app running on your own computer for free. No paid tools needed.
-
-## 1. Install Node.js
-
-Download the **LTS** version from https://nodejs.org and run the installer,
-accepting the defaults. This gives you `node` and `npm`.
-
-Check it worked — open **Command Prompt** or **PowerShell** and run:
-
-```
-node --version
-npm --version
-```
-
-You should see version numbers, not an error.
-
-## 2. Unzip this project
-
-Unzip `touchline-app.zip` somewhere easy to find, e.g. `C:\Users\<you>\touchline-app`.
-
-Open that folder in Command Prompt (or right-click inside the folder in File
-Explorer → "Open in Terminal" on Windows 11).
-
-## 3. Create a free database
-
-Go to https://neon.tech (or https://supabase.com — either works), sign up
-free, no credit card needed, and create a new project.
-
-Find your **connection string** — on Neon it's on the project dashboard,
-labeled "Connection string." It looks like:
-
-```
-postgresql://user:password@ep-something.neon.tech/dbname?sslmode=require
-```
-
-Copy it.
-
-## 4. Configure the app
-
-In the project folder, copy `.env.example` to a new file named `.env`
-(just `.env`, no `.example`). Open `.env` in Notepad and paste your
-connection string as the value of `DATABASE_URL`.
-
-## 5. Install dependencies
-
-Back in the terminal, inside the project folder, run:
-
-```
+### Setup Commands
+```bash
 npm install
-```
-
-This downloads everything the project needs. Takes a minute or two.
-
-## 6. Create the database tables
-
-```
-npx prisma migrate dev --name init
-```
-
-This reads `prisma/schema.prisma` and creates all the real tables in your
-database. If this command finishes without a red error message, it worked.
-
-## 7. Seed some starter data
-
-```
-npm run seed
-```
-
-This adds the age groups (U7–U15), a sample location, and an admin + head
-coach account so the app isn't empty.
-
-## 8. Run it
-
-```
+npx prisma migrate deploy
+npm run seed:demo
 npm run dev
 ```
 
-Open your browser to **http://localhost:3000**. You should see the
-Touchline homepage showing your seeded age groups and locations pulled
-live from the real database.
+Open **http://localhost:3000** to view the application.
+
+### Separate Databases Recommended
+- Use **different database URLs** for development and production environments
+- Never share the production database connection string in development
+- Seed data should use demo suffixes (e.g., `@demo.touchline.local`) to avoid affecting production data
+
+## Current Limitations
+- Parent-child profile isolation verified only through code review (runtime behavior unverified without deployed access)
+- Password policy complexity not enforced in schema (verified only through code review)
+- Push notification delivery best-effort (depends on user subscription status)
+- Real-time features limited to push notifications; no WebSocket polling
+- Some advanced analytics and reporting features pending implementation
+
+## Development Status
+- Active development in progress
+- TypeScript compilation verified (`npx tsc --noEmit` passes with zero errors)
+- Prisma schema migration system operational
+- GitHub repository: `umarinthikab-design/touchline-app`
+- Vercel deployments from `main` branch
+
+## Author
+**Umar Inthikab**
 
 ---
 
-## If something goes wrong
-
-Copy the exact error message and bring it back to this conversation — I'll
-read it and tell you what to do. Don't guess at fixes; the error text
-usually says exactly what's wrong.
+**Note:** This README reflects the current code state as of the latest review. Features and status may have changed since initial repository creation. For the most current state, refer to the GitHub repository and recent commits.
