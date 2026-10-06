@@ -19,7 +19,7 @@
 // for all three.
 
 import { prisma } from "./prisma";
-import { sendPushToUser } from "./pushNotifications";
+import { notifyUser } from "./notifications";
 
 export type NotifyApproversInput =
   | { type: "ATTENDANCE_CONFIRM"; requestedByCoachId: string; scheduledSessionId: string }
@@ -62,5 +62,10 @@ async function resolveApproverUserIds(input: NotifyApproversInput): Promise<stri
 
 export async function notifyApprovers(input: NotifyApproversInput, title: string, body: string, url: string) {
   const userIds = await resolveApproverUserIds(input);
-  await Promise.all(userIds.map((userId) => sendPushToUser(userId, title, body, url)));
+  // notifyUser (not sendPushToUser) so approvers also get a durable row in
+  // /notifications - an approver who never granted push permission would
+  // otherwise have no way to know a request is waiting.
+  await Promise.all(
+    userIds.map((userId) => notifyUser({ userId, title, body, link: url, category: "APPROVAL" }))
+  );
 }

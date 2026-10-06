@@ -6,17 +6,20 @@ import { redirect } from "next/navigation";
 import { randomUUID } from "crypto";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
-import { sendPushToUser } from "@/lib/pushNotifications";
+import { notifyUser } from "@/lib/notifications";
 
-// Pushes the same message to every one of the given coaches (by Coach.id,
-// not User.id - the callers below all work in Coach ids since that's what
-// ScheduledSession.headCoaches/assistantCoaches are keyed by). Best-effort:
-// a push failure must never break the schedule change that triggered it.
+// Pushes an in-app notification (and push if subscribed) to every coach
+// whose userId we can look up from their Coach row. Best-effort: a
+// notification failure must never break the schedule change that triggered it.
 async function notifyCoaches(coachIds: string[], title: string, body: string, url: string) {
   if (coachIds.length === 0) return;
   try {
     const coaches = await prisma.coach.findMany({ where: { id: { in: coachIds } }, select: { userId: true } });
-    await Promise.all(coaches.map((c) => sendPushToUser(c.userId, title, body, url)));
+    await Promise.all(
+      coaches.map((c) =>
+        notifyUser({ userId: c.userId, title, body, link: url, category: "GENERAL" })
+      )
+    );
   } catch {
     // Best-effort - see above.
   }

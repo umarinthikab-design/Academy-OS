@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { notifyApprovers } from "@/lib/notifyApprovers";
-import { sendPushToUser } from "@/lib/pushNotifications";
+import { notifyUser } from "@/lib/notifications";
 
 // A Session is a reusable drill PLAN (name + an ordered list of drills) -
 // distinct from ScheduledSession, the calendar slot. All coaches can create
@@ -121,7 +121,13 @@ export async function approveSessionShare(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "approved_request", "ApprovalRequest", requestId, "session_share");
-  await sendPushToUser(request.requestedBy.userId, "Session plan share approved", "Your session plan is now visible to the team.", "/sessions").catch(() => {});
+  await notifyUser({
+      userId: request.requestedBy.userId,
+      title: "Session plan share approved",
+      body: "Your session plan is now visible to the team.",
+      link: "/sessions",
+      category: "APPROVAL",
+    });
   revalidatePath("/sessions");
   redirect("/sessions?success=Session plan shared with the team.");
 }
@@ -146,7 +152,13 @@ export async function rejectSessionShare(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "rejected_request", "ApprovalRequest", requestId, "session_share");
-  await sendPushToUser(request.requestedBy.userId, "Session plan share rejected", "Your session plan share request was rejected.", "/sessions").catch(() => {});
+  await notifyUser({
+      userId: request.requestedBy.userId,
+      title: "Session plan share rejected",
+      body: "Your session plan share request was rejected.",
+      link: "/sessions",
+      category: "APPROVAL",
+    });
   revalidatePath("/sessions");
   redirect("/sessions?success=Share request rejected - the plan stays private.");
 }

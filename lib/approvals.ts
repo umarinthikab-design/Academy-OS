@@ -15,7 +15,7 @@
 
 import { prisma } from "./prisma";
 import { logActivity } from "./logActivity";
-import { sendPushToUser } from "./pushNotifications";
+import { notifyUser } from "./notifications";
 import { PlayerAttendanceStatus } from "@prisma/client";
 import type { Permissions } from "./permissions";
 import type { RequestType } from "@prisma/client";
@@ -373,12 +373,13 @@ export async function applyDecision(
     }
     await prisma.approvalRequest.update({ where: { id: requestId }, data: { status, resolvedById: perms.coachId, resolvedAt: new Date() } });
     if (perms.userId) await logActivity(perms.userId, approve ? "approved_request" : "rejected_request", "ApprovalRequest", requestId, "attendance");
-    await sendPushToUser(
-      request.requestedBy.userId,
-      approve ? "Attendance proposal approved" : "Attendance proposal rejected",
-      approve ? "Your attendance proposal was approved." : "Your attendance proposal was rejected - you can resubmit.",
-      "/requests"
-    ).catch(() => {});
+    await notifyUser({
+      userId: request.requestedBy.userId,
+      title: approve ? "Attendance proposal approved" : "Attendance proposal rejected",
+      body: approve ? "Your attendance proposal was approved." : "Your attendance proposal was rejected - you can resubmit.",
+      link: "/requests",
+      category: "APPROVAL",
+    });
     return { ok: true, label: "attendance" };
   }
 
@@ -392,12 +393,13 @@ export async function applyDecision(
     }
     await prisma.approvalRequest.update({ where: { id: requestId }, data: { status, resolvedById: perms.coachId, resolvedAt: new Date() } });
     if (perms.userId) await logActivity(perms.userId, approve ? "approved_request" : "rejected_request", "ApprovalRequest", requestId, "session_share");
-    await sendPushToUser(
-      request.requestedBy.userId,
-      approve ? "Session plan share approved" : "Session plan share rejected",
-      approve ? "Your session plan is now visible to the team." : "Your session plan share request was rejected.",
-      "/sessions"
-    ).catch(() => {});
+    await notifyUser({
+      userId: request.requestedBy.userId,
+      title: approve ? "Session plan share approved" : "Session plan share rejected",
+      body: approve ? "Your session plan is now visible to the team." : "Your session plan share request was rejected.",
+      link: "/sessions",
+      category: "APPROVAL",
+    });
     return { ok: true, label: "session_share" };
   }
 

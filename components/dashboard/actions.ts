@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
 import { applyDecision } from "@/lib/approvals";
 import { logActivity } from "@/lib/logActivity";
-import { sendPushToUser } from "@/lib/pushNotifications";
+import { notifyUser } from "@/lib/notifications";
 
 export async function approveRequest(requestId: string) {
   const perms = await getPermissions();
@@ -107,12 +107,13 @@ export async function confirmSessionParticipation(
     const when = `${row.scheduledSession.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${row.scheduledSession.startTime}`;
     await Promise.all(
       recipientUserIds.map((userId) =>
-        sendPushToUser(
+        notifyUser({
           userId,
-          "Coach declined a session",
-          `${row.coach.user.name} declined ${row.scheduledSession.ageGroup.name} on ${when} - may need re-staffing.`,
-          "/"
-        )
+          title: "Coach declined a session",
+          body: `${row.coach.user.name} declined ${row.scheduledSession.ageGroup.name} on ${when} - may need re-staffing.`,
+          link: "/",
+          category: "ATTENDANCE",
+        })
       )
     ).catch(() => {});
   }

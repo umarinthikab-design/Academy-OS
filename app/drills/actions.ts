@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { sanitizePhotoUrl } from "@/lib/photo";
-import { sendPushToUser } from "@/lib/pushNotifications";
+import { notifyUser } from "@/lib/notifications";
 import { notifyApprovers } from "@/lib/notifyApprovers";
 
 // Coaches who approve requests can also attach photos. URLs come through as
@@ -149,7 +149,13 @@ export async function approveDrill(id: string) {
   });
   if (perms.userId) await logActivity(perms.userId, "approved_drill", "Drill", id);
   if (drill.createdBy) {
-    await sendPushToUser(drill.createdBy.userId, "Drill suggestion approved", `"${drill.name}" was approved and added to the library.`, "/drills").catch(() => {});
+    await notifyUser({
+      userId: drill.createdBy.userId,
+      title: "Drill suggestion approved",
+      body: `"${drill.name}" was approved and added to the library.`,
+      link: "/drills",
+      category: "DRILL",
+    });
   }
   revalidatePath("/drills");
   redirect("/drills?success=Drill approved and added to the library.");
@@ -167,7 +173,13 @@ export async function rejectDrill(id: string) {
   await prisma.drill.delete({ where: { id } });
   if (perms.userId) await logActivity(perms.userId, "rejected_drill", "Drill", id);
   if (drill?.createdBy) {
-    await sendPushToUser(drill.createdBy.userId, "Drill suggestion rejected", `"${drill.name}" was not approved.`, "/drills").catch(() => {});
+    await notifyUser({
+      userId: drill.createdBy.userId,
+      title: "Drill suggestion rejected",
+      body: `"${drill.name}" was not approved.`,
+      link: "/drills",
+      category: "DRILL",
+    });
   }
   revalidatePath("/drills");
   redirect("/drills?success=Drill rejected.");

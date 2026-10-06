@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/getSession";
 import { getUnreadCount, getInbox, markAllRead, markRead } from "@/lib/notifications";
 import { getPermissions } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/PageHeader";

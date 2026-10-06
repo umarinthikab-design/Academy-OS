@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { notifyApprovers } from "@/lib/notifyApprovers";
-import { sendPushToUser } from "@/lib/pushNotifications";
+import { notifyUser } from "@/lib/notifications";
 import {
   CoachAttendanceStatus,
   PlayerAttendanceStatus,
@@ -192,7 +192,13 @@ export async function approveAttendanceRequest(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "approved_request", "ApprovalRequest", requestId, "attendance");
-  await sendPushToUser(request.requestedBy.userId, "Attendance proposal approved", "Your attendance proposal was approved.", "/requests").catch(() => {});
+  await notifyUser({
+      userId: request.requestedBy.userId,
+      title: "Attendance proposal approved",
+      body: "Your attendance proposal was approved.",
+      link: "/requests",
+      category: "ATTENDANCE",
+    });
   revalidatePath("/attendance");
   redirect("/attendance?success=Attendance approved.");
 }
@@ -235,7 +241,13 @@ export async function rejectAttendanceRequest(requestId: string) {
   });
 
   if (perms.userId) await logActivity(perms.userId, "rejected_request", "ApprovalRequest", requestId, "attendance");
-  await sendPushToUser(request.requestedBy.userId, "Attendance proposal rejected", "Your attendance proposal was rejected - you can resubmit.", "/requests").catch(() => {});
+  await notifyUser({
+      userId: request.requestedBy.userId,
+      title: "Attendance proposal rejected",
+      body: "Your attendance proposal was rejected - you can resubmit.",
+      link: "/requests",
+      category: "ATTENDANCE",
+    });
   revalidatePath("/attendance");
   redirect(`/attendance?success=${encodeURIComponent("Attendance proposal rejected — the assistant can resubmit.")}`);
 }
