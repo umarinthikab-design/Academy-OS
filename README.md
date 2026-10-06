@@ -21,7 +21,7 @@ Academy administrators and coaches need a centralized system to manage player re
 ### Planned for the Next Release
 - **Parent** — View own child's sessions and attendance; limited profile access
 
-### Current Capabilities
+### Core Features
 - Player registration and roster management
 - Session scheduling and planning
 - Attendance tracking and status management
@@ -78,6 +78,7 @@ Copy `.env.example` to `.env` and set the following (recommended: separate dev a
 - `DATABASE_URL` — PostgreSQL connection string (recommended: separate dev and prod databases)
 - `DIRECT_URL` — Prisma direct connection string for **raw database operations and running Prisma migrations**
 - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — VAPID public key for push notifications (frontend-safe); must match `VAPID_PUBLIC_KEY`
+- `VAPID_PUBLIC_KEY` — VAPID public key for push notifications (must match `NEXT_PUBLIC_VAPID_PUBLIC_KEY`)
 - `VAPID_PRIVATE_KEY` — VAPID private key for push notifications (server-side only)
 - `VAPID_SUBJECT` — VAPID subject identifier
 - `CRON_SECRET` — Authenticates scheduled cron requests (not the JotForm webhook)
@@ -98,6 +99,7 @@ Open **http://localhost:3000** to view the application.
 ### Separate Databases Recommended
 - Use **different database URLs** for development and production environments
 - Never share the production database connection string in development
+- **Run demo seeding only against a separate development database, never production.**
 - Seed data should use demo suffixes (e.g., `@demo.touchline.local`) to avoid affecting production data
 
 ## Current Limitations
