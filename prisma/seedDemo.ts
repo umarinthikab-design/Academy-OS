@@ -79,6 +79,14 @@ async function clean() {
 }
 
 async function main() {
+  // Exit with a clear error unless explicitly allowed via env var.
+  if (process.env.ALLOW_DEMO_SEED !== "1") {
+    console.error(
+      "Demo seeding is disabled. Set ALLOW_DEMO_SEED=1 in your environment to enable it."
+    );
+    process.exit(1);
+  }
+  console.log("Demo seeding enabled via ALLOW_DEMO_SEED=1");
   console.log("Cleaning up any previous demo data...");
   await clean();
 

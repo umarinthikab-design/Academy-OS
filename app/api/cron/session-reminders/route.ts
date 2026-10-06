@@ -19,12 +19,26 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getConfirmationsNeedingReminder } from "@/lib/confirmations";
 import { sendPushToUser } from "@/lib/pushNotifications";
+import { safeEqual } from "@/lib/safeEqual";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
+
+  // Fail closed: if CRON_SECRET is not configured, reject the request.
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Also validate using constant-time comparison via safeEqual, in case
+  // the header format is slightly different but the token matches.
+  const headerToken = authHeader?.replace("Bearer ", "") ?? "";
+  if (!safeEqual(headerToken, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

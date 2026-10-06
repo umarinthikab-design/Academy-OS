@@ -150,6 +150,16 @@ export default async function AcademySettingsPage({
                 required
               />
             </Field>
+            <Field
+              label="Academy timezone"
+              hint="IANA timezone string (e.g. America/New_York, Europe/London, UTC). Affects how wall-clock session times, deadlines, and today filters are interpreted."
+            >
+              <Input
+                name="timeZone"
+                defaultValue={settings.timeZone ?? "UTC"}
+                required
+              />
+            </Field>
           </div>
         </section>
 

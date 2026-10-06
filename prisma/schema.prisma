@@ -599,6 +599,11 @@ model AcademySettings {
   // Within this many hours of start, an unanswered confirmation escalates
   // to the "priority" treatment.
   priorityWindowHours           Int     @default(48)
+  // Academy timezone for wall-clock time interpretation. Stored as an IANA
+  // string (e.g. "America/New_York", "Europe/London"). Default "UTC" so
+  // existing data is unaffected; compute helpers read this value and apply
+  // the offset when interpreting startTime / deadline / "today" filters.
+  timeZone String @default("UTC")
   // Academy name shown prominently across the app (login screen, sidebar,
   // mobile top bar, dashboard welcome). The "system name" stays Touchline;
   // this is the club's own branding on top of it.

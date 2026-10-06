@@ -102,13 +102,13 @@ export default async function RootLayout({
                 style={{
                   width: 256,
                   flexShrink: 0,
-                  background: "var(--primary)",
-                  color: "var(--text)",
+                  background: "var(--sidebar-bg)",
+                  color: "var(--sidebar-text)",
                   flexDirection: "column",
                   position: "sticky",
                   top: 0,
                   height: "100vh",
-                  borderRight: "1px solid var(--primary-container)",
+                  borderRight: "1px solid var(--sidebar-border)",
                 }}
               >
                 <div style={{ padding: "24px 16px 24px", display: "flex", alignItems: "center", gap: 12 }}>
@@ -116,7 +116,7 @@ export default async function RootLayout({
                     <img
                       src={branding.logoUrl}
                       alt=""
-                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "contain", background: "var(--surface)", flexShrink: 0 }}
+                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "contain", background: "var(--sidebar-logo-bg)", flexShrink: 0 }}
                     />
                   ) : (
                     <div
@@ -124,14 +124,14 @@ export default async function RootLayout({
                         width: 40,
                         height: 40,
                         borderRadius: "50%",
-                        background: "var(--primary-container)",
+                        background: "var(--sidebar-logo-bg)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
                       }}
                     >
-                      <Icon name="football" size={20} style={{ color: "var(--accent)" }} />
+                      <Icon name="football" size={20} style={{ color: "var(--sidebar-logo-icon)" }} />
                     </div>
                   )}
                   <div style={{ minWidth: 0 }}>
@@ -141,7 +141,7 @@ export default async function RootLayout({
                         fontSize: 20,
                         fontWeight: 700,
                         lineHeight: 1.15,
-color: "var(--text)",
+                        color: "var(--sidebar-text-strong)",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
@@ -149,18 +149,18 @@ color: "var(--text)",
                     >
                       {branding.academyName}
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--primary-fixed-dim)", marginTop: 1 }}>Powered by Touchline</div>
+                    <div style={{ fontSize: 12, color: "var(--sidebar-text)", marginTop: 1 }}>Powered by Touchline</div>
                   </div>
                 </div>
 
                 <SidebarNav items={navItems} />
 
-                <div style={{ padding: "16px 16px 20px", borderTop: "1px solid var(--primary-container)", marginTop: 12 }}>
+                <div style={{ padding: "16px 16px 20px", borderTop: "1px solid var(--sidebar-border)", marginTop: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "0 8px" }}>
                     <Avatar name={session.name} src={photoUrl} size={36} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
-                      <div style={{ fontSize: 11, color: "var(--primary-fixed-dim)" }}>{roleLabel(session.role)}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--sidebar-text-strong)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--sidebar-text)" }}>{roleLabel(session.role)}</div>
                     </div>
                   </div>
                   <form action={logout}>
@@ -174,8 +174,8 @@ color: "var(--text)",
                         gap: 8,
                         padding: "9px 10px",
                         background: "transparent",
-                        color: "var(--primary-fixed-dim)",
-                        border: "1px solid var(--primary-container)",
+                        color: "var(--sidebar-text)",
+                        border: "1px solid var(--sidebar-border)",
                         borderRadius: 8,
                         cursor: "pointer",
                         fontSize: 12.5,
@@ -199,13 +199,13 @@ color: "var(--text)",
                 style={{
                   width: 72,
                   flexShrink: 0,
-                  background: "var(--primary)",
-color: "var(--text)",
+                  background: "var(--sidebar-bg)",
+                  color: "var(--sidebar-text)",
                   flexDirection: "column",
                   position: "sticky",
                   top: 0,
                   height: "100vh",
-                  borderRight: "1px solid var(--primary-container)",
+                  borderRight: "1px solid var(--sidebar-border)",
                 }}
               >
                 <div style={{ padding: "20px 0", display: "flex", justifyContent: "center" }}>
@@ -214,7 +214,7 @@ color: "var(--text)",
                       src={branding.logoUrl}
                       alt={branding.academyName}
                       title={branding.academyName}
-                      style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "contain", background: "var(--surface)", flexShrink: 0 }}
+                      style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "contain", background: "var(--sidebar-logo-bg)", flexShrink: 0 }}
                     />
                   ) : (
                     <div
@@ -223,21 +223,21 @@ color: "var(--text)",
                         width: 36,
                         height: 36,
                         borderRadius: "50%",
-                        background: "var(--primary-container)",
+                        background: "var(--sidebar-logo-bg)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
                       }}
                     >
-                      <Icon name="football" size={18} style={{ color: "var(--accent)" }} />
+                      <Icon name="football" size={18} style={{ color: "var(--sidebar-logo-icon)" }} />
                     </div>
                   )}
                 </div>
 
                 <SidebarNav items={navItems} compact />
 
-                <div style={{ padding: "12px 8px 16px", borderTop: "1px solid var(--primary-container)", marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                <div style={{ padding: "12px 8px 16px", borderTop: "1px solid var(--sidebar-border)", marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                   <Link href="/settings" title={`${session.name} · ${roleLabel(session.role)}`}>
                     <Avatar name={session.name} src={photoUrl} size={32} />
                   </Link>
@@ -252,8 +252,8 @@ color: "var(--text)",
                         justifyContent: "center",
                         padding: 8,
                         background: "transparent",
-                        color: "var(--primary-fixed-dim)",
-                        border: "1px solid var(--primary-container)",
+                        color: "var(--sidebar-text)",
+                        border: "1px solid var(--sidebar-border)",
                         borderRadius: 8,
                         cursor: "pointer",
                         transition: "background var(--transition), color var(--transition)",

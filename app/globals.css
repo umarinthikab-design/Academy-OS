@@ -70,13 +70,38 @@
   --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Dark theme ─────────────────────────────────────────────
-   data-theme="dark" on <html> overrides the same tokens so every
-   component that uses var() picks up the dark palette automatically.
-   Level 0 is Deep Pitch Green in dark mode; cards sit on elevated
-   dark-green containers (#132019 stroke tone from DESIGN.md). */
+/* ── Sidebar tokens ──────────────────────────────────────────
+   Light-mode defaults under :root; dark-mode overrides under
+   :root[data-theme="dark"]. Active element uses --secondary (dark)
+   or var(--secondary-fixed) (light hover bar). Inactive/inert text
+   uses --text-muted / --primary-fixed-dim. */
 
+/* Light sidebar tokens */
+:root {
+  --sidebar-bg: var(--surface);
+  --sidebar-border: var(--border);
+  --sidebar-text: var(--text-muted);
+  --sidebar-text-strong: var(--text);
+  --sidebar-hover-bg: var(--surface-muted);
+  --sidebar-active-bg: var(--surface-container);
+  --sidebar-active-text: var(--primary-container);
+  --sidebar-active-bar: var(--secondary);
+  --sidebar-logo-bg: var(--surface-container);
+  --sidebar-logo-icon: var(--secondary);
+}
+
+/* Dark sidebar tokens — reproduce TODAY's deep-pitch look exactly */
 :root[data-theme="dark"] {
+  --sidebar-bg: var(--primary);
+  --sidebar-border: var(--primary-container);
+  --sidebar-text: var(--primary-fixed-dim);
+  --sidebar-text-strong: var(--primary-container);
+  --sidebar-hover-bg: var(--primary-fixed-dim);
+  --sidebar-active-bg: var(--primary-container);
+  --sidebar-active-text: var(--secondary-fixed);
+  --sidebar-active-bar: var(--secondary-fixed);
+  --sidebar-logo-bg: var(--primary-container);
+  --sidebar-logo-icon: var(--secondary-fixed);
   --primary: #00261b;
   --primary-dark: #000f0a;
   --primary-light: #3b9469;
@@ -399,4 +424,12 @@ a {
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ── Sidebar nav item hover CSS class ───────────────────────
+   Applied as class="sidebar-nav-item" in SidebarNav.tsx.
+   The :hover state picks up --sidebar-hover-bg from the :root
+   or :root[data-theme="dark"] depending on the current theme. */
+.sidebar-nav-item:hover {
+  background: var(--sidebar-hover-bg);
 }

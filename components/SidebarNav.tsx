@@ -16,6 +16,9 @@ import type { NavItem } from "@/lib/navItems";
 // see .tablet-sidebar in globals.css. Same component, same data, so the
 // two tiers can never drift out of sync with each other.
 
+// Hover state for nav items uses the --sidebar-hover-bg token from globals.css.
+// Inline styles cannot express :hover, so a CSS class is used (see globals.css).
+
 export function SidebarNav({ items, compact = false }: { items: NavItem[]; compact?: boolean }) {
   const pathname = usePathname();
 
@@ -28,6 +31,7 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
             key={item.href}
             href={item.href}
             title={compact ? item.label : undefined}
+            className="sidebar-nav-item"
             style={{
               display: "flex",
               alignItems: "center",
@@ -35,13 +39,13 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
               gap: 12,
               padding: compact ? "12px 8px" : "10px 14px",
               position: "relative",
-              color: active ? "var(--secondary-fixed)" : "var(--primary-fixed-dim)",
+              color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
               textDecoration: "none",
               fontSize: 13.5,
               fontWeight: active ? 700 : 500,
               borderRadius: 8,
-              borderRight: active && !compact ? "4px solid var(--secondary-fixed)" : "4px solid transparent",
-              background: active ? "var(--primary-container)" : "transparent",
+              borderRight: active && !compact ? "4px solid var(--sidebar-active-bar)" : "4px solid transparent",
+              background: active ? "var(--sidebar-active-bg)" : "transparent",
               transition: "background var(--transition), color var(--transition)",
             }}
           >

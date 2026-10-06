@@ -19,6 +19,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
+import { safeEqual } from "@/lib/safeEqual";
+
 export const runtime = "nodejs";
 
 function parsePretty(pretty: string): Record<string, string> {
@@ -52,8 +54,24 @@ function parseDate(value: string | undefined): Date | null {
 }
 
 export async function POST(request: Request) {
-  const token = new URL(request.url).searchParams.get("token");
-  if (!token || token !== process.env.JOTFORM_WEBHOOK_SECRET) {
+  // Fail closed: if JOTFORM_WEBHOOK_SECRET is missing or empty, reject.
+  const webhookSecret = process.env.JOTFORM_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Reject requests with Content-Length above 256 KB (413).
+  // We check content-length before reading the body.
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > 256 * 1024) {
+    return NextResponse.json({ error: "payload too large" }, { status: 413 });
+  }
+
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+
+  // Compare token using constant-time comparison.
+  if (!token || !safeEqual(token, webhookSecret)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

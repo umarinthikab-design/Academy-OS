@@ -329,9 +329,6 @@ export async function detachSessionPlan(scheduledSessionId: string) {
   redirect("/schedule?success=Session plan removed.");
 }
 
-function sessionEnd(s: { date: Date; startTime: string; durationMinutes: number }): Date {
-  const [h, m] = s.startTime.split(":").map(Number);
-  const start = new Date(s.date);
-  start.setHours(h, m, 0, 0);
-  return new Date(start.getTime() + s.durationMinutes * 60 * 1000);
+function sessionEnd(s: { date: Date; startTime: string; durationMinutes: number; timeZone?: string }): Date {
+  return sessionEnd(s);
 }

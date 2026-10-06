@@ -7,26 +7,33 @@ import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { notifyApprovers } from "@/lib/notifyApprovers";
 import { notifyUser } from "@/lib/notifications";
-import {
-  CoachAttendanceStatus,
-  PlayerAttendanceStatus,
-} from "@prisma/client";
+import { safeEqual } from "@/lib/safeEqual";
+import { sessionStartInstant } from "@/lib/time";
+import { PlayerAttendanceStatus, CoachAttendanceStatus } from "@prisma/client";
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
-function sessionStart(session: { date: Date; startTime: string }): Date {
-  const [h, m] = session.startTime.split(":").map(Number);
-  const start = new Date(session.date);
-  start.setHours(h, m, 0, 0);
-  return start;
+// Timezone-aware session start.
+// Reads the academy's timeZone from AcademySettings; falls back to UTC.
+async function sessionStart(
+  session: { date: Date; startTime: string; timeZone?: string }
+): Promise<Date> {
+  const timeZone = session.timeZone || "UTC";
+  return sessionStartInstant(session.date, session.startTime, timeZone);
 }
 
-function sessionDeadline(session: { date: Date; startTime: string }): Date {
-  return new Date(sessionStart(session).getTime() - SIX_HOURS_MS);
+// Timezone-aware session deadline: 6 hours before session start.
+async function sessionDeadline(
+  session: { date: Date; startTime: string; timeZone?: string }
+): Promise<Date> {
+  return new Date((await sessionStart(session)).getTime() - SIX_HOURS_MS);
 }
 
-function sessionEnd(session: { date: Date; startTime: string; durationMinutes: number }): Date {
-  return new Date(sessionStart(session).getTime() + session.durationMinutes * 60 * 1000);
+// Timezone-aware session end.
+async function sessionEnd(
+  session: { date: Date; startTime: string; durationMinutes: number; timeZone?: string }
+): Promise<Date> {
+  return new Date((await sessionStart(session)).getTime() + session.durationMinutes * 60 * 1000);
 }
 
 // ── Post-session attendance marking ──────────────────────────────────
@@ -64,7 +71,7 @@ export async function submitAttendance(formData: FormData) {
           playerId,
           scheduledSessionId,
           status: status as PlayerAttendanceStatus,
-          deadline: sessionDeadline(session),
+          deadline: await sessionDeadline(session),
           confirmedAt: new Date(),
         },
       });
@@ -171,7 +178,7 @@ export async function approveAttendanceRequest(requestId: string) {
     redirect("/attendance?error=no_permission");
   }
 
-  const deadline = sessionDeadline(session);
+  const deadline = await sessionDeadline(session);
   for (const { playerId, status } of payload.statuses) {
     await prisma.playerAttendance.upsert({
       where: { playerId_scheduledSessionId: { playerId, scheduledSessionId: session.id } },
@@ -292,7 +299,7 @@ export async function checkInCoach(scheduledSessionId: string) {
 
   const assigned = [...session.headCoaches, ...session.assistantCoaches].some((c) => c.id === perms.coachId);
   if (!assigned) redirect("/attendance?error=no_permission");
-  if (new Date() < sessionStart(session)) redirect("/attendance?error=not_started");
+  if (new Date() < await sessionStart(session)) redirect("/attendance?error=not_started");
 
   await prisma.coachAttendance.upsert({
     where: { coachId_scheduledSessionId: { coachId: perms.coachId!, scheduledSessionId } },

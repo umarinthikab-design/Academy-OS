@@ -6,7 +6,7 @@ This application is branded as **Touchline**, a football academy management plat
 ## Overview
 The current release is designed for internal academy stakeholders:
 administrators, club managers, head coaches and assistant coaches.
-Parent access is planned for the next release.
+Parent access is in progress.
 
 Academy administrators and coaches need a centralized system to manage player registrations, track attendance, schedule sessions, and manage academy operations — without the complexity of enterprise software or the risk of scattered spreadsheets.
 
@@ -19,7 +19,7 @@ Academy administrators and coaches need a centralized system to manage player re
 - **Assistant Coach** — Session execution, attendance taking
 
 ### Planned for the Next Release
-- **Parent** — View own child's sessions and attendance; limited profile access
+- **Parent** — View own child's sessions and attendance; limited profile access (in progress)
 
 ### Core Features
 - Player registration and roster management
@@ -90,7 +90,7 @@ Copy `.env.example` to `.env` and set the following (recommended: separate dev a
 ```bash
 npm install
 npx prisma migrate deploy
-npm run seed:demo
+npm run seed:demo    # Run only when ALLOW_DEMO_SEED=1 is set
 npm run dev
 ```
 
@@ -100,6 +100,7 @@ Open **http://localhost:3000** to view the application.
 - Use **different database URLs** for development and production environments
 - Never share the production database connection string in development
 - **Run demo seeding only against a separate development database, never production.**
+- Set `ALLOW_DEMO_SEED=1` to enable `npm run seed:demo`.
 - Seed data should use demo suffixes (e.g., `@demo.touchline.local`) to avoid affecting production data
 
 ## Current Limitations

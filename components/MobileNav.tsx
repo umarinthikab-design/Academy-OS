@@ -37,7 +37,7 @@ export function MobileNav({
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
+          style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
         >
           <Icon name="menu" size={24} />
         </button>
@@ -49,7 +49,7 @@ export function MobileNav({
             minWidth: 0,
             fontWeight: 800,
             fontSize: 16,
-            color: "#fff",
+            color: "var(--sidebar-text-strong)",
             textDecoration: "none",
             textAlign: "center",
             padding: "0 4px",
@@ -74,8 +74,8 @@ export function MobileNav({
               position: "relative",
               width: 280,
               maxWidth: "84vw",
-              background: "var(--primary)",
-              color: "#fff",
+              background: "var(--sidebar-bg)",
+              color: "var(--sidebar-text-strong)",
               height: "100%",
               display: "flex",
               flexDirection: "column",
@@ -85,49 +85,51 @@ export function MobileNav({
             }}
           >
             <div style={{ padding: "0 20px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ minWidth: 0 }}>
-                {logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt={academyName}
-                    style={{ maxWidth: 200, maxHeight: 36, objectFit: "contain", display: "block", marginBottom: 4 }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 800,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: 200,
-                    }}
-                  >
-                    {academyName}
-                  </div>
-                )}
-                {logoUrl && (
-                  <div
-                    style={{
-                      fontSize: 15,
-                      fontWeight: 800,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: 200,
-                    }}
-                  >
-                    {academyName}
-                  </div>
-                )}
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.55, marginTop: 2 }}>
+<div style={{ minWidth: 0 }}>
+                  {logoUrl ? (
+                    <img
+                      src={logoUrl}
+                      alt={academyName}
+                      style={{ maxWidth: 200, maxHeight: 36, objectFit: "contain", display: "block", marginBottom: 4 }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 800,
+                        color: "var(--sidebar-text-strong)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                      }}
+                    >
+                      {academyName}
+                    </div>
+                  )}
+                  {logoUrl && (
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 800,
+                        color: "var(--sidebar-text-strong)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                      }}
+                    >
+                      {academyName}
+                    </div>
+                  )}
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.55, marginTop: 2, color: "var(--sidebar-text)" }}>
                   Powered by Touchline
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
-                style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", display: "flex", opacity: 0.8 }}
+                style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", opacity: 0.8 }}
               >
                 <Icon name="close" size={22} />
               </button>
@@ -153,9 +155,9 @@ export function MobileNav({
                       fontSize: 14,
                       fontWeight: active ? 700 : 500,
                       borderRadius: 8,
-                      background: active ? "var(--primary-container)" : "transparent",
-                      borderRight: active ? "4px solid var(--secondary-fixed)" : "4px solid transparent",
-                      color: active ? "var(--secondary-fixed)" : "var(--primary-fixed-dim)",
+                      background: active ? "var(--sidebar-active-bg)" : "transparent",
+                      borderRight: active ? "4px solid var(--sidebar-active-bar)" : "4px solid transparent",
+                      color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
                     }}
                   >
                     <Icon name={item.icon} size={18} />
@@ -184,7 +186,7 @@ export function MobileNav({
               })}
             </nav>
 
-            <div style={{ padding: "14px 20px 0", borderTop: "1px solid rgba(255,255,255,0.12)", marginTop: 12 }}>
+            <div style={{ padding: "14px 20px 0", borderTop: "1px solid var(--sidebar-border)", marginTop: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <Avatar name={userName} src={photoUrl} size={38} />
                 <div style={{ minWidth: 0 }}>
@@ -202,9 +204,9 @@ export function MobileNav({
                     justifyContent: "center",
                     gap: 8,
                     padding: "9px 10px",
-                    background: "rgba(255,255,255,0.08)",
-                    color: "#fff",
-                    border: "1px solid rgba(255,255,255,0.2)",
+                    background: "transparent",
+                    color: "var(--sidebar-text)",
+                    border: "1px solid var(--sidebar-border)",
                     borderRadius: 8,
                     cursor: "pointer",
                     fontSize: 13,

@@ -38,6 +38,15 @@ export async function updateAcademySettings(formData: FormData) {
     ? formData.get("clubManagersCanAuthorDrills") === "on"
     : (existing?.clubManagersCanAuthorDrills ?? true);
 
+  // Timezone for wall-clock session time interpretation. IANA timezone string
+  // (e.g. "America/New_York", "Europe/London", "UTC"). Default "UTC" preserves
+  // existing behavior; compute helpers read this value and apply the offset when
+  // interpreting startTime / deadline / "today" filters.
+  const timeZone = String(formData.get("timeZone") || "").trim() || "UTC";
+  if (!/^[A-Za-z\/\-]+$/.test(timeZone)) {
+    redirect("/academy-settings?error=timezone");
+  }
+
   await prisma.academySettings.upsert({
     where: { id: existing?.id ?? "__none__" },
     update: {
@@ -45,6 +54,7 @@ export async function updateAcademySettings(formData: FormData) {
       confirmationWindowHours,
       priorityWindowHours,
       clubManagersCanAuthorDrills,
+      timeZone,
       academyName,
       logoUrl,
     },
@@ -53,6 +63,7 @@ export async function updateAcademySettings(formData: FormData) {
       confirmationWindowHours,
       priorityWindowHours,
       clubManagersCanAuthorDrills,
+      timeZone: "UTC",
       academyName,
       logoUrl,
     },
