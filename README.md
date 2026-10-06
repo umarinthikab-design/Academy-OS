@@ -4,15 +4,21 @@
 This application is branded as **Touchline**, a football academy management platform. The system handles scheduling, roster management, attendance, and administrative workflows for youth academies.
 
 ## Overview
+The current release is designed for internal academy stakeholders:
+administrators, club managers, head coaches and assistant coaches.
+Parent access is planned for the next release.
+
 Academy administrators and coaches need a centralized system to manage player registrations, track attendance, schedule sessions, and manage academy operations — without the complexity of enterprise software or the risk of scattered spreadsheets.
 
-## Verified Features
+## Current Capabilities
 
 ### User Roles
 - **Admin** — Full access to all pages and administration features
 - **Club Manager** — Administrative oversight without account-management privileges
 - **Head Coach** — Session scheduling, squad management, drill creation
 - **Assistant Coach** — Session execution, attendance taking
+
+### Planned for the Next Release
 - **Parent** — View own child's sessions and attendance; limited profile access
 
 ### Core Features (code-review verified)
@@ -20,7 +26,7 @@ Academy administrators and coaches need a centralized system to manage player re
 - Session scheduling and planning
 - Attendance tracking and status management
 - Drill library and creation
-- Session confirmation requests to players/parents
+- Pre-session participation confirmations for assigned coaches
 - Attendance proposal and approval workflow
 - Squad management and player profiles
 - Age group and batch organization
@@ -40,7 +46,7 @@ Academy administrators and coaches need a centralized system to manage player re
 ### Frontend
 - **Next.js 15** — App Router framework with Server Components
 - **React 19** — UI library
-- **Tailwind CSS** — Utility-first styling framework
+- Custom CSS — Design tokens, layout, and shared UI components defined in `app/globals.css` with CSS variables, layout utilities, and form/helpers. No Tailwind configuration or directives are present in the codebase.
 
 ### Backend & Database
 - **Prisma ORM** — Type-safe database client
@@ -53,7 +59,7 @@ Academy administrators and coaches need a centralized system to manage player re
 - **JotForm webhook** — Registration form integration
 
 ## Architecture
-The application uses a **Server Components** architecture where data-fetching happens on the server, and interactive elements use Client Components. Authentication state flows through JWT tokens signed with a session secret. Database operations go through Prisma Client with Row-Level Security concepts implemented via permission checks in API routes.
+The application uses a **Server Components** architecture where data-fetching happens on the server, and interactive elements use Client Components. Authentication state flows through JWT tokens signed with a session secret. Database operations go through Prisma Client with application-level permission checks in API routes.
 
 ## Live Application
 **https://touchline-app-exp.vercel.app**
@@ -67,15 +73,17 @@ Authentication is required to access the application. Demo accounts can be creat
 - PostgreSQL database (Neon.tech or Supabase recommended)
 
 ### Environment Variables
-Copy `.env.example` to `.env` and set:
+Copy `.env.example` to `.env` and set the following (recommended: separate dev and prod `.env` files):
 
 - `DATABASE_URL` — PostgreSQL connection string (recommended: separate dev and prod databases)
-- `SESSION_SECRET` — Random string for JWT signing
-- `VAPID_PUBLIC_KEY` — Push notification public key
-- `VAPID_PRIVATE_KEY` — Push notification private key
+- `DIRECT_URL` — Prisma direct connection string for raw database operations
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — VAPID public key for push notifications (frontend-safe)
+- `VAPID_PRIVATE_KEY` — VAPID private key for push notifications (server-side only)
 - `VAPID_SUBJECT` — VAPID subject identifier
-- `CRON_SECRET` — Webhook verification secret
-- `JOTFORM_WEBHOOK_SECRET` — JotForm integration secret
+- `CRON_SECRET` — Authenticates scheduled cron requests (not the JotForm webhook)
+- `JOTFORM_WEBHOOK_SECRET` — Secret for JotForm webhook verification; must match the secret configured in JotForm's webhook URL (`?token=<value>`)
+- `BLOB_READ_WRITE_TOKEN` — Token for Vercel Blob read/write operations
+- `SESSION_SECRET` — Random string for JWT signing
 
 ### Setup Commands
 ```bash
@@ -93,8 +101,6 @@ Open **http://localhost:3000** to view the application.
 - Seed data should use demo suffixes (e.g., `@demo.touchline.local`) to avoid affecting production data
 
 ## Current Limitations
-- Parent-child profile isolation verified only through code review (runtime behavior unverified without deployed access)
-- Password policy complexity not enforced in schema (verified only through code review)
 - Push notification delivery best-effort (depends on user subscription status)
 - Real-time features limited to push notifications; no WebSocket polling
 - Some advanced analytics and reporting features pending implementation
@@ -103,7 +109,7 @@ Open **http://localhost:3000** to view the application.
 - Active development in progress
 - TypeScript compilation verified (`npx tsc --noEmit` passes with zero errors)
 - Prisma schema migration system operational
-- GitHub repository: `umarinthikab-design/touchline-app`
+- GitHub repository: `umarinthikab-design/Academy-OS`
 - Vercel deployments from `main` branch
 
 ## Author
