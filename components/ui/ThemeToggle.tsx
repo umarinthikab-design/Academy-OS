@@ -3,19 +3,28 @@
 // Toggle between light and dark theme. Persists to the user's account via a
 // server action and immediately applies the data-theme attribute so the whole
 // app switches without a reload.
+// Derives the current theme from the DOM data-theme attribute so the button
+// label updates immediately after toggling, without requiring a page refresh.
 
-import { useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { setTheme } from "@/app/settings/actions";
 import { Icon } from "./Icon";
 
 export function ThemeToggle({ theme }: { theme: string }) {
+  // Derive current theme from DOM data-theme attribute so the button label
+  // updates immediately after toggling, without requiring a page refresh.
+  const [domTheme, setDomTheme] = useState(() =>
+    document.documentElement.dataset.theme ?? theme
+  );
+
   const [pending, startTransition] = useTransition();
 
   const toggle = () => {
-    const next = theme === "dark" ? "light" : "dark";
+    const next = domTheme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
+    setDomTheme(next); // update local state immediately so UI re-renders
     startTransition(async () => {
-      await setTheme(next);
+      await setTheme(next); // persist to DB
     });
   };
 
@@ -40,7 +49,7 @@ export function ThemeToggle({ theme }: { theme: string }) {
       }}
       aria-label="Toggle dark mode"
     >
-      {theme === "dark" ? (
+      {domTheme === "dark" ? (
         <>
           <Icon name="sun" size={16} /> Light mode
         </>
