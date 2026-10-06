@@ -15,13 +15,13 @@ Academy administrators and coaches need a centralized system to manage player re
 ### User Roles
 - **Admin** — Full access to all pages and administration features
 - **Club Manager** — Administrative oversight without account-management privileges
-- **Head Coach** — Session scheduling, squad management, drill creation
+- **Head Coach** — Session scheduling access depends on assigned permissions; squad and drill management
 - **Assistant Coach** — Session execution, attendance taking
 
 ### Planned for the Next Release
 - **Parent** — View own child's sessions and attendance; limited profile access
 
-### Core Features (code-review verified)
+### Current Capabilities
 - Player registration and roster management
 - Session scheduling and planning
 - Attendance tracking and status management
@@ -59,12 +59,12 @@ Academy administrators and coaches need a centralized system to manage player re
 - **JotForm webhook** — Registration form integration
 
 ## Architecture
-The application uses a **Server Components** architecture where data-fetching happens on the server, and interactive elements use Client Components. Authentication state flows through JWT tokens signed with a session secret. Database operations go through Prisma Client with application-level permission checks in API routes.
+The application uses a **Server Components** architecture where data-fetching happens on the server, and interactive elements use Client Components. Authentication state flows through JWT tokens signed with a session secret. Database operations go through Prisma Client with **permission checks in server-side actions and routes.**
 
 ## Live Application
 **https://touchline-app-exp.vercel.app**
 
-Authentication is required to access the application. Demo accounts can be created via `npm run seed:demo`.
+Authentication is required to access the application.
 
 ## Local Development Setup
 
@@ -76,8 +76,8 @@ Authentication is required to access the application. Demo accounts can be creat
 Copy `.env.example` to `.env` and set the following (recommended: separate dev and prod `.env` files):
 
 - `DATABASE_URL` — PostgreSQL connection string (recommended: separate dev and prod databases)
-- `DIRECT_URL` — Prisma direct connection string for raw database operations
-- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — VAPID public key for push notifications (frontend-safe)
+- `DIRECT_URL` — Prisma direct connection string for **raw database operations and running Prisma migrations**
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — VAPID public key for push notifications (frontend-safe); must match `VAPID_PUBLIC_KEY`
 - `VAPID_PRIVATE_KEY` — VAPID private key for push notifications (server-side only)
 - `VAPID_SUBJECT` — VAPID subject identifier
 - `CRON_SECRET` — Authenticates scheduled cron requests (not the JotForm webhook)
@@ -102,7 +102,7 @@ Open **http://localhost:3000** to view the application.
 
 ## Current Limitations
 - Push notification delivery best-effort (depends on user subscription status)
-- Real-time features limited to push notifications; no WebSocket polling
+- Real-time features limited to push notifications; **No WebSocket-based live updates.**
 - Some advanced analytics and reporting features pending implementation
 
 ## Development Status
