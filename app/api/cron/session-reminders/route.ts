@@ -31,10 +31,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-
   // Also validate using constant-time comparison via safeEqual, in case
   // the header format is slightly different but the token matches.
   const headerToken = authHeader?.replace("Bearer ", "") ?? "";

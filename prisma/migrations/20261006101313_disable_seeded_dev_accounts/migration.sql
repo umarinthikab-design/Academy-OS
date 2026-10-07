@@ -6,8 +6,8 @@
 -- if the password was already changed, this migration leaves it untouched.
 UPDATE "User"
 SET
-  password = '!disabled',
-  archivedAt = NOW(),
+  "password" = '!disabled',
+  "archivedAt" = NOW(),
   "sessionVersion" = "sessionVersion" + 1
-WHERE email IN ('admin@touchline.local', 'cm@touchline.local')
-  AND password = '$2a$10$F9vvF3ASrXxVD2pHg05h6Orr2uTX5jQHC9JWW/v8Y2tr78eevfJEu';
+WHERE "email" IN ('admin@touchline.local', 'cm@touchline.local')
+  AND "password" = '$2a$10$F9vvF3ASrXxVD2pHg05h6Orr2uTX5jQHC9JWW/v8Y2tr78eevfJEu';
