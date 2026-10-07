@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { getUnreadCount, getInbox, markAllRead, markRead } from "@/lib/notifications";
+import { getUnreadCount, getInbox } from "@/lib/notifications";
 import { getPermissions } from "@/lib/permissions";
+import { markNotificationRead, markAllNotificationsRead } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import Link from "next/link";
 
 export default async function NotificationsPage() {
   const perms = await getPermissions();
@@ -31,6 +33,14 @@ export default async function NotificationsPage() {
         title="Notifications"
         subtitle={unread > 0 ? `${unread} unread` : "No new notifications"}
       />
+
+      {(perms.isAdmin || perms.isClubManager) && (
+        <nav>
+          <Link href="/notifications/new" style={{ marginLeft: 16 }}>
+            Send a broadcast
+          </Link>
+        </nav>
+      )}
 
       {items.length === 0 ? (
         <EmptyState
@@ -73,9 +83,9 @@ export default async function NotificationsPage() {
                     </p>
                   </div>
                   {item.readAt === null && (
-                    <button
-                      onClick={() => markRead(userId, item.id)}
-                      style={{
+                    <form action={markNotificationRead} style={{ marginLeft: 8 }}>
+                      <input type="hidden" name="id" value={item.id} />
+                      <button type="submit" style={{
                         marginLeft: 8,
                         padding: "6px 10px",
                         background: "var(--primary)",
@@ -84,10 +94,10 @@ export default async function NotificationsPage() {
                         borderRadius: 6,
                         fontSize: 11,
                         cursor: "pointer",
-                      }}
-                    >
-                      Mark read
-                    </button>
+                      }}>
+                        Mark read
+                      </button>
+                    </form>
                   )}
                 </div>
                 {item.link && (
@@ -106,9 +116,8 @@ export default async function NotificationsPage() {
               </div>
             );
           })}
-          <button
-            onClick={() => markAllRead(userId)}
-            style={{
+          <form action={markAllNotificationsRead} style={{ marginTop: 24, marginLeft: -16 }}>
+            <button type="submit" style={{
               marginTop: 24,
               marginLeft: -16,
               padding: "8px 16px",
@@ -118,12 +127,13 @@ export default async function NotificationsPage() {
               borderRadius: 6,
               fontSize: 13,
               cursor: "pointer",
-            }}
-          >
-            Mark all read
-          </button>
+            }}>
+              Mark all read
+            </button>
+          </form>
         </div>
       )}
     </div>
   );
 }
+

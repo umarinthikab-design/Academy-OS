@@ -1,8 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getPermissions } from "@/lib/permissions";
 import { getSession } from "@/lib/getSession";
-import { broadcastNotification } from "@/lib/notifications";
+import { broadcastNotification, markAllRead, markRead } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/logActivity";
 import { Audience, Delivery } from "@/lib/notifications";
@@ -97,4 +98,20 @@ export async function sendBroadcast(prevState: BroadcastState, formData: FormDat
     console.error("Broadcast failed:", error);
     return { success: false, error: "Failed to send broadcast. Please try again." };
   }
+}
+
+export async function markNotificationRead(formData: FormData): Promise<void> {
+  const perms = await getPermissions();
+  if (!perms.userId) return;
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await markRead(perms.userId, id);
+  revalidatePath("/notifications");
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  const perms = await getPermissions();
+  if (!perms.userId) return;
+  await markAllRead(perms.userId);
+  revalidatePath("/notifications");
 }
