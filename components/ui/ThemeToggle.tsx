@@ -1,105 +1,44 @@
 "use client";
 
-import * as React from "react";
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { setTheme } from "@/app/settings/actions";
 import { Icon } from "./Icon";
 
-// MutationObserver that subscribes to data-theme attribute changes on <html>.
-// Returns a cleanup function that disconnects the observer.
-function useThemeFromDOM(
-  serverTheme: string // theme from the DB (prop), used as the SSR snapshot
-) {
-  // Snapshot used during SSR (before the DOM is available).
-  if (typeof document === "undefined") {
-    return serverTheme;
-  }
+type Theme = "light" | "dark";
 
-  const getSnapshot = () =>
-    document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
 
-  const observe = () => {
-    const observer = new MutationObserver(() => {
-      // The observer fires; useSyncExternalStore will re-read the snapshot
-      // and trigger a re-render automatically.
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-    return () => observer.disconnect();
-  };
-
-  const cleanup = observe();
-
-  // useSyncExternalStore must be called after the DOM is available.
-  return useSyncExternalStore(
-    // subscribe: return a function that React calls to set up the subscription.
-    // We use a ref to avoid setting up multiple observers.
-    () => {
-      // The observer was already set up via the cleanup above in the render
-        // cycle. This no-op return tells React the snapshot hasn't changed
-        // from the subscription perspective.
-      return getSnapshot;
-    },
-    // getSnapshot
-    getSnapshot,
-    // getServerSnapshot: use the theme from the DB (the prop) as the SSR snapshot.
-    () => serverTheme
-  );
+function getSnapshot(): Theme {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
 
 export function ThemeToggle({ theme }: { theme: string }) {
-  // serverTheme is the theme from the DB (the prop). This serves as the
-  // getServerSnapshot for useSyncExternalStore, ensuring SSR hydration works.
-  const themeFromStore = useThemeFromDOM(theme);
+  const serverTheme: Theme = theme === "dark" ? "dark" : "light";
+  const current = useSyncExternalStore(subscribe, getSnapshot, () => serverTheme);
+  const writeId = useRef(0);
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
 
-  // Persistence ref: keep track of the latest requested theme so that
-  // only the last click's server action resolves; earlier in-flight
-  // actions are no-ops (stale writes are skipped).
-  const latestRef = React.useRef<string | null>(null);
-
-  const toggle = () => {
-    const next = themeFromStore === "dark" ? "light" : "dark";
-
-    // Set the data-theme attribute immediately so the UI updates
-    // visually right away (the MutationObserver will keep react in sync).
+  function toggle() {
+    const prev = getSnapshot();
+    const next: Theme = prev === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
-
-    // Record this as the latest request; earlier in-flight actions will
-    // be skipped because their .then() check will fail.
-    latestRef.current = next;
-
-    // Persist to the DB via the server action. We do NOT disable the
-    // button – the user can click again immediately.
-    Promise.resolve()
-      .then(async () => {
-        // Skip this write if it's not the latest request.
-        if (latestRef.current !== next) return;
-
-        try {
-          await setTheme(next);
-          // Success – the DB now reflects the choice. No need to revert.
-          latestRef.current = null;
-        } catch (err) {
-          // Server action failed – revert the DOM attribute to the
-          // previous value so the UI stays consistent.
-          const prev = next === "dark" ? "light" : "dark";
-          document.documentElement.dataset.theme = prev;
-          latestRef.current = null;
-        }
-      })
+    const id = ++writeId.current;
+    queue.current = queue.current
+      .then(() => setTheme(next))
       .catch(() => {
-        // Outer catch for Promise.resolve() rejection path.
-        // Already handled in the .then, but be defensive.
-        latestRef.current = null;
+        if (writeId.current === id) document.documentElement.dataset.theme = prev;
       });
-  };
+  }
 
   return (
     <button
       type="button"
       onClick={toggle}
+      aria-label={current === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -114,9 +53,8 @@ export function ThemeToggle({ theme }: { theme: string }) {
         fontSize: 13,
         transition: "all var(--transition)",
       }}
-      aria-label={themeFromStore === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {themeFromStore === "dark" ? (
+      {current === "dark" ? (
         <>
           <Icon name="sun" size={16} /> Light mode
         </>
