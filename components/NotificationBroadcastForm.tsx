@@ -1,133 +1,66 @@
 "use client";
 
-import React, { useState } from "react";
-import { Input } from "@/components/ui/Form";
-import { Textarea } from "@/components/ui/Form";
+import { useActionState, useState } from "react";
+import { sendBroadcast, type BroadcastState } from "@/app/notifications/actions";
+import { Field, Input, Select, Textarea } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";
 
-type AudienceOption = 
-  | { value: "EVERYONE"; label: string }
-  | { value: "COACHES"; label: string }
-  | { value: "PARENTS"; label: string }
-  | { value: "MANAGERS"; label: string }
-  | { value: "AGE_GROUP"; label: string };
-
-type DeliveryOption = 
-  | { value: "both"; label: string }
-  | { value: "inApp"; label: string }
-  | { value: "push"; label: string };
-
-const AUDIENCE_OPTIONS: AudienceOption[] = [
+const AUDIENCES = [
   { value: "EVERYONE", label: "Everyone" },
   { value: "COACHES", label: "Coaches" },
   { value: "PARENTS", label: "Parents" },
   { value: "MANAGERS", label: "Managers" },
-  { value: "AGE_GROUP", label: "Age Group" },
+  { value: "AGE_GROUP", label: "A specific age group" },
 ];
-
-const DELIVERY_OPTIONS: DeliveryOption[] = [
+const DELIVERIES = [
   { value: "both", label: "In-app + push" },
   { value: "inApp", label: "In-app only" },
   { value: "push", label: "Push only" },
 ];
 
-interface FormData {
-  title: string;
-  body: string;
-  audience: string;
-  delivery: string;
-}
-
 export default function NotificationBroadcastForm({
-  onSuccess,
-  onError,
+  ageGroups,
 }: {
-  onSuccess: () => void;
-  onError: (error: string) => void;
+  ageGroups: { id: string; name: string }[];
 }) {
-  const [state, setState] = useState({ success: false, error: null, title: "", body: "", audience: "EVERYONE", delivery: "both" });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    const title = (form.elements.namedItem("title") as HTMLInputElement).value;
-    const body = (form.elements.namedItem("body") as HTMLTextAreaElement).value;
-    const audience = (form.elements.namedItem("audience") as HTMLSelectElement).value;
-    const delivery = (form.elements.namedItem("delivery") as HTMLSelectElement).value;
-
-    const response = await fetch("/api/broadcast", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        body,
-        audience,
-        delivery,
-      }),
-    });
-    const data = await response.json();
-
-    if (response.ok) {
-      setState({ success: true, error: null, title, body, audience, delivery });
-      onSuccess();
-    } else {
-      setState({ success: false, error: data.error ?? "Failed to send broadcast", title, body, audience, delivery });
-      onError(data.error ?? "Failed to send broadcast");
-    }
-  };
-
-  if (state.success) {
-    onSuccess();
-    return null;
-  }
-
-  if (state.error) {
-    onError(state.error);
-    return null;
-  }
+  const [state, formAction, pending] = useActionState<BroadcastState, FormData>(sendBroadcast, {
+    success: false,
+  });
+  const [audience, setAudience] = useState("EVERYONE");
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 400, marginTop: 24 }}>
-      <Input
-        placeholder="Title"
-        maxLength={120}
-        required
-        value={state.title}
-        onChange={(e) => 
-          setState(s => ({ ...s, title: e.target.value }))}
-      />
-      <Textarea
-        placeholder="Body"
-        maxLength={1000}
-        rows={4}
-        required
-        value={state.body}
-        onChange={(e) => 
-          setState(s => ({ ...s, body: e.target.value }))}
-      />
-      <select
-        style={{ width: "100%", marginTop: 8, padding: "6px 10px" }}
-        required
-      >
-        {AUDIENCE_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <select
-        style={{ width: "100%", marginTop: 8, padding: "6px 10px" }}
-        required
-      >
-        {DELIVERY_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <Button type="submit" style={{ width: "100%", marginTop: 16 }}>Send Broadcast</Button>
+    <form action={formAction} style={{ maxWidth: 520, marginTop: 24, display: "flex", flexDirection: "column", gap: 14 }}>
+      {state.success && (
+        <div role="status" style={{ background: "var(--success-bg)", color: "var(--success)", padding: "10px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+          Broadcast sent.
+        </div>
+      )}
+      {state.error && (
+        <div role="alert" style={{ background: "var(--error-bg)", color: "var(--error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+          {state.error}
+        </div>
+      )}
+      <Field label="Title"><Input name="title" maxLength={120} required /></Field>
+      <Field label="Message"><Textarea name="body" rows={4} maxLength={1000} required /></Field>
+      <Field label="Audience">
+        <Select name="audience" value={audience} onChange={(e) => setAudience(e.target.value)}>
+          {AUDIENCES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </Select>
+      </Field>
+      {audience === "AGE_GROUP" && (
+        <Field label="Age group">
+          <Select name="ageGroupId" required defaultValue="">
+            <option value="" disabled>Select an age group…</option>
+            {ageGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </Select>
+        </Field>
+      )}
+      <Field label="Delivery">
+        <Select name="delivery" defaultValue="both">
+          {DELIVERIES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </Select>
+      </Field>
+      <Button type="submit" disabled={pending}>{pending ? "Sending…" : "Send Broadcast"}</Button>
     </form>
   );
 }

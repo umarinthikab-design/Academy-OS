@@ -7,21 +7,21 @@ import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/logActivity";
 import { Audience, Delivery } from "@/lib/notifications";
 
-export async function sendBroadcast(prevState: {
+export type BroadcastState = {
   success: boolean;
-  error?: string;
-}, formData: FormData) {
-  "use server";
+  error?: string | null;
+};
 
-  const title = formData.get("title") as string;
-  const body = formData.get("body") as string;
-  const audience = formData.get("audience") as Audience;
-  const delivery = formData.get("delivery") as Delivery;
-
+export async function sendBroadcast(prevState: BroadcastState, formData: FormData): Promise<BroadcastState> {
   const permissions = await getPermissions();
   if (!permissions.isAdmin && !permissions.isClubManager) {
     return { success: false, error: "You don't have permission to send broadcasts." };
   }
+
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  const audience = String(formData.get("audience") ?? "") as Audience;
+  const delivery = String(formData.get("delivery") ?? "") as Delivery;
 
   // Validate title (1-120 chars)
   if (title.length < 1 || title.length > 120) {
@@ -53,7 +53,7 @@ export async function sendBroadcast(prevState: {
   // Validate ageGroupId when audience is AGE_GROUP
   let ageGroupId: string | undefined = undefined;
   if (audience === "AGE_GROUP") {
-    const ageGroupIdRaw = formData.get("ageGroupId") as string;
+    const ageGroupIdRaw = String(formData.get("ageGroupId") ?? "").trim();
     if (!ageGroupIdRaw) {
       return { success: false, error: "Age group is required when selecting AGE_GROUP audience." };
     }
@@ -77,6 +77,11 @@ export async function sendBroadcast(prevState: {
       sentById,
       senderName,
     });
+
+    // If no active recipients matched that audience
+    if (sentCount === null) {
+      return { success: false, error: "No active recipients matched that audience." };
+    }
 
     // Log activity
     await logActivity(
