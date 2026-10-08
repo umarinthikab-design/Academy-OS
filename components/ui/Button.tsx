@@ -13,9 +13,9 @@ type Size = "sm" | "md";
 
 const VARIANTS: Record<Variant, React.CSSProperties> = {
   primary: {
-    background: "var(--primary)",
-    color: "#fff",
-    border: "1px solid var(--primary)",
+    background: "var(--btn-primary-bg)",
+    color: "var(--btn-primary-text)",
+    border: "1px solid var(--btn-primary-bg)",
   },
   secondary: {
     background: "var(--secondary)",

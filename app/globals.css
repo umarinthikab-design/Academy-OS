@@ -23,7 +23,11 @@
   /* Text */
   --text: #141e1a;
   --text-muted: #414944;
-  --text-faint: #717974;
+  --text-faint: #48505c; /* light theme */
+  --text-heading: var(--text);
+  --text-brand: var(--secondary);
+  --btn-primary-bg: var(--primary);
+  --btn-primary-text: #ffffff;
 
   /* Lines & states — "chalk lines" plus yellow/red card status colors */
   --border: #c0c8c3;
@@ -95,7 +99,7 @@
   --sidebar-bg: var(--primary);
   --sidebar-border: var(--primary-container);
   --sidebar-text: var(--primary-fixed-dim);
-  --sidebar-text-strong: var(--primary-container);
+  --sidebar-text-strong: var(--text);
   --sidebar-hover-bg: var(--primary-fixed-dim);
   --sidebar-active-bg: var(--primary-container);
   --sidebar-active-text: var(--secondary-fixed);
@@ -118,7 +122,11 @@
 
   --text: #e8f3ee;
   --text-muted: #9fb3a9;
-  --text-faint: #6d7f76;
+  --text-faint: #88928f; /* dark theme */
+  --text-heading: var(--text);
+  --text-brand: var(--secondary);
+  --btn-primary-bg: var(--secondary);
+  --btn-primary-text: var(--primary);
 
   --border: #26362e;
   --surface-tint: #396756;
@@ -408,6 +416,23 @@ a {
 :focus-visible {
   outline: 2px solid var(--secondary);
   outline-offset: 2px;
+}
+
+/* Default focus ring for form elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* ── Button hover ──────────────────────────────────────────── */
+
+.btn-primary:hover {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
 }
 
 /* ── Scrollbars (subtle) ──────────────────────────────────── */
