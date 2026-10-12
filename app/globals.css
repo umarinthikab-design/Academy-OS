@@ -24,8 +24,8 @@
   --text: #141e1a;
   --text-muted: #414944;
   --text-faint: #48505c; /* light theme */
-  --text-heading: var(--text);
-  --text-brand: var(--secondary);
+  --text-heading: var(--primary);
+  --text-brand: var(--primary-container);
   --btn-primary-bg: var(--primary);
   --btn-primary-text: #ffffff;
 
@@ -100,7 +100,7 @@
   --sidebar-border: var(--primary-container);
   --sidebar-text: var(--primary-fixed-dim);
   --sidebar-text-strong: var(--text);
-  --sidebar-hover-bg: var(--primary-fixed-dim);
+  --sidebar-hover-bg: #053224;
   --sidebar-active-bg: var(--primary-container);
   --sidebar-active-text: var(--secondary-fixed);
   --sidebar-active-bar: var(--secondary-fixed);
