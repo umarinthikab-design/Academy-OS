@@ -6,7 +6,7 @@ import type { CSSProperties } from "react";
 
 const TINTS: Record<string, string> = {
   green: "var(--secondary)",
-  pitch: "var(--primary)",
+  pitch: "var(--text-brand)",
   accent: "#65a30d",
   amber: "var(--warning)",
   blue: "#2563eb",
