@@ -125,7 +125,7 @@ export async function CoachDashboard({
     fontFamily: "var(--font-headline)",
     fontSize: 20,
     fontWeight: 600,
-    color: "var(--primary)",
+color: "var(--text-heading)",
     marginBottom: 12,
   };
 
@@ -159,7 +159,7 @@ export async function CoachDashboard({
               <Icon name="alert" size={20} style={{ color: "var(--error)" }} />
             </div>
             <div>
-              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>
                 Action Required
               </h3>
               <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "4px 0 0" }}>
@@ -231,7 +231,7 @@ export async function CoachDashboard({
                       </span>
                       <StatusPill tone="approved">UPCOMING</StatusPill>
                     </div>
-                    <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+                    <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>
                       {s.session?.name ?? "Training Session"}
                     </h4>
                   </div>
@@ -272,7 +272,7 @@ export async function CoachDashboard({
                     padding: "12px 16px",
                     marginTop: 12,
                     background: "var(--surface-muted)",
-                    color: "var(--primary)",
+color: "var(--text-heading)",
                     border: "1px solid var(--border)",
                     borderRadius: "var(--radius)",
                     fontWeight: 600,
@@ -323,7 +323,7 @@ export async function CoachDashboard({
             </span>
           </div>
           <div>
-            <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>
+            <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>
               Drill Suggestions
             </div>
           </div>
@@ -339,7 +339,7 @@ export async function CoachDashboard({
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <Icon name="user" size={22} style={{ color: "var(--primary-container)" }} />
+            <Icon name="user" size={22} style={{ color: "var(--text-brand)" }} />
             <span
               style={{
                 background: "var(--surface-muted)",
@@ -355,7 +355,7 @@ export async function CoachDashboard({
             </span>
           </div>
           <div>
-            <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>
+            <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>
               Leave Requests
             </div>
           </div>

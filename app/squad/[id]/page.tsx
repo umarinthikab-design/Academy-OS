@@ -105,7 +105,7 @@ export default async function PlayerDetailPage({
           <Avatar name={player.name} src={player.photoUrl} size={120} style={{ borderRadius: "var(--radius)" }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 style={{ fontFamily: "var(--font-headline)", fontSize: 32, fontWeight: 600, color: "var(--primary)", letterSpacing: "-0.02em", margin: "0 0 8px" }}>{player.name}</h1>
+          <h1 style={{ fontFamily: "var(--font-headline)", fontSize: 32, fontWeight: 600, color: "var(--text-heading)", letterSpacing: "-0.02em", margin: "0 0 8px" }}>{player.name}</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
             <PlayerStatusBadge status={player.status} statusUpdatedAt={player.statusUpdatedAt} />
             <Badge tone="muted">Age {age}</Badge>

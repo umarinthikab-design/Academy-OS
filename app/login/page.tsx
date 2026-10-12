@@ -100,7 +100,7 @@ export default async function LoginPage({
               fontWeight: 700,
               lineHeight: 1.15,
               letterSpacing: "-0.01em",
-              color: "var(--primary)",
+              color: "var(--text-heading)",
               margin: 0,
             }}
           >

@@ -39,7 +39,7 @@ export async function RegistrationsInbox({ perms }: { perms: Permissions }) {
           <Icon name="squad" size={18} />
         </div>
         <div>
-          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, color: "var(--primary)" }}>Pending registrations</h2>
+          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, color: "var(--text-heading)" }}>Pending registrations</h2>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--text-muted)" }}>New sign-ups from the registration form awaiting review.</p>
         </div>
       </div>

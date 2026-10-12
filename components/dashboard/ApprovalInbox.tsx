@@ -40,7 +40,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
     <section style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "18px 20px", borderBottom: "1px solid var(--border)" }}>
         <div>
-          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--primary)" }}>Requests awaiting approval</h2>
+          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--text-heading)" }}>Requests awaiting approval</h2>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--text-muted)" }}>Review and manage academy requests.</p>
         </div>
         <StatusPill tone="pending">{total} pending</StatusPill>

@@ -195,7 +195,7 @@ export default async function DrillsPage({
         </CollapsibleCreate>
       )}
 
-      <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: "28px 0 14px" }}>
+      <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", margin: "28px 0 14px" }}>
         Pending Approval <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({pending.length})</span>
       </h3>
 
@@ -208,7 +208,7 @@ export default async function DrillsPage({
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 17, fontWeight: 600, color: "var(--primary)" }}>{d.name}</strong>
+                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 17, fontWeight: 600, color: "var(--text-heading)" }}>{d.name}</strong>
                     <StatusPill tone="pending">Pending</StatusPill>
                   </div>
                   <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 4 }}>
@@ -265,7 +265,7 @@ export default async function DrillsPage({
         </div>
       )}
 
-      <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", margin: "28px 0 14px" }}>
+      <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", margin: "28px 0 14px" }}>
         Library <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({approved.length})</span>
       </h3>
 
@@ -294,7 +294,7 @@ export default async function DrillsPage({
                   <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.category.name}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>{d.duration}m</span>
                 </div>
-                <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--primary)", margin: "0 0 6px" }}>{d.name}</h3>
+                <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--text-heading)", margin: "0 0 6px" }}>{d.name}</h3>
                 <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginBottom: 8 }}>
                   {d.ageGroups.map((a) => a.name).join(", ")}
                   {d.playerRange ? ` · ${d.playerRange} players` : ""}

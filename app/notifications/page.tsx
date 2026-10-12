@@ -66,10 +66,10 @@ export default async function NotificationsPage() {
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Icon name={icon} size={18} style={{ color: "var(--primary)" }} />
+                  <Icon name={icon} size={18} style={{ color: "var(--text-heading)" }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>
                         {item.title}
                       </h3>
                       {item.readAt === null && (

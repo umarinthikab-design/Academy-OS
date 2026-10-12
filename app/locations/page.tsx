@@ -63,7 +63,7 @@ export default async function LocationsPage({
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
           <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border)", background: "var(--surface-muted)", display: "flex", alignItems: "center", gap: 8 }}>
             <Icon name="pin" size={16} style={{ color: "var(--secondary)" }} />
-            <span style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>Locations</span>
+            <span style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>Locations</span>
             <Badge tone="muted" style={{ marginLeft: "auto" }}>{locations.length}</Badge>
           </div>
           {locations.map((l, idx) => (
@@ -82,7 +82,7 @@ export default async function LocationsPage({
                 <span style={{ width: 32, height: 32, borderRadius: 8, background: "var(--surface-container)", color: "var(--secondary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name="pin" size={16} />
                 </span>
-                <span style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--primary)" }}>{l.name}</span>
+                <span style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--text-heading)" }}>{l.name}</span>
               </div>
               {canEdit && (
                 <ConfirmDeleteButton

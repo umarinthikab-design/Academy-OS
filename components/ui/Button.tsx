@@ -24,7 +24,7 @@ const VARIANTS: Record<Variant, React.CSSProperties> = {
   },
   outline: {
     background: "var(--surface)",
-    color: "var(--primary)",
+    color: "var(--text-heading)",
     border: "1px solid var(--border)",
   },
   ghost: {

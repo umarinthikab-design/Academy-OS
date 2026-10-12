@@ -148,7 +148,7 @@ export default async function BatchesPage({
                 {batches.map((b, idx) => (
                   <tr key={b.id} style={{ borderTop: "1px solid var(--border)", background: idx % 2 === 1 ? "var(--surface-muted)" : "var(--surface)" }}>
                     <td style={{ padding: "14px 16px" }}>
-                      <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--primary)" }}>{b.name}</div>
+                      <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--text-heading)" }}>{b.name}</div>
                       {b.supportingCoaches.length > 0 && (
                         <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
                           Supporting: {b.supportingCoaches.map((c) => c.user.name).join(", ")}

@@ -39,7 +39,7 @@ export default async function AgeGroupsPage({
   function groupSection(key: string, title: string, groups: typeof ageGroups) {
     return (
       <div key={key} style={{ marginBottom: 20 }}>
-        <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", marginBottom: 12 }}>{title}</div>
+        <div style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", marginBottom: 12 }}>{title}</div>
         {groups.length === 0 ? (
           <p style={{ color: "var(--text-faint)", fontSize: 13 }}>None yet.</p>
         ) : (
@@ -66,7 +66,7 @@ export default async function AgeGroupsPage({
                         height: 34,
                         borderRadius: "50%",
                         background: "var(--surface-container)",
-                        color: "var(--primary)",
+                        color: "var(--text-heading)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -79,7 +79,7 @@ export default async function AgeGroupsPage({
                       {ag.name.toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--primary)" }}>{ag.name}</div>
+                      <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--text-heading)" }}>{ag.name}</div>
                       {inUse ? (
                         <Badge tone="warning" style={{ marginTop: 4 }}>
                           In use · {ag._count.batches} batch{ag._count.batches === 1 ? "" : "es"}, {ag._count.scheduledSessions} session{ag._count.scheduledSessions === 1 ? "" : "s"}

@@ -144,7 +144,7 @@ export default async function AttendancePage({
       )}
 
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
-        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)" }}>
+        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)" }}>
           Needs review
         </h3>
         <span style={{ fontSize: 13, color: "var(--text-faint)" }}>({sessions.length})</span>
@@ -175,7 +175,7 @@ export default async function AttendancePage({
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
-                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", lineHeight: 1.2 }}>
+                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2 }}>
                       {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}
                     </strong>
                     <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
@@ -312,7 +312,7 @@ export default async function AttendancePage({
       {/* ── Rollup ─────────────────────────────────────────────────── */}
       <div style={{ marginTop: 36, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)", margin: 0 }}>Rollup</h3>
+          <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>Rollup</h3>
           <form style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <select name="range" defaultValue={range} style={{ padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
               <option value="month">This month</option>

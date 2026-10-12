@@ -61,7 +61,7 @@ export default async function SettingsPage({
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <Avatar name={user.name} src={user.photoUrl} size={72} style={{ border: "2px solid var(--border)" }} />
             <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-              <div style={{ fontWeight: 800, color: "var(--primary)", fontSize: 15 }}>{user.name}</div>
+              <div style={{ fontWeight: 800, color: "var(--text-heading)", fontSize: 15 }}>{user.name}</div>
               <div>{user.email}</div>
               <div>{roleLabel(user.role)}</div>
             </div>
@@ -84,14 +84,14 @@ export default async function SettingsPage({
 
         <section className="settings-col-appearance" style={{ ...card, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 180 }}>
           <div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>Appearance</h2>
+            <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>Appearance</h2>
             <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 16px", lineHeight: 1.5 }}>Select your preferred viewing mode. Saved to your account.</p>
           </div>
           <ThemeToggle theme={user.theme} />
         </section>
 
         <section style={{ ...card, gridColumn: "span 12", display: "flex", flexDirection: "column", gap: 4 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--primary)" }}>Notifications</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>Notifications</h2>
           <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 10px", lineHeight: 1.5 }}>
             Push notifications for drill suggestions awaiting your approval and session confirmations you haven't answered yet.
           </p>
@@ -99,7 +99,7 @@ export default async function SettingsPage({
         </section>
 
         <section style={{ ...card, gridColumn: "span 12" }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--primary)", marginBottom: 4 }}>Change password</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--text-heading)", marginBottom: 4 }}>Change password</h2>
           <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 20px" }}>You'll stay signed in on this device; all other sessions are signed out.</p>
           <form action={changePassword} style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 520 }}>
             <div>

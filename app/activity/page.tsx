@@ -172,7 +172,7 @@ export default async function ActivityPage({
               }}
             >
               <div className="activity-row-meta" style={{ display: "flex", flexDirection: "column", gap: 1, fontSize: 11 }}>
-                <span style={{ fontWeight: 700, color: "var(--primary)" }}>{l.user.name}</span>
+                <span style={{ fontWeight: 700, color: "var(--text-heading)" }}>{l.user.name}</span>
                 <span style={{ color: "var(--text-muted)" }}>
                   {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                   <span style={{ color: "var(--text-faint)" }}>{" · "}{l.createdAt.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</span>

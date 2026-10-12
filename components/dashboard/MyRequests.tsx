@@ -40,7 +40,7 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
     <section>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
         <div>
-          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--primary)" }}>My requests</h2>
+          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--text-heading)" }}>My requests</h2>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--text-muted)" }}>Track the status of your submitted requests and reply to feedback.</p>
         </div>
         <Badge tone="muted">{requests.length}</Badge>
@@ -66,7 +66,7 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
             </div>
 
             <div>
-              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--primary)", margin: 0 }}>{r.detail}</h3>
+              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--text-heading)", margin: 0 }}>{r.detail}</h3>
               <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>
                 Submitted {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                 {r.resolvedAt ? ` · resolved ${r.resolvedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}

@@ -31,7 +31,7 @@ export function EntityHero({
   const title =
     heading ??
     (href ? (
-      <Link href={href} style={{ fontSize: 16, fontWeight: 800, color: "var(--primary)", textDecoration: "none" }}>
+      <Link href={href} style={{ fontSize: 16, fontWeight: 800, color: "var(--text-heading)", textDecoration: "none" }}>
         {name}
       </Link>
     ) : (

@@ -107,7 +107,7 @@ export default async function SessionsPage({
       {pendingShares.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
-            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 22, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>
               Share requests pending review
             </h3>
             <span style={{ fontSize: 13, color: "var(--text-faint)", fontWeight: 600 }}>({pendingShares.length})</span>
@@ -181,7 +181,7 @@ export default async function SessionsPage({
 
       {/* My plans */}
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
-        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>
           My plans
         </h3>
         <span style={{ fontSize: 13, color: "var(--text-faint)", fontWeight: 600 }}>({mySessions.length})</span>
@@ -227,7 +227,7 @@ export default async function SessionsPage({
                 </div>
               </div>
 
-              <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", lineHeight: 1.2, marginBottom: 6, position: "relative" }}>{s.name}</h4>
+              <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2, marginBottom: 6, position: "relative" }}>{s.name}</h4>
 
               <div style={{ display: "flex", alignItems: "center", gap: 16, color: "var(--text-muted)", marginBottom: 12, position: "relative", fontSize: 13 }}>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -275,7 +275,7 @@ export default async function SessionsPage({
       {teamSessions.length > 0 && (
         <div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
-            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--primary)", margin: 0 }}>
+            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>
               Team plans
             </h3>
             <span style={{ fontSize: 13, color: "var(--text-faint)", fontWeight: 600 }}>({teamSessions.length})</span>
@@ -288,7 +288,7 @@ export default async function SessionsPage({
                   <Badge tone="green">Team</Badge>
                   <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>by {s.createdBy.user.name}</span>
                 </div>
-                <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--primary)", lineHeight: 1.2, marginBottom: 8, position: "relative" }}>{s.name}</h4>
+                <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2, marginBottom: 8, position: "relative" }}>{s.name}</h4>
                 <div style={{ marginTop: "auto", borderTop: "1px solid var(--border)", paddingTop: 10, position: "relative" }}>
                   {s.drills.map((sd, i) => (
                     <div key={sd.id} style={{ padding: "3px 0", fontSize: 13 }}>

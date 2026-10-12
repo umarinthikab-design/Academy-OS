@@ -32,7 +32,7 @@ export default async function AcademySettingsPage({
     gap: 8,
     fontSize: 20,
     fontWeight: 600,
-    color: "var(--primary)",
+    color: "var(--text-heading)",
     paddingBottom: 12,
     borderBottom: "1px solid var(--border)",
     marginBottom: 20,

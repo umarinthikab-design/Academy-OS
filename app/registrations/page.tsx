@@ -54,7 +54,7 @@ export default async function RegistrationsPage({
               <div key={r.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", padding: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
                   <div>
-                    <div style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, color: "var(--primary)" }}>
+                    <div style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, color: "var(--text-heading)" }}>
                       {r.playerName || "Unmapped submission"}
                     </div>
                     <div style={{ fontSize: 12.5, color: "var(--text-faint)", marginTop: 2 }}>
