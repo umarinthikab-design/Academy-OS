@@ -59,7 +59,7 @@ export function CollapsibleCreate({
           style={{ color: "var(--secondary)", transition: "transform var(--transition)" }}
         />
         <span>{title}</span>
-        {subtitle && <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)" }}>{subtitle}</span>}
+        {subtitle && <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)" }}>{subtitle}</span>}
       </summary>
       <div style={{ paddingTop: 14, ...contentStyle }}>{children}</div>
     </details>

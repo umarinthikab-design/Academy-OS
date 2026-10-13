@@ -156,15 +156,15 @@ export function DrillPhotoUpload({
           borderRadius: 8,
           cursor: "pointer",
           fontWeight: 700,
-          fontSize: 12.5,
+          fontSize: 13,
         }}
       >
         <Icon name="upload" size={14} /> {busy ? "Processing…" : label}
-        {photos.length > 0 && <span style={{ fontSize: 11, color: "var(--text-muted)" }}>({photos.length})</span>}
+        {photos.length > 0 && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>({photos.length})</span>}
       </button>
-      <span style={{ fontSize: 11, color: "var(--text-faint)", marginLeft: 8 }}>JPG or PNG, up to 5 MB each. More than one photo allowed.</span>
+      <span style={{ fontSize: 13, color: "var(--text-faint)", marginLeft: 8 }}>JPG or PNG, up to 5 MB each. More than one photo allowed.</span>
 
-      {error && <p style={{ fontSize: 12, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}
+      {error && <p style={{ fontSize: 13, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}
 
       <input
         ref={fileRef}

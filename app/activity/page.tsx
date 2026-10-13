@@ -74,8 +74,8 @@ export default async function ActivityPage({
   const actionLabel = (action: string) =>
     action.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
-  const inputBase: React.CSSProperties = { padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, background: "var(--surface)", fontSize: 12, color: "var(--text)" };
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const inputBase: React.CSSProperties = { padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, background: "var(--surface)", fontSize: 13, color: "var(--text)" };
 
   const buildHref = (overrides: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
@@ -89,7 +89,7 @@ export default async function ActivityPage({
 
   const labelCaps: React.CSSProperties = {
     fontFamily: "var(--font-mono-label)",
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     letterSpacing: "0.06em",
     textTransform: "uppercase",
@@ -123,11 +123,11 @@ export default async function ActivityPage({
           <label style={fieldLabel}>To</label>
           <input name="to" type="date" defaultValue={params.to ?? ""} style={inputBase} />
         </div>
-        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "var(--shadow-sm)" }}>
+        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "var(--shadow-sm)" }}>
           Filter
         </button>
         {(entityType || from || to) && (
-          <a href="/activity" style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none" }}>
+          <a href="/activity" style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none" }}>
             Clear
           </a>
         )}
@@ -171,7 +171,7 @@ export default async function ActivityPage({
                 transition: "background var(--transition)",
               }}
             >
-              <div className="activity-row-meta" style={{ display: "flex", flexDirection: "column", gap: 1, fontSize: 11 }}>
+              <div className="activity-row-meta" style={{ display: "flex", flexDirection: "column", gap: 1, fontSize: 13 }}>
                 <span style={{ fontWeight: 700, color: "var(--text-heading)" }}>{l.user.name}</span>
                 <span style={{ color: "var(--text-muted)" }}>
                   {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric" })}

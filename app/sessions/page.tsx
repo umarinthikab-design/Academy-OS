@@ -81,23 +81,23 @@ export default async function SessionsPage({
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
           <CollapsibleCreate title="Create a session plan" style={{ width: "100%", maxWidth: 640, marginBottom: 0 }}>
             <form action={createSession}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 5 }}>Plan name</label>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 5 }}>Plan name</label>
               <input name="name" required placeholder="e.g. Passing patterns - warmup" style={{ ...inputBase, marginBottom: 14 }} />
 
-              <label style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 5 }}>Drills (in order)</label>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 5 }}>Drills (in order)</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 260, overflowY: "auto", border: "1px solid var(--border)", borderRadius: 8, padding: 10, marginBottom: 12, background: "var(--surface-muted)" }}>
                 {approvedDrills.map((d) => (
                   <label key={d.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}>
                     <input type="checkbox" name="drillIds" value={d.id} /> {d.name} <span style={{ color: "var(--text-faint)" }}>· {d.category.name} · {d.duration}m</span>
                   </label>
                 ))}
-                {approvedDrills.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
+                {approvedDrills.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
               </div>
 
               <button type="submit" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
                 <Icon name="plus" size={15} /> Create Plan
               </button>
-              <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
+              <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
             </form>
           </CollapsibleCreate>
         </div>
@@ -123,12 +123,12 @@ export default async function SessionsPage({
                     </span>
                     <div style={{ display: "flex", gap: 6 }}>
                       <form action={approveSessionShare.bind(null, r.id)}>
-                        <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                        <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                           Approve
                         </button>
                       </form>
                       <form action={rejectSessionShare.bind(null, r.id)}>
-                        <button type="submit" style={{ padding: "6px 12px", background: "var(--surface)", color: "var(--error)", border: "1px solid var(--error)", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                        <button type="submit" style={{ padding: "6px 12px", background: "var(--surface)", color: "var(--error)", border: "1px solid var(--error)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                           Reject
                         </button>
                       </form>
@@ -137,7 +137,7 @@ export default async function SessionsPage({
 
                   {/* Expandable plan content + conversation */}
                   <details style={{ marginTop: 10, borderRadius: 8, background: "var(--surface)", padding: "0 12px" }}>
-                    <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--secondary)", padding: "9px 0", outline: "none" }}>
+                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", padding: "9px 0", outline: "none" }}>
                       View plan & conversation {detail.messages.length > 0 ? `(${detail.messages.length})` : ""}
                     </summary>
                     <div style={{ padding: "0 0 12px", fontSize: 13 }}>
@@ -153,9 +153,9 @@ export default async function SessionsPage({
                           <div style={{ fontWeight: 700, marginBottom: 6 }}>Conversation</div>
                           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
                             {detail.messages.map((m) => (
-                              <div key={m.id} style={{ fontSize: 12.5, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
+                              <div key={m.id} style={{ fontSize: 13, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
                                 <strong>{m.authorName}:</strong> {m.message}
-                                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>
+                                <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
                                   {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                                 </div>
                               </div>
@@ -165,8 +165,8 @@ export default async function SessionsPage({
                       )}
 
                       <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
-                        <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 12.5, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                        <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}>
+                        <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 13, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
+                        <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                           Send
                         </button>
                       </form>
@@ -207,14 +207,14 @@ export default async function SessionsPage({
                 <div style={{ display: "flex", gap: 6 }}>
                   {s.shareStatus === null && (
                     <form action={shareSession.bind(null, s.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                      <button type="submit" style={{ padding: "6px 12px", border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                         Share
                       </button>
                     </form>
                   )}
                   {s.shareStatus === "REJECTED" && (
                     <form action={shareSession.bind(null, s.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+                      <button type="submit" style={{ padding: "6px 12px", border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                         Resubmit
                       </button>
                     </form>
@@ -253,13 +253,13 @@ export default async function SessionsPage({
                   <div key={sd.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0" }}>
                     <span style={{ color: "var(--text-faint)", width: 18, fontFamily: "var(--font-mono-label)", fontWeight: 700 }}>{i + 1}.</span>
                     <span style={{ flex: 1 }}>{sd.drill.name}</span>
-                    <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{sd.drill.category.name} · {sd.drill.duration}m</span>
+                    <span style={{ fontSize: 13, color: "var(--text-faint)" }}>{sd.drill.category.name} · {sd.drill.duration}m</span>
                     <div style={{ display: "flex", gap: 4 }}>
                       <form action={reorderSessionDrill.bind(null, s.id, sd.drillId, "up")}>
-                        <button type="submit" disabled={i === 0} style={{ padding: "2px 8px", fontSize: 12, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}>↑</button>
+                        <button type="submit" disabled={i === 0} style={{ padding: "2px 8px", fontSize: 13, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}>↑</button>
                       </form>
                       <form action={reorderSessionDrill.bind(null, s.id, sd.drillId, "down")}>
-                        <button type="submit" disabled={i === s.drills.length - 1} style={{ padding: "2px 8px", fontSize: 12, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === s.drills.length - 1 ? "default" : "pointer", opacity: i === s.drills.length - 1 ? 0.4 : 1 }}>↓</button>
+                        <button type="submit" disabled={i === s.drills.length - 1} style={{ padding: "2px 8px", fontSize: 13, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === s.drills.length - 1 ? "default" : "pointer", opacity: i === s.drills.length - 1 ? 0.4 : 1 }}>↓</button>
                       </form>
                     </div>
                   </div>
@@ -286,7 +286,7 @@ export default async function SessionsPage({
                 <div style={{ position: "absolute", top: 0, right: 0, width: 80, height: 80, background: "var(--surface-muted)", borderBottomLeftRadius: 40, opacity: 0.6 }} aria-hidden="true" />
                 <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 10 }}>
                   <Badge tone="green">Team</Badge>
-                  <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>by {s.createdBy.user.name}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-muted)" }}>by {s.createdBy.user.name}</span>
                 </div>
                 <h4 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2, marginBottom: 8, position: "relative" }}>{s.name}</h4>
                 <div style={{ marginTop: "auto", borderTop: "1px solid var(--border)", paddingTop: 10, position: "relative" }}>

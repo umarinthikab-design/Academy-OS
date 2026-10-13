@@ -26,7 +26,7 @@ export function TeamSelector({
         gap: 6,
         padding: "6px 14px",
         borderRadius: "var(--radius-pill)",
-        fontSize: 12.5,
+        fontSize: 13,
         fontWeight: 700,
         textDecoration: "none",
         whiteSpace: "nowrap",

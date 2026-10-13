@@ -95,7 +95,7 @@ export function QuickActions({
               </span>
               <span style={{ minWidth: 0, textAlign: "left" }}>
                 <span style={{ display: "block", fontSize: 13.5, fontWeight: 700 }}>{a.label}</span>
-                <span style={{ display: "block", fontSize: 11.5, color: "var(--text-muted)" }}>{a.desc}</span>
+                <span style={{ display: "block", fontSize: 13, color: "var(--text-muted)" }}>{a.desc}</span>
               </span>
             </span>
           </Link>

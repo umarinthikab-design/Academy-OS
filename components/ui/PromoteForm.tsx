@@ -37,7 +37,7 @@ export function PromoteForm({
   const targetName = targetBatches.find((b) => b.id === target)?.name ?? "";
   const canSubmit = selected.size > 0 && showConfirm;
 
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
   const inputBase: React.CSSProperties = { padding: "7px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13, color: "var(--text)" };
 
   return (
@@ -78,7 +78,7 @@ export function PromoteForm({
           <label style={{ fontSize: 13, fontWeight: 700 }}>
             Players to move <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>({players.length})</span>
           </label>
-          <label style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 5 }}>
+          <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
             <input
               type="checkbox"
               checked={selected.size === players.length && players.length > 0}
@@ -94,7 +94,7 @@ export function PromoteForm({
               {p.name}
             </label>
           ))}
-          {players.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No players in this batch.</span>}
+          {players.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No players in this batch.</span>}
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export function PromoteForm({
         ) : (
           "Select at least one player to move."
         )}
-        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+        <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
           Skill ratings, notes, and attendance stay attached to each player — only batch membership changes.
         </div>
       </div>
@@ -133,7 +133,7 @@ export function PromoteForm({
           Move {selected.size} {selected.size === 1 ? "player" : "players"}
         </button>
         {selected.size > 0 && (
-          <label style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 5, color: "var(--text-muted)" }}>
+          <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5, color: "var(--text-muted)" }}>
             <input type="checkbox" checked={showConfirm} onChange={(e) => setShowConfirm(e.target.checked)} />
             I understand this changes batch membership for all selected players
           </label>
@@ -141,7 +141,7 @@ export function PromoteForm({
       </div>
 
       {selected.size > 0 && !showConfirm && (
-        <p style={{ fontSize: 12, color: "var(--warning)", fontWeight: 600, margin: 0 }}>
+        <p style={{ fontSize: 13, color: "var(--warning)", fontWeight: 600, margin: 0 }}>
           Tick the confirmation box to enable the move.
         </p>
       )}

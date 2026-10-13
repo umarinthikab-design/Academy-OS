@@ -139,7 +139,7 @@ export default async function CoachesPage({
                     }
                     subtitle={
                       c.primaryFocus.length > 0 ? (
-                        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                        <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
                           Focus: {c.primaryFocus.map((a) => a.name).join(", ")}
                         </div>
                       ) : undefined
@@ -154,7 +154,7 @@ export default async function CoachesPage({
                                   type="submit"
                                   title="Reset this coach's password to a temporary value they must change on next login"
                                   style={{
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     padding: "6px 12px",
                                     borderRadius: 8,
                                     border: "1px solid var(--border)",
@@ -171,7 +171,7 @@ export default async function CoachesPage({
                                   type="submit"
                                   title="Invalidate all of this coach's active sessions so they must log in again"
                                   style={{
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     padding: "6px 12px",
                                     borderRadius: 8,
                                     border: "1px solid var(--border)",
@@ -205,7 +205,7 @@ export default async function CoachesPage({
 
                 {canManageStaff && c.designation === "HEAD" && (
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>
                       Permissions
                     </div>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: -12 }}>
@@ -214,7 +214,7 @@ export default async function CoachesPage({
                           <button
                             type="submit"
                             style={{
-                              fontSize: 11,
+                              fontSize: 13,
                               padding: "5px 12px",
                               borderRadius: 20,
                               border: `1px solid ${c[t.field] ? "var(--secondary)" : "var(--border)"}`,
@@ -236,19 +236,19 @@ export default async function CoachesPage({
                     title="Promote to head coach"
                     style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", boxShadow: "none", marginBottom: 0 }}
                   >
-                    <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "0 0 10px" }}>
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 10px" }}>
                       Pick which head-coach permissions they should inherit, then promote. Their focus areas are kept.
                     </p>
                     <form action={promoteCoach.bind(null, c.id)} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                       {PERMISSION_TOGGLES.map((t) => (
-                        <label key={t.field} style={{ fontSize: 12, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                        <label key={t.field} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                           <input type="checkbox" name={t.field} defaultChecked={c[t.field]} /> {t.label}
                         </label>
                       ))}
                       <button
                         type="submit"
                         style={{
-                          fontSize: 12,
+                          fontSize: 13,
                           padding: "6px 14px",
                           borderRadius: 8,
                           border: "none",
@@ -292,7 +292,7 @@ export default async function CoachesPage({
                           </>
                         }
                         subtitle={
-                          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                          <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
                             Archived {c.user.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                             {c.primaryFocus.length > 0 && ` · Focus: ${c.primaryFocus.map((a) => a.name).join(", ")}`}
                           </div>
@@ -313,7 +313,7 @@ export default async function CoachesPage({
                                 borderRadius: 8,
                                 cursor: "pointer",
                                 fontWeight: 700,
-                                fontSize: 12,
+                                fontSize: 13,
                                 padding: "5px 12px",
                               }}
                             />
@@ -356,7 +356,7 @@ export default async function CoachesPage({
                 ))}
                 {staffArchived.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginTop: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginTop: 4 }}>
                       Archived
                     </div>
                     {staffArchived.map((s) => (
@@ -373,7 +373,7 @@ export default async function CoachesPage({
                               </>
                             }
                             subtitle={
-                              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
                                 Archived {s.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                               </div>
                             }
@@ -392,7 +392,7 @@ export default async function CoachesPage({
                                   borderRadius: 8,
                                   cursor: "pointer",
                                   fontWeight: 700,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   padding: "5px 12px",
                                 }}
                               />

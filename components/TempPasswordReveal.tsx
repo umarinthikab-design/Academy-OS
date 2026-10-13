@@ -59,7 +59,7 @@ export function TempPasswordReveal({ email, password }: { email: string; passwor
         }}
         style={{
           alignSelf: "flex-start",
-          fontSize: 11,
+          fontSize: 13,
           padding: "4px 10px",
           borderRadius: 6,
           border: "1px solid var(--border)",

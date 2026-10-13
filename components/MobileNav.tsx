@@ -135,7 +135,7 @@ export function MobileNav({
                       {academyName}
                     </div>
                   )}
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.55, marginTop: 2, color: "var(--sidebar-text)" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.55, marginTop: 2, color: "var(--sidebar-text)" }}>
                   Powered by Touchline
                 </div>
               </div>
@@ -149,7 +149,7 @@ export function MobileNav({
             </div>
 
             <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: "0 12px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "4px 10px 8px" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "4px 10px 8px" }}>
                 Menu
               </div>
               {items.map((item) => {
@@ -184,7 +184,7 @@ export function MobileNav({
                           borderRadius: "var(--radius-pill)",
                           background: "var(--accent)",
                           color: "var(--primary-dark)",
-                          fontSize: 11,
+                          fontSize: 13,
                           fontWeight: 800,
                           lineHeight: "18px",
                           textAlign: "center",
@@ -204,7 +204,7 @@ export function MobileNav({
                 <Avatar name={userName} src={photoUrl} size={38} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</div>
-                  <div style={{ fontSize: 11, opacity: 0.7 }}>{roleLabel(userRole)}</div>
+                  <div style={{ fontSize: 13, opacity: 0.7 }}>{roleLabel(userRole)}</div>
                 </div>
               </div>
               <form action={logoutAction}>

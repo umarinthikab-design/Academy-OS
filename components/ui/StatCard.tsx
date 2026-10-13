@@ -67,7 +67,7 @@ export function StatCard({
               position: "absolute",
               top: 0,
               right: 0,
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: 700,
               color: trend.up !== false ? "var(--success)" : "var(--error)",
               display: "inline-flex",
@@ -82,8 +82,8 @@ export function StatCard({
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.02em" }}>{value}</div>
-        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{label}</div>
-        {sub && <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{label}</div>
+        {sub && <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>{sub}</div>}
       </div>
     </div>
   );

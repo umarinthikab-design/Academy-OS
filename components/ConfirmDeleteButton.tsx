@@ -35,7 +35,7 @@ export function ConfirmDeleteButton({
             borderRadius: 8,
             cursor: "pointer",
             fontWeight: 700,
-            fontSize: 12,
+            fontSize: 13,
             padding: "5px 12px",
             transition: "all var(--transition)",
           }

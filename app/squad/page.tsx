@@ -77,7 +77,7 @@ export default async function SquadPage({
 
   const hasFilters = !!params.age || !!params.batch || !!params.status || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
 
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
   return (
     <>
@@ -95,7 +95,7 @@ export default async function SquadPage({
                   <Icon name="trendUp" size={15} /> Promote players
                 </a>
               )}
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)" }}>
                 <Icon name="squad" size={15} /> {filtered.length} {filtered.length === 1 ? "player" : "players"}
               </span>
             </span>
@@ -132,7 +132,7 @@ export default async function SquadPage({
             const bandSkills = skillDefinitions.filter((s) => s.band === bandMeta.label);
             return (
               <div key={bandMeta.label} style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
                   {bandMeta.ageLabel} · {bandMeta.label}
                 </div>
                 {bandSkills.length === 0 ? (
@@ -165,10 +165,10 @@ export default async function SquadPage({
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <details>
-                              <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
+                              <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
                               <form action={renameSkillDefinition.bind(null, s.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                                <input name="name" defaultValue={s.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 180 }} />
-                                <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                                <input name="name" defaultValue={s.name} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", width: 180 }} />
+                                <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                                   Save
                                 </button>
                               </form>
@@ -242,7 +242,7 @@ export default async function SquadPage({
           gap: 12,
         }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: "auto", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: "auto", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
           <Icon name="filter" size={16} />
           Filters
         </span>
@@ -267,10 +267,10 @@ export default async function SquadPage({
             <option value="INACTIVE">Inactive</option>
           </select>
           <input name="age" type="number" min={1} defaultValue={params.age ?? ""} placeholder="Age (e.g. 16)" style={{ width: 96, padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }} />
-          <button type="submit" style={{ padding: "6px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+          <button type="submit" style={{ padding: "6px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
             Filter
           </button>
-          <a href="/squad" style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--secondary)", textDecoration: "none" }}>
+          <a href="/squad" style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--secondary)", textDecoration: "none" }}>
             Clear
           </a>
         </form>

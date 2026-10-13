@@ -47,7 +47,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
       </div>
       {groups.map((group) => (
         <div key={group.label} style={{ borderTop: "1px solid var(--border)" }}>
-          <div style={{ padding: "10px 20px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-faint)", background: "var(--surface-muted)" }}>
+          <div style={{ padding: "10px 20px", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-faint)", background: "var(--surface-muted)" }}>
             {group.label} <span style={{ fontWeight: 600 }}>({group.items.length})</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -73,7 +73,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text-muted)" }}>
                           {requestCategory(r.type)}
                         </span>
                       </div>
@@ -86,7 +86,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                             borderRadius: "50%",
                             background: "var(--primary)",
                             color: "#fff",
-                            fontSize: 9,
+                            fontSize: 13,
                             fontWeight: 700,
                             display: "flex",
                             alignItems: "center",
@@ -96,12 +96,12 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                         >
                           {(r.requesterName.match(/\b\w/g) ?? []).slice(0, 2).join("").toUpperCase()}
                         </span>
-                        <span style={{ fontSize: 12.5, color: "var(--text-muted)" }}>{r.requesterName}</span>
-                        <span style={{ fontSize: 12.5, color: "var(--text-faint)" }}>
+                        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{r.requesterName}</span>
+                        <span style={{ fontSize: 13, color: "var(--text-faint)" }}>
                           · {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                         </span>
                       </div>
-                      {r.summary ? <div style={{ fontSize: 12.5, color: "var(--text-faint)", marginTop: 4 }}>{r.summary}</div> : null}
+                      {r.summary ? <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 4 }}>{r.summary}</div> : null}
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -118,7 +118,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                           color: "#fff",
                           borderRadius: 8,
                           fontWeight: 600,
-                          fontSize: 12.5,
+                          fontSize: 13,
                           border: "none",
                           cursor: "pointer",
                         }}
@@ -138,7 +138,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                           color: "var(--error)",
                           borderRadius: 8,
                           fontWeight: 600,
-                          fontSize: 12.5,
+                          fontSize: 13,
                           border: "1px solid var(--border)",
                           cursor: "pointer",
                         }}
@@ -151,7 +151,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
 
                 {r.full && (
                   <details style={{ marginTop: 12, borderRadius: 8, background: "var(--surface-muted)", padding: "0 12px" }}>
-                    <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--secondary)", padding: "9px 0", outline: "none" }}>
+                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", padding: "9px 0", outline: "none" }}>
                       View content & conversation {r.full.messages.length > 0 ? `(${r.full.messages.length})` : ""}
                     </summary>
                     <div style={{ padding: "0 0 12px", fontSize: 13 }}>
@@ -167,9 +167,9 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                           <div style={{ fontWeight: 700, marginBottom: 6 }}>Conversation</div>
                           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
                             {r.full.messages.map((m) => (
-                              <div key={m.id} style={{ fontSize: 12.5, background: "var(--surface)", borderRadius: 8, padding: "7px 10px" }}>
+                              <div key={m.id} style={{ fontSize: 13, background: "var(--surface)", borderRadius: 8, padding: "7px 10px" }}>
                                 <strong>{m.authorName}:</strong> {m.message}
-                                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>
+                                <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
                                   {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                                 </div>
                               </div>
@@ -179,8 +179,8 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                       )}
 
                       <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
-                        <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 12.5, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                        <button type="submit" style={{ padding: "8px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: "pointer" }}>
+                        <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 13, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
+                        <button type="submit" style={{ padding: "8px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                           Send
                         </button>
                       </form>

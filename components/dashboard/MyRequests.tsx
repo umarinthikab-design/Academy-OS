@@ -58,7 +58,7 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                 <Icon name={TYPE_ICON[r.type] ?? "attendance"} size={16} style={{ color: "var(--text-muted)" }} />
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
                   {requestCategory(r.type)}
                 </span>
               </div>
@@ -75,7 +75,7 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
 
             <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10 }}>
               <details style={{ borderRadius: 8 }}>
-                <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>
+                <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>
                   View content & conversation {r.messages.length > 0 ? `(${r.messages.length})` : ""}
                 </summary>
                 <div style={{ padding: "12px 0 0", fontSize: 13 }}>
@@ -88,9 +88,9 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
                   {r.messages.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
                       {r.messages.map((m) => (
-                        <div key={m.id} style={{ fontSize: 12.5, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
+                        <div key={m.id} style={{ fontSize: 13, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
                           <strong>{m.authorName}:</strong> {m.message}
-                          <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>
+                          <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
                             {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                           </div>
                         </div>
@@ -100,13 +100,13 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
 
                   {r.status === "PENDING" ? (
                     <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
-                      <input name="message" placeholder="Reply to feedback..." required style={{ flex: 1, fontSize: 12.5, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                      <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: "pointer" }}>
+                      <input name="message" placeholder="Reply to feedback..." required style={{ flex: 1, fontSize: 13, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
+                      <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                         Reply
                       </button>
                     </form>
                   ) : (
-                    <div style={{ fontSize: 12, color: "var(--text-faint)" }}>This request is {STATUS_LABEL[r.status].toLowerCase()} — no further replies.</div>
+                    <div style={{ fontSize: 13, color: "var(--text-faint)" }}>This request is {STATUS_LABEL[r.status].toLowerCase()} — no further replies.</div>
                   )}
                 </div>
               </details>

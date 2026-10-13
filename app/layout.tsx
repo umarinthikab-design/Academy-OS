@@ -162,7 +162,7 @@ export default async function RootLayout({
                     >
                       {branding.academyName}
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--sidebar-text)", marginTop: 1 }}>Powered by Touchline</div>
+                    <div style={{ fontSize: 13, color: "var(--sidebar-text)", marginTop: 1 }}>Powered by Touchline</div>
                   </div>
                 </div>
 
@@ -173,7 +173,7 @@ export default async function RootLayout({
                     <Avatar name={session.name} src={photoUrl} size={36} />
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--sidebar-text-strong)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
-                      <div style={{ fontSize: 11, color: "var(--sidebar-text)" }}>{roleLabel(session.role)}</div>
+                      <div style={{ fontSize: 13, color: "var(--sidebar-text)" }}>{roleLabel(session.role)}</div>
                     </div>
                   </div>
                   <form action={logout}>
@@ -191,7 +191,7 @@ export default async function RootLayout({
                         border: "1px solid var(--sidebar-border)",
                         borderRadius: 8,
                         cursor: "pointer",
-                        fontSize: 12.5,
+                        fontSize: 13,
                         fontWeight: 600,
                         transition: "background var(--transition), color var(--transition)",
                       }}

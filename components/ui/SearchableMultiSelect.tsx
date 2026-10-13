@@ -154,7 +154,7 @@ export function SearchableMultiSelect({
                     borderRadius: 8,
                     background: "var(--surface)",
                     color: "var(--text)",
-                    fontSize: 12.5,
+                    fontSize: 13,
                   }}
                 >
                   <option value="">{f.label}: All</option>
@@ -168,7 +168,7 @@ export function SearchableMultiSelect({
 
           <div style={{ overflowY: "auto", maxHeight: 190, display: "flex", flexDirection: "column", gap: 2 }}>
             {filtered.length === 0 ? (
-              <span style={{ fontSize: 12.5, color: "var(--text-faint)", padding: "6px 4px" }}>{emptyText}</span>
+              <span style={{ fontSize: 13, color: "var(--text-faint)", padding: "6px 4px" }}>{emptyText}</span>
             ) : (
               filtered.map((o) => {
                 const checked = picked.includes(o.id);
@@ -191,7 +191,7 @@ export function SearchableMultiSelect({
                     <span style={{ minWidth: 0, flex: 1 }}>
                       <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.label}</span>
                       {o.sublabel && (
-                        <span style={{ display: "block", fontSize: 11, opacity: 0.8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.sublabel}</span>
+                        <span style={{ display: "block", fontSize: 13, opacity: 0.8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.sublabel}</span>
                       )}
                     </span>
                   </label>

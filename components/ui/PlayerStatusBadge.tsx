@@ -38,7 +38,7 @@ export function PlayerStatusBadge({ status, statusUpdatedAt }: { status: string;
     <>
       <Badge tone={tone}>{playerStatusLabel(status)}</Badge>
       {staleDays !== null && (
-        <span style={{ fontSize: 11, color: "var(--text-faint)" }}>· flagged {staleDays} days ago</span>
+        <span style={{ fontSize: 13, color: "var(--text-faint)" }}>· flagged {staleDays} days ago</span>
       )}
     </>
   );

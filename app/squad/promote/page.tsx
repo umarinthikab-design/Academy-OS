@@ -57,7 +57,7 @@ export default async function PromotePlayersPage({
                   border: `1px solid ${b.id === sourceBatch.id ? "var(--secondary)" : "var(--border)"}`,
                   background: b.id === sourceBatch.id ? "var(--secondary)" : "var(--surface)",
                   color: b.id === sourceBatch.id ? "#fff" : "var(--text)",
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 700,
                   textDecoration: "none",
                 }}

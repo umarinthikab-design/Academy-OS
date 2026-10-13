@@ -83,7 +83,7 @@ export function InstallPrompt() {
             </p>
           ) : ios ? (
             <p style={{ margin: "0 0 10px", fontSize: 13, color: "var(--text-muted)" }}>
-              Tap <strong>Share</strong> <span aria-hidden style={{ fontSize: 11 }}>(the square-and-arrow icon)</span>, then{" "}
+              Tap <strong>Share</strong> <span aria-hidden style={{ fontSize: 13 }}>(the square-and-arrow icon)</span>, then{" "}
               <strong>Add to Home Screen</strong> to install Touchline.
             </p>
           ) : null}

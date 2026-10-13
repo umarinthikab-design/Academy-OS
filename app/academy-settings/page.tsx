@@ -163,7 +163,7 @@ export default async function AcademySettingsPage({
           </div>
         </section>
 
-        <div style={{ fontSize: 12, color: "var(--text-faint)" }}>
+        <div style={{ fontSize: 13, color: "var(--text-faint)" }}>
           A coach declining or failing to confirm appears in the "Needs attention" section on admin and head-coach
           dashboards so the session can be re-staffed in time.
         </div>

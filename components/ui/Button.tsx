@@ -40,7 +40,7 @@ const VARIANTS: Record<Variant, React.CSSProperties> = {
 };
 
 const SIZES: Record<Size, React.CSSProperties> = {
-  sm: { padding: "5px 12px", fontSize: 12 },
+  sm: { padding: "5px 12px", fontSize: 13 },
   md: { padding: "8px 16px", fontSize: 14 },
 };
 

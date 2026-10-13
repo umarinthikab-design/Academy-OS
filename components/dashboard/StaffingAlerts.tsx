@@ -49,7 +49,7 @@ export async function StaffingAlerts({ perms }: { perms: Permissions }) {
                   {a.session.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} ·{" "}
                   {a.session.startTime}–{endTime(a.session.startTime, a.session.durationMinutes)} · {a.session.locationName}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 2 }}>
+                <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
                   {a.declined.length > 0 && <span>Declined: {a.declined.join(", ")}</span>}
                   {a.declined.length > 0 && a.pending.length > 0 && <span> · </span>}
                   {a.pending.length > 0 && <span>Awaiting: {a.pending.join(", ")}</span>}

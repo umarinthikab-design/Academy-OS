@@ -61,10 +61,10 @@ export default async function ChangePasswordPage({
             An administrator gave you this account. Before you can use Touchline, pick a password only you know — at least 8 characters.
           </p>
 
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>New password</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>New password</label>
           <PasswordField name="newPassword" required minLength={8} autoComplete="new-password" style={{ marginBottom: 14 }} />
 
-          <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Confirm new password</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Confirm new password</label>
           <PasswordField name="confirmPassword" required minLength={8} autoComplete="new-password" style={{ marginBottom: 18 }} />
 
           <button

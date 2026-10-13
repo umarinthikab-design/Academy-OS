@@ -140,7 +140,7 @@ export function LogoUpload({
           {value ? (
             <img src={value} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
           ) : (
-            <span style={{ fontSize: 11, color: "var(--text-faint)" }}>No logo</span>
+            <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No logo</span>
           )}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -160,7 +160,7 @@ export function LogoUpload({
                 borderRadius: 8,
                 cursor: "pointer",
                 fontWeight: 700,
-                fontSize: 12.5,
+                fontSize: 13,
               }}
             >
               <Icon name="upload" size={14} /> {busy ? "Uploading…" : value ? "Replace logo" : "Upload logo"}
@@ -180,19 +180,19 @@ export function LogoUpload({
                   borderRadius: 8,
                   cursor: "pointer",
                   fontWeight: 700,
-                  fontSize: 12.5,
+                  fontSize: 13,
                 }}
               >
                 Remove
               </button>
             )}
           </div>
-          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>
+          <span style={{ fontSize: 13, color: "var(--text-faint)" }}>
             PNG or JPG, up to 15 MB. Transparency is kept and the logo is stored at up to 1024px for crisp display.
           </span>
         </div>
       </div>
-      {error && <p style={{ fontSize: 12, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}
+      {error && <p style={{ fontSize: 13, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}
 
       <input
         ref={fileRef}

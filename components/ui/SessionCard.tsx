@@ -67,23 +67,23 @@ export function SessionCard({
               flexShrink: 0,
             }}
           >
-            <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>{weekday.slice(0, 3)}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>{weekday.slice(0, 3)}</span>
             <span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.15 }}>{date.getDate()}</span>
-            <span style={{ fontSize: 10, fontWeight: 600, opacity: 0.75, lineHeight: 1 }}>{dateStr}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.75, lineHeight: 1 }}>{dateStr}</span>
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <span style={{ fontSize: 15, fontWeight: 800 }}>{ageGroupName}</span>
               {badge}
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
               {startTime}–{endTime(startTime, durationMinutes)}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 6 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)" }}>
                 <Icon name="pin" size={13} style={{ color: "var(--text-faint)" }} /> {locationName}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)" }}>
                 <Icon name="whistle" size={13} style={{ color: "var(--text-faint)" }} />
                 {headCoaches.join(", ") || "—"}
                 {assistantCoaches.length > 0 && ` · + ${assistantCoaches.length} asst.`}
@@ -95,7 +95,7 @@ export function SessionCard({
           {status && (
             <span
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.05em",

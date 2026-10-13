@@ -14,7 +14,7 @@ export function CoachCreateFields({ ageGroups }: { ageGroups: { id: string; name
   const [designation, setDesignation] = useState<Designation>("HEAD");
   const isCoach = designation !== "CLUB_MANAGER";
 
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
   return (
     <div className="form-grid-2col" style={{ gap: 12 }}>
@@ -44,7 +44,7 @@ export function CoachCreateFields({ ageGroups }: { ageGroups: { id: string; name
           </label>
         </div>
         {!isCoach && (
-          <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6 }}>
+          <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 6 }}>
             Club managers run the club (staff, schedule, settings) but aren&apos;t assigned to batches.
           </div>
         )}
@@ -68,7 +68,7 @@ export function CoachCreateFields({ ageGroups }: { ageGroups: { id: string; name
                   <input type="checkbox" name="primaryFocus" value={ag.id} /> {ag.name}
                 </label>
               ))}
-              {ageGroups.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No age groups seeded yet.</span>}
+              {ageGroups.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No age groups seeded yet.</span>}
             </div>
           </div>
         </>

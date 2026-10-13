@@ -29,7 +29,7 @@ export default async function BatchesPage({
   ]);
 
   const missingPrereqs = ageGroups.length === 0;
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
   const coachOptions = coaches.map((c) => ({
     id: c.id,
@@ -138,10 +138,10 @@ export default async function BatchesPage({
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-muted)" }}>
-                  <th style={{ padding: "12px 16px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Batch Name</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Age Group</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Head Coach</th>
-                  <th style={{ padding: "12px 16px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", textAlign: "right" }}>Players</th>
+                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Batch Name</th>
+                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Age Group</th>
+                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Head Coach</th>
+                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", textAlign: "right" }}>Players</th>
                 </tr>
               </thead>
               <tbody>
@@ -150,7 +150,7 @@ export default async function BatchesPage({
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--text-heading)" }}>{b.name}</div>
                       {b.supportingCoaches.length > 0 && (
-                        <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 3 }}>
+                        <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
                           Supporting: {b.supportingCoaches.map((c) => c.user.name).join(", ")}
                         </div>
                       )}
@@ -166,10 +166,10 @@ export default async function BatchesPage({
                     </td>
                     <td style={{ padding: "14px 16px", color: "var(--text-muted)", fontSize: 13 }}>{b.ageGroup.name}</td>
                     <td style={{ padding: "14px 16px", fontSize: 13 }}>{b.mainCoaches.map((c) => c.user.name).join(", ") || <span style={{ color: "var(--text-faint)" }}>none assigned</span>}</td>
-                    <td style={{ padding: "14px 16px", textAlign: "right", fontSize: 12, color: "var(--text-muted)" }}>
+                    <td style={{ padding: "14px 16px", textAlign: "right", fontSize: 13, color: "var(--text-muted)" }}>
                       <div>{b.players.length} player{b.players.length === 1 ? "" : "s"}</div>
                       {b.players.length > 0 && (
-                        <div style={{ marginTop: 2, maxWidth: 200, fontSize: 11, color: "var(--text-faint)" }}>
+                        <div style={{ marginTop: 2, maxWidth: 200, fontSize: 13, color: "var(--text-faint)" }}>
                           {b.players.map((p) => p.name).join(", ")}
                         </div>
                       )}

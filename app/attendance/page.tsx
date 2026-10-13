@@ -129,8 +129,8 @@ export default async function AttendancePage({
   const batchStatList = [...batchStats.values()].sort((a, b) => b.name.localeCompare(a.name));
 
   const btnPrimary: React.CSSProperties = { padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all var(--transition)", boxShadow: "var(--shadow-sm)" };
-  const btnOutline: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", cursor: "pointer", fontWeight: 700, fontSize: 12 };
-  const btnDanger: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--error)", background: "var(--surface)", color: "var(--error)", cursor: "pointer", fontWeight: 700, fontSize: 12 };
+  const btnOutline: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", cursor: "pointer", fontWeight: 700, fontSize: 13 };
+  const btnDanger: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--error)", background: "var(--surface)", color: "var(--error)", cursor: "pointer", fontWeight: 700, fontSize: 13 };
   const faceSize = 44;
 
   return (
@@ -174,7 +174,7 @@ export default async function AttendancePage({
               <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 18, boxShadow: "var(--shadow-sm)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
                     <strong style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2 }}>
                       {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}
                     </strong>
@@ -214,7 +214,7 @@ export default async function AttendancePage({
 
                 {/* Admin override for coach attendance */}
                 {isAdmin && (
-                  <details style={{ marginTop: 12, fontSize: 12.5, background: "var(--surface-muted)", borderRadius: 8, padding: "8px 12px", border: "1px solid var(--border)" }}>
+                  <details style={{ marginTop: 12, fontSize: 13, background: "var(--surface-muted)", borderRadius: 8, padding: "8px 12px", border: "1px solid var(--border)" }}>
                     <summary style={{ color: "var(--text-muted)", cursor: "pointer", fontWeight: 700 }}>Admin — override coach attendance</summary>
                     <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                       {[...s.headCoaches, ...s.assistantCoaches].map((c) => (
@@ -224,12 +224,12 @@ export default async function AttendancePage({
                           style={{ display: "flex", gap: 6, alignItems: "center", background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 8px" }}
                         >
                           <span>{c.user.name}</span>
-                          <select name="status" defaultValue={s.coachAttendance.find((ca) => ca.coachId === c.id)?.status ?? "NOT_YET"} style={{ border: "1px solid var(--border)", borderRadius: 5, fontSize: 11 }}>
+                          <select name="status" defaultValue={s.coachAttendance.find((ca) => ca.coachId === c.id)?.status ?? "NOT_YET"} style={{ border: "1px solid var(--border)", borderRadius: 5, fontSize: 13 }}>
                             <option value="NOT_YET">Not yet</option>
                             <option value="CHECKED_IN">Checked in</option>
                             <option value="ABSENT">Absent</option>
                           </select>
-                          <button type="submit" style={{ padding: "3px 8px", fontSize: 11, borderRadius: 5, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer" }}>
+                          <button type="submit" style={{ padding: "3px 8px", fontSize: 13, borderRadius: 5, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer" }}>
                             Set
                           </button>
                         </form>
@@ -241,10 +241,10 @@ export default async function AttendancePage({
                 {/* Pending request needing this user's action */}
                 {requests && canApprove(s, requests) && (
                   <div style={{ marginTop: 12, padding: "12px 14px", background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: 8 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "#92400e", marginBottom: 6 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "#92400e", marginBottom: 6 }}>
                       Pending proposal from {requests.requestedBy.user.name}
                     </div>
-                    <div style={{ fontSize: 12.5, color: "var(--text)", marginBottom: 8 }}>
+                    <div style={{ fontSize: 13, color: "var(--text)", marginBottom: 8 }}>
                       {(requests.payload as { statuses?: { playerId: string; status: string }[] }).statuses?.map((p) => {
                         const player = players.find((pl) => pl.id === p.playerId);
                         return (
@@ -282,10 +282,10 @@ export default async function AttendancePage({
                               {p.status !== "ACTIVE" && (
                                 <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
                               )}
-                              {marked.has(p.id) && <span style={{ fontSize: 11, color: "var(--success)", fontWeight: 700 }}>✓ recorded</span>}
+                              {marked.has(p.id) && <span style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>✓ recorded</span>}
                             </div>
                           </div>
-                          <select name="status" defaultValue="" style={{ padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 12.5, background: "var(--surface)" }}>
+                          <select name="status" defaultValue="" style={{ padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--surface)" }}>
                             <option value="">—</option>
                             <option value="ATTENDED">Attended</option>
                             <option value="ABSENT">Absent</option>
@@ -296,7 +296,7 @@ export default async function AttendancePage({
                     <button type="submit" style={{ ...btnPrimary, marginTop: 14, width: "100%", padding: "12px 18px", fontSize: 14 }}>
                       {isAdmin ? "Record attendance" : "Submit for approval"}
                     </button>
-                    <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 8 }}>
+                    <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>
                       {isAdmin
                         ? "Records directly — no approval needed."
                         : "Your marking goes to " + (isHeadOfSession(s) ? "an administrator for approval." : "the session's head coach for approval.")}
@@ -324,7 +324,7 @@ export default async function AttendancePage({
 
         <div className="rollup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 16 }}>
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
-            <div className="label-caps" style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Misses by player</div>
+            <div className="label-caps" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Misses by player</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {playerMissList.map((p) => (
                 <div key={p.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
@@ -334,12 +334,12 @@ export default async function AttendancePage({
                   </span>
                 </div>
               ))}
-              {playerMissList.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No attendance recorded in this window.</span>}
+              {playerMissList.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No attendance recorded in this window.</span>}
             </div>
           </div>
 
           <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
-            <div className="label-caps" style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Attendance rate by batch</div>
+            <div className="label-caps" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Attendance rate by batch</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {batchStatList.map((b) => {
                 const rate = b.attended + b.absent > 0 ? Math.round((b.attended / (b.attended + b.absent)) * 100) : 0;
@@ -348,12 +348,12 @@ export default async function AttendancePage({
                     <span>{b.name}</span>
                     <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontWeight: 700 }}>{rate}%</span>
-                      <span style={{ fontSize: 11, color: "var(--text-faint)" }}>({b.attended}/{b.attended + b.absent})</span>
+                      <span style={{ fontSize: 13, color: "var(--text-faint)" }}>({b.attended}/{b.attended + b.absent})</span>
                     </span>
                   </div>
                 );
               })}
-              {batchStatList.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>No attendance recorded in this window.</span>}
+              {batchStatList.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No attendance recorded in this window.</span>}
             </div>
           </div>
         </div>

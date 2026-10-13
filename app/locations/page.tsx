@@ -44,7 +44,7 @@ export default async function LocationsPage({
           }}
         >
           <div style={{ flex: 1 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Name</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Name</label>
             <input name="name" placeholder="e.g. CR7, Colombo 03" required style={inputBase} />
           </div>
           <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>

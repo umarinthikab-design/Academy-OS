@@ -112,12 +112,12 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
               <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--primary)", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>{s.startTime}</span>
-                    <span style={{ fontSize: 10, fontWeight: 800, lineHeight: 1.1 }}>{endTime(s.startTime, s.durationMinutes)}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>{s.startTime}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.1 }}>{endTime(s.startTime, s.durationMinutes)}</span>
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{s.ageGroup.name}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
                       {s.location.name} · {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}
                       {s.assistantCoaches.length > 0 && ` + ${s.assistantCoaches.length} asst.`}
                     </div>
@@ -142,7 +142,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
           {ageGroups.map((ag, i) => (
             <div key={ag.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderLeft: `3px solid ${AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length]}`, borderRadius: "var(--radius)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
               <div style={{ fontSize: 15, fontWeight: 800 }}>{ag.name}</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
                 {ag._count.batches} {ag._count.batches === 1 ? "batch" : "batches"} · {ag._count.scheduledSessions} sessions
               </div>
             </div>
@@ -164,14 +164,14 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
               <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "14px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--primary)", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
                       {s.date.toLocaleDateString(undefined, { month: "short" })}
                     </span>
                     <span style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.1 }}>{s.date.getDate()}</span>
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{s.ageGroup.name}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
                       {s.date.toLocaleDateString(undefined, { weekday: "long" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.location.name}
                     </div>
                   </div>
@@ -196,7 +196,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
             <div style={{ width: 120, height: 120, borderRadius: "50%", background: `conic-gradient(var(--secondary) ${attendanceRate}%, var(--surface-muted) 0)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <div style={{ width: 84, height: 84, borderRadius: "50%", background: "var(--surface)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontSize: 24, fontWeight: 800, lineHeight: 1 }}>{attendanceRate}%</span>
-                <span style={{ fontSize: 10, color: "var(--text-muted)" }}>this month</span>
+                <span style={{ fontSize: 13, color: "var(--text-muted)" }}>this month</span>
               </div>
             </div>
             <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
@@ -222,7 +222,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
                   <strong>{l.action.replace(/_/g, " ")}</strong>
                   <span style={{ color: "var(--text-muted)" }}> · {l.entityType}</span>
                 </div>
-                <div className="activity-row-meta" style={{ textAlign: "right", fontSize: 11, color: "var(--text-faint)" }}>
+                <div className="activity-row-meta" style={{ textAlign: "right", fontSize: 13, color: "var(--text-faint)" }}>
                   {l.user.name} · {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>

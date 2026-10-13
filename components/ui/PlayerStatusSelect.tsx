@@ -28,7 +28,7 @@ export function PlayerStatusSelect({
           border: "1px solid var(--border)",
           borderRadius: 6,
           background: "var(--surface)",
-          fontSize: 12,
+          fontSize: 13,
           color: "var(--text)",
           cursor: "pointer",
         }}

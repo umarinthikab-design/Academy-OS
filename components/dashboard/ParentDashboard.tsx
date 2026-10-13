@@ -65,7 +65,7 @@ export async function ParentDashboard({ scope, userName, academyName }: { scope:
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>
             My Children <span style={{ color: "var(--text-faint)", fontWeight: 600 }}>({children.length})</span>
           </h2>
-          <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
             Attendance: <strong style={{ color: "var(--secondary)" }}>{attendanceRate}%</strong>
           </span>
         </div>
@@ -96,7 +96,7 @@ export async function ParentDashboard({ scope, userName, academyName }: { scope:
                 <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border)" }}>
                   {next ? (
                     <div style={{ fontSize: 13 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--secondary)", marginBottom: 4 }}>Next session</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--secondary)", marginBottom: 4 }}>Next session</div>
                       <div style={{ fontWeight: 700 }}>
                         {next.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
                       </div>
@@ -105,7 +105,7 @@ export async function ParentDashboard({ scope, userName, academyName }: { scope:
                       </div>
                     </div>
                   ) : (
-                    <div style={{ fontSize: 12, color: "var(--text-faint)" }}>No upcoming sessions scheduled.</div>
+                    <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No upcoming sessions scheduled.</div>
                   )}
                 </div>
               </div>

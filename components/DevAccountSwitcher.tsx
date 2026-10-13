@@ -58,7 +58,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
       {open ? (
         <>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "2px 4px 4px" }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-faint)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-faint)" }}>
               DEV · switch account
             </span>
             <button
@@ -97,7 +97,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
                     color: isActive ? "#fff" : "var(--text)",
                     borderRadius: 8,
                     cursor: "pointer",
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 700,
                     whiteSpace: "nowrap",
                   }}
@@ -123,7 +123,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
             color: "var(--text)",
             borderRadius: "var(--radius-pill)",
             cursor: "pointer",
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
             boxShadow: "var(--shadow-sm)",
           }}

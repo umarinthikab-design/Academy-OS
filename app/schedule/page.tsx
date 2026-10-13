@@ -76,8 +76,8 @@ export default async function SchedulePage({
     return new Date().getTime() <= end.getTime() + SIXTY_TWO_MS;
   };
 
-  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
-  const smallBtn: React.CSSProperties = { padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: "pointer" };
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+  const smallBtn: React.CSSProperties = { padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" };
 
   const activeAgeGroup = params.ageGroup ?? null;
 
@@ -164,7 +164,7 @@ export default async function SchedulePage({
                 <div style={{ gridColumn: "1 / -1" }}>
                   <label style={fieldLabel}>Assistant coach(es)</label>
                   <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
-                    {assistantCoaches.length === 0 && <span style={{ fontSize: 12, color: "var(--text-faint)" }}>None in the roster yet.</span>}
+                    {assistantCoaches.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>None in the roster yet.</span>}
                     {assistantCoaches.map((c) => (
                       <label key={c.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
                         <input type="checkbox" name="assistantCoaches" value={c.id} /> {c.user.name}
@@ -177,7 +177,7 @@ export default async function SchedulePage({
                     <input type="checkbox" name="recurring" /> Weekly recurring
                   </label>
                   <div>
-                    <label style={{ fontSize: 11, color: "var(--text-muted)", marginRight: 6 }}>Weeks (only if recurring):</label>
+                    <label style={{ fontSize: 13, color: "var(--text-muted)", marginRight: 6 }}>Weeks (only if recurring):</label>
                     <input name="weeks" type="number" defaultValue={8} min={1} max={26} style={{ width: 64, padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6 }} />
                   </div>
                 </div>
@@ -200,12 +200,12 @@ export default async function SchedulePage({
           </div>
 
           <div>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
               Age Group / Batch
             </span>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
               {ageGroups.length === 0 && (
-                <p style={{ fontSize: 12, color: "var(--text-faint)" }}>No age groups yet.</p>
+                <p style={{ fontSize: 13, color: "var(--text-faint)" }}>No age groups yet.</p>
               )}
               {ageGroups.map((ag) => {
                 const active = activeAgeGroup === ag.id;
@@ -240,7 +240,7 @@ export default async function SchedulePage({
           </div>
 
           <div>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
               Location
             </span>
             <div style={{ marginTop: 8 }}>
@@ -288,7 +288,7 @@ export default async function SchedulePage({
                             <summary
                               style={{
                                 cursor: "pointer",
-                                fontSize: 12,
+                                fontSize: 13,
                                 fontWeight: 700,
                                 padding: "5px 12px",
                                 borderRadius: 8,
@@ -402,7 +402,7 @@ export default async function SchedulePage({
                             Plan: {s.session.name}
                           </strong>{" "}
                           <span style={{ color: "var(--text-muted)" }}>· by {s.session.createdBy.user.name}</span>
-                          <div style={{ marginTop: 4, color: "var(--text)", fontSize: 12 }}>
+                          <div style={{ marginTop: 4, color: "var(--text)", fontSize: 13 }}>
                             {s.session.drills.map((sd, i) => (
                               <div key={sd.id} style={{ padding: "1px 0" }}>
                                 <span style={{ color: "var(--text-faint)", marginRight: 4 }}>{i + 1}.</span> {sd.drill.name}
@@ -411,7 +411,7 @@ export default async function SchedulePage({
                           </div>
                           {canEdit && inAttachWindow(s) && (
                             <form action={detachSessionPlan.bind(null, s.id)} style={{ marginTop: 6 }}>
-                              <button type="submit" style={{ fontSize: 11, padding: "4px 10px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 6, cursor: "pointer", color: "var(--text-muted)" }}>
+                              <button type="submit" style={{ fontSize: 13, padding: "4px 10px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 6, cursor: "pointer", color: "var(--text-muted)" }}>
                                 Remove plan
                               </button>
                             </form>
@@ -419,7 +419,7 @@ export default async function SchedulePage({
                         </div>
                       ) : canEdit && inAttachWindow(s) ? (
                         <form action={attachSessionPlan.bind(null, s.id)} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                          <select name="sessionId" required style={{ ...inputBase, width: "auto", minWidth: 220, fontSize: 12, padding: "6px 10px" }}>
+                          <select name="sessionId" required style={{ ...inputBase, width: "auto", minWidth: 220, fontSize: 13, padding: "6px 10px" }}>
                             <option value="">Attach a session plan…</option>
                             {sessionPlans.map((sp) => (
                               <option key={sp.id} value={sp.id}>{sp.name}</option>
@@ -438,7 +438,7 @@ export default async function SchedulePage({
       </div>
 
       {!canEdit && (
-        <p style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 16 }}>
+        <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 16 }}>
           Showing this calendar month only. Past sessions are available on the history page.
         </p>
       )}

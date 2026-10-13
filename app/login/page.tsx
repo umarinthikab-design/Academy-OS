@@ -25,7 +25,7 @@ export default async function LoginPage({
 
   const fieldLabel = {
     display: "block",
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     letterSpacing: "0.08em",
     textTransform: "uppercase",
@@ -183,7 +183,7 @@ export default async function LoginPage({
             padding: "14px 28px",
             textAlign: "center",
             borderTop: "1px solid var(--border)",
-            fontSize: 12,
+            fontSize: 13,
             color: "var(--text-faint)",
           }}
         >

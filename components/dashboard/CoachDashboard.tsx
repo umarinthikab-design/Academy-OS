@@ -314,7 +314,7 @@ color: "var(--text-heading)",
               style={{
                 background: "var(--error)",
                 color: "#fff",
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 700,
                 padding: "2px 8px",
                 borderRadius: "var(--radius-pill)",
@@ -346,7 +346,7 @@ color: "var(--text-heading)",
               style={{
                 background: "var(--surface-muted)",
                 color: "var(--text-muted)",
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 700,
                 padding: "2px 8px",
                 borderRadius: "var(--radius-pill)",
@@ -397,7 +397,7 @@ color: "var(--text-heading)",
                       flexShrink: 0,
                     }}
                   >
-                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
                       {s.date.toLocaleDateString(undefined, { month: "short" })}
                     </span>
                     <span style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.1 }}>{s.date.getDate()}</span>
@@ -407,7 +407,7 @@ color: "var(--text-heading)",
                       {s.ageGroup.name}
                       {s.batch && <span style={{ color: "var(--text-muted)", fontWeight: 500 }}> · {s.batch.name}</span>}
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
                       {s.startTime} – {endTime(s.startTime, s.durationMinutes)} · {s.location.name}
                     </div>
                   </div>

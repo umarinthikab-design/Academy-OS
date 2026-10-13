@@ -24,7 +24,7 @@ export function Table({
                 style={{
                   textAlign: c.align === "right" ? "right" : "left",
                   padding: "9px 12px",
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: 700,
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",

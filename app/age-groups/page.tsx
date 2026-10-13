@@ -71,7 +71,7 @@ export default async function AgeGroupsPage({
                         alignItems: "center",
                         justifyContent: "center",
                         fontWeight: 800,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontFamily: "var(--font-headline)",
                         flexShrink: 0,
                       }}
@@ -120,7 +120,7 @@ export default async function AgeGroupsPage({
             style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16 }}
           >
             <div style={{ flex: 1, minWidth: 160 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>New category name</label>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>New category name</label>
               <input name="name" placeholder="e.g. Elite Academy" required style={inputBase} />
             </div>
             <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
@@ -157,10 +157,10 @@ export default async function AgeGroupsPage({
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <details>
-                        <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
+                        <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
                         <form action={renameAgeGroupCategory.bind(null, c.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                          <input name="name" defaultValue={c.name} required style={{ ...inputBase, fontSize: 12.5, padding: "6px 9px", width: 180 }} />
-                          <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: "pointer" }}>
+                          <input name="name" defaultValue={c.name} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", width: 180 }} />
+                          <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                             Save
                           </button>
                         </form>
@@ -197,11 +197,11 @@ export default async function AgeGroupsPage({
           }}
         >
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Name</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Name</label>
             <input name="name" placeholder="e.g. U17" required style={inputBase} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Category</label>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Category</label>
             <select name="categoryId" required defaultValue={categories[0]?.id ?? ""} style={inputBase}>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>

@@ -255,7 +255,7 @@ export function PhotoUpload({
                 borderRadius: 8,
                 cursor: "pointer",
                 fontWeight: 700,
-                fontSize: 12.5,
+                fontSize: 13,
               }}
             >
               <Icon name="upload" size={14} /> {busy ? "Processing…" : label}
@@ -276,17 +276,17 @@ export function PhotoUpload({
                   borderRadius: 8,
                   cursor: "pointer",
                   fontWeight: 700,
-                  fontSize: 12.5,
+                  fontSize: 13,
                 }}
               >
                 Remove
               </button>
             )}
           </div>
-          <span style={{ fontSize: 11, color: "var(--text-faint)" }}>JPG or PNG, up to 5 MB. Crop & rotate before uploading.</span>
+          <span style={{ fontSize: 13, color: "var(--text-faint)" }}>JPG or PNG, up to 5 MB. Crop & rotate before uploading.</span>
         </div>
       </div>
-      {error && <p style={{ fontSize: 12, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}
+      {error && <p style={{ fontSize: 13, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}
 
       {editing && (
         <div
@@ -298,7 +298,7 @@ export function PhotoUpload({
             padding: 14,
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10 }}>Crop & align your photo</div>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Crop & align your photo</div>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-start" }}>
             <div
               data-cropbox
@@ -361,20 +361,20 @@ export function PhotoUpload({
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", gap: 6 }}>
-                <button type="button" onClick={() => rotate(-1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 12 }}>
+                <button type="button" onClick={() => rotate(-1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13 }}>
                   <Icon name="rotate" size={14} /> Rotate left
                 </button>
-                <button type="button" onClick={() => rotate(1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 12 }}>
+                <button type="button" onClick={() => rotate(1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13 }}>
                   Rotate right <Icon name="rotate" size={14} style={{ transform: "scaleX(-1)" }} />
                 </button>
               </div>
-              <p style={{ fontSize: 11, color: "var(--text-faint)", margin: 0 }}>Drag the box to frame the photo. Use the corner handle to resize. The result is cropped to a square.</p>
+              <p style={{ fontSize: 13, color: "var(--text-faint)", margin: 0 }}>Drag the box to frame the photo. Use the corner handle to resize. The result is cropped to a square.</p>
               <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                 <button
                   type="button"
                   onClick={confirmCrop}
                   disabled={busy}
-                  style={{ padding: "8px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}
+                  style={{ padding: "8px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                 >
                   Apply crop
                 </button>
@@ -386,7 +386,7 @@ export function PhotoUpload({
                     setFit(null);
                     setRotation(0);
                   }}
-                  style={{ padding: "8px 16px", background: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 8, fontWeight: 700, fontSize: 12.5, cursor: "pointer" }}
+                  style={{ padding: "8px 16px", background: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                 >
                   Cancel
                 </button>

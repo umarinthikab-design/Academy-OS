@@ -37,7 +37,7 @@ export function DashboardHero({
       <div style={{ position: "absolute", right: 30, bottom: 0, width: 160, height: 160, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.14)" }} />
 
       <div style={{ position: "relative" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.7, color: "#fff" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.7, color: "#fff" }}>
           {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
         </div>
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 6px", color: "#fff" }}>

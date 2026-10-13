@@ -86,7 +86,7 @@ export default async function PlayerDetailPage({
   };
 
   const labelCaps: React.CSSProperties = {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     letterSpacing: "0.06em",
     textTransform: "uppercase",
@@ -130,7 +130,7 @@ export default async function PlayerDetailPage({
           </div>
           {canEdit && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-              <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 700 }}>Status:</span>
+              <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 700 }}>Status:</span>
               <PlayerStatusSelect action={updatePlayerStatus.bind(null, player.id)} status={player.status} />
             </div>
           )}
@@ -151,7 +151,7 @@ export default async function PlayerDetailPage({
           />
           <div style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
             {skillTrend.map(({ skillName, current, history }) => (
-              <div key={skillName} style={{ marginBottom: 6, fontSize: 12, color: "var(--text-muted)" }}>
+              <div key={skillName} style={{ marginBottom: 6, fontSize: 13, color: "var(--text-muted)" }}>
                 <strong style={{ color: "var(--text)" }}>{skillName}</strong>
                 {history.length > 1 && (
                   <span>
@@ -169,13 +169,13 @@ export default async function PlayerDetailPage({
             {player.notes.map((n) => (
               <div key={n.id} style={{ fontSize: 13, padding: "8px 10px", background: "var(--surface-muted)", borderRadius: "var(--radius-sm)", borderLeft: "3px solid var(--secondary)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ ...labelCaps, fontSize: 10 }}>{n.coach.user.name}</span>
-                  <span style={{ fontSize: 11, color: "var(--text-faint)" }}>{n.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                  <span style={{ ...labelCaps, fontSize: 13 }}>{n.coach.user.name}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-faint)" }}>{n.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
                 </div>
                 <div>{n.content}</div>
               </div>
             ))}
-            {player.notes.length === 0 && <p style={{ fontSize: 12, color: "var(--text-faint)" }}>No notes yet.</p>}
+            {player.notes.length === 0 && <p style={{ fontSize: 13, color: "var(--text-faint)" }}>No notes yet.</p>}
           </div>
           {canEdit && (
             <form action={createNote.bind(null, player.id)} style={{ display: "flex", gap: 6 }}>
@@ -202,7 +202,7 @@ export default async function PlayerDetailPage({
               </div>
             );
           })}
-          {player.attendance.length === 0 && <p style={{ fontSize: 12, color: "var(--text-faint)", padding: "8px 0" }}>No attended sessions recorded yet.</p>}
+          {player.attendance.length === 0 && <p style={{ fontSize: 13, color: "var(--text-faint)", padding: "8px 0" }}>No attended sessions recorded yet.</p>}
         </div>
       </section>
 

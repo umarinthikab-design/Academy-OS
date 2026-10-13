@@ -41,7 +41,7 @@ export default async function SettingsPage({
 
   const labelCaps: React.CSSProperties = {
     fontFamily: "var(--font-mono-label)",
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     letterSpacing: "0.06em",
     textTransform: "uppercase",

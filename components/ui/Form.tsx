@@ -29,13 +29,13 @@ export function Field({
   return (
     <div style={style}>
       {label && (
-        <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--text)", marginBottom: 5 }}>
+        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 5 }}>
           {label}
         </label>
       )}
       {children}
       {hint && (
-        <p style={{ margin: "5px 0 0", fontSize: 12, color: "var(--text-faint)" }}>{hint}</p>
+        <p style={{ margin: "5px 0 0", fontSize: 13, color: "var(--text-faint)" }}>{hint}</p>
       )}
     </div>
   );
