@@ -1,49 +1,67 @@
-// RegistrationsInbox - "Pending registrations" dashboard section, same
-// visual pattern as ApprovalInbox (header + StatusPill count) so it reads as
-// part of the same "things awaiting your review" language, without actually
-// being wired into the generic ApprovalRequest machinery ApprovalInbox uses -
-// PendingRegistration is its own model with its own review flow
-// (app/registrations), same relationship DrillStatus PENDING has to the
-// approvals system: adjacent, not merged in.
-
 import { prisma } from "@/lib/prisma";
 import type { Permissions } from "@/lib/permissions";
 import { Icon } from "@/components/ui/Icon";
-import { StatusPill } from "@/components/ui/StatusPill";
+import { Button } from "@/components/ui/Button";
 
+// Shown only when at least one registration is pending review. Renders nothing
+// at zero, so it costs no space on the dashboard the rest of the time.
 export async function RegistrationsInbox({ perms }: { perms: Permissions }) {
   if (!(perms.isAdmin || perms.isClubManager)) return null;
 
-  const count = await prisma.pendingRegistration.count({ where: { status: "PENDING" } });
+  const [count, latest] = await Promise.all([
+    prisma.pendingRegistration.count({ where: { status: "PENDING" } }),
+    prisma.pendingRegistration.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { id: true, playerName: true },
+    }),
+  ]);
   if (count === 0) return null;
 
+  const names = latest.map((r) => r.playerName || "Unmapped submission");
+  const more = count - names.length;
+  const summary = names.join(", ") + (more > 0 ? " and " + more + " more" : "");
+
   return (
-    <a
-      href="/registrations"
+    <section
       style={{
         display: "flex",
-        justifyContent: "space-between",
         alignItems: "center",
-        gap: 12,
+        gap: 16,
+
         flexWrap: "wrap",
         background: "var(--surface)",
         border: "1px solid var(--border)",
+        borderLeft: "4px solid var(--warning)",
         borderRadius: "var(--radius-lg)",
         boxShadow: "var(--shadow-sm)",
-        padding: "18px 20px",
-        textDecoration: "none",
+        padding: "16px 20px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--surface-muted)", color: "var(--secondary)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Icon name="squad" size={18} />
-        </div>
-        <div>
-          <h2 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, color: "var(--text-heading)" }}>Pending registrations</h2>
-          <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--text-muted)" }}>New sign-ups from the registration form awaiting review.</p>
-        </div>
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 10,
+          background: "var(--surface-muted)",
+          color: "var(--text-brand)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon name="squad" size={20} />
       </div>
-      <StatusPill tone="pending">{count} pending</StatusPill>
-    </a>
+      <div style={{ flex: "1 1 240px", minWidth: 0 }}>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text-heading)" }}>
+          {count === 1 ? "1 new registration awaiting review" : count + " new registrations awaiting review"}
+        </h2>
+        <p style={{ margin: "4px 0 0", fontSize: 14, color: "var(--text-muted)" }}>{summary}</p>
+      </div>
+      <Button href="/registrations">Review</Button>
+    </section>
+
   );
 }

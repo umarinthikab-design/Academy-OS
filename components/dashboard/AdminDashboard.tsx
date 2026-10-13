@@ -76,13 +76,14 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
         }
       />
 
+      {/* Registrations awaiting review - top of the page: needs a prompt response */}
+      <RegistrationsInbox perms={perms} />
+
       <BroadcastsSection />
 
       {/* Approvals */}
       <ApprovalInbox perms={perms} />
 
-      {/* Registrations awaiting review */}
-      <RegistrationsInbox perms={perms} />
 
       {/* Staffing alerts - sessions where a coach hasn't confirmed / declined */}
       <StaffingAlerts perms={perms} />
