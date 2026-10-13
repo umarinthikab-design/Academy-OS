@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { Permissions } from "@/lib/permissions";
+import { BroadcastsSection } from "./BroadcastsSection";
 
 // Small fixed palette for the Club Overview age-group card accents. Assigned
 // by index so it's deterministic with no extra configuration.
@@ -74,6 +75,8 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
           </a>
         }
       />
+
+      <BroadcastsSection />
 
       {/* Approvals */}
       <ApprovalInbox perms={perms} />

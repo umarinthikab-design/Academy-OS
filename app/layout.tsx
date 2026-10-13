@@ -12,6 +12,8 @@ import { Icon } from "@/components/ui/Icon";
 import { roleLabel } from "@/lib/roleLabel";
 import { getNavItems } from "@/lib/navItems";
 import { getRequestsBadge } from "@/lib/approvals";
+import { getUnreadCount } from "@/lib/notifications";
+import { RefreshOnFocus } from "@/components/RefreshOnFocus";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import Link from "next/link";
@@ -65,7 +67,9 @@ export default async function RootLayout({
   const perms = await getPermissions();
   const requestsBadge = await getRequestsBadge(perms);
   const registrationsBadge = perms.isAdmin || perms.isClubManager ? await prisma.pendingRegistration.count({ where: { status: "PENDING" } }) : 0;
-  const navItems = getNavItems(perms, requestsBadge, registrationsBadge);
+  const unreadUserId = perms.userId ?? "";
+  const unreadCount = await getUnreadCount(unreadUserId);
+  const navItems = getNavItems(perms, requestsBadge, registrationsBadge, unreadCount);
 
   // Dev-only convenience switcher. The dynamic import sits behind a
   // build-time-inlined NODE_ENV check, so in production builds neither the
@@ -84,6 +88,7 @@ export default async function RootLayout({
         {devSwitcher}
         {session ? (
           <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            <RefreshOnFocus />
             <MobileNav
               userName={session.name}
               userRole={session.role}

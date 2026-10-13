@@ -42,7 +42,7 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
               color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
               textDecoration: "none",
               fontSize: 13.5,
-              fontWeight: active ? 700 : 500,
+              fontWeight: active || item.badge ? 700 : 500,
               borderRadius: 8,
               borderRight: active && !compact ? "4px solid var(--sidebar-active-bar)" : "4px solid transparent",
               background: active ? "var(--sidebar-active-bg)" : "transparent",

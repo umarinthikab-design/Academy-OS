@@ -10,6 +10,7 @@ import { endTime } from "@/components/ui/SessionCard";
 import { CoachDashboardClient } from "./CoachDashboardClient";
 import type { DashboardScope } from "@/lib/assignments";
 import type { Permissions } from "@/lib/permissions";
+import { BroadcastsSection } from "./BroadcastsSection";
 
 function sessionStart(date: Date, startTime: string): Date {
   const [h, m] = startTime.split(":").map(Number);
@@ -131,6 +132,7 @@ color: "var(--text-heading)",
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 80 }}>
+      <BroadcastsSection />
       {priority && (
         <section style={cardStyle}>
           <div

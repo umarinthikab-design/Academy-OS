@@ -7,8 +7,9 @@ import type { Permissions } from "./permissions";
 
 export type NavItem = { href: string; label: string; icon: string; badge?: number };
 
-export function getNavItems(perms: Permissions, requestsBadge = 0, registrationsBadge = 0): NavItem[] {
+export function getNavItems(perms: Permissions, requestsBadge = 0, registrationsBadge = 0, broadcastsBadge = 0): NavItem[] {
   const items: NavItem[] = [{ href: "/", label: "Dashboard", icon: "dashboard" }];
+  items.push({ href: "/broadcasts", label: "Broadcasts", icon: "bell", badge: broadcastsBadge > 0 ? Math.min(broadcastsBadge, 9) : undefined });
 
   if (perms.role === "PARENT") {
     items.push({ href: "/settings", label: "Settings", icon: "settings" });
@@ -22,7 +23,7 @@ export function getNavItems(perms: Permissions, requestsBadge = 0, registrations
   // (they're tracking the status of their submissions, not fielding them);
   // admins and head coaches keep "Requests" since they're approving.
   if (perms.isAdmin || perms.isClubManager || perms.isHeadCoach || perms.isAssistant) {
-    items.push({ href: "/requests", label: perms.isAssistant ? "Approvals" : "Requests", icon: "bell", badge: requestsBadge || undefined });
+    items.push({ href: "/requests", label: perms.isAssistant ? "Approvals" : "Requests", icon: "inbox", badge: requestsBadge || undefined });
   }
 
   // Coaching staff (head + assistant) and admins share the football-ops pages.

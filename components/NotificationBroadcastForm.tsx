@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { sendBroadcast, type BroadcastState } from "@/app/notifications/actions";
+import { sendBroadcast, type BroadcastState } from "@/app/broadcasts/actions";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";
 

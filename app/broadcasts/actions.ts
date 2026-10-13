@@ -93,6 +93,7 @@ export async function sendBroadcast(prevState: BroadcastState, formData: FormDat
       `Broadcast sent to ${sentCount} recipients`
     );
 
+    revalidatePath("/", "layout");
     return { success: true, error: null };
   } catch (error) {
     console.error("Broadcast failed:", error);
@@ -106,12 +107,12 @@ export async function markNotificationRead(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await markRead(perms.userId, id);
-  revalidatePath("/notifications");
+  revalidatePath("/", "layout");
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
   const perms = await getPermissions();
   if (!perms.userId) return;
   await markAllRead(perms.userId);
-  revalidatePath("/notifications");
+  revalidatePath("/", "layout");
 }

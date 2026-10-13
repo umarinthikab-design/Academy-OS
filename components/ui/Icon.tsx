@@ -242,6 +242,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M12 8h.01M12 11v5" />
     </>
   ),
+  inbox: (
+    <>
+      <rect x="3" y="6" width="18" height="14" rx="2" />
+      <path d="M9 6l3 6L15 6" />
+    </>
+  ),
   refresh: (
     <>
       <path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" />

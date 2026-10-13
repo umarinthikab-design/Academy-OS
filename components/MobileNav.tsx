@@ -40,6 +40,19 @@ export function MobileNav({
           style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
         >
           <Icon name="menu" size={24} />
+          {items.some((item) => item.badge) && (
+            <span
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "var(--accent)",
+              }}
+            />
+          )}
         </button>
         <Link
           href="/"
@@ -153,7 +166,7 @@ export function MobileNav({
                       padding: "11px 10px",
                       textDecoration: "none",
                       fontSize: 14,
-                      fontWeight: active ? 700 : 500,
+                      fontWeight: active || item.badge ? 700 : 500,
                       borderRadius: 8,
                       background: active ? "var(--sidebar-active-bg)" : "transparent",
                       borderRight: active ? "4px solid var(--sidebar-active-bar)" : "4px solid transparent",

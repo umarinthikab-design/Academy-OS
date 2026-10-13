@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { DashboardScope } from "@/lib/assignments";
+import { BroadcastsSection } from "./BroadcastsSection";
 
 export async function ParentDashboard({ scope, userName, academyName }: { scope: DashboardScope; userName: string; academyName: string }) {
   const now = new Date();
@@ -35,6 +36,7 @@ export async function ParentDashboard({ scope, userName, academyName }: { scope:
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <DashboardHero name={userName} subtitle={<span>Welcome to {academyName}{userName ? ", parent." : "."}</span>} />
+        <BroadcastsSection />
         <EmptyState
           icon="squad"
           title="No linked players yet"
@@ -54,6 +56,8 @@ export async function ParentDashboard({ scope, userName, academyName }: { scope:
         name={userName}
         subtitle={<span>Here's how your children are getting on at the academy.</span>}
       />
+
+      <BroadcastsSection />
 
       {/* My Children */}
       <section>
