@@ -23,10 +23,12 @@ export default async function DashboardPage({
   searchParams: Promise<{ team?: string; error?: string; success?: string }>;
 }) {
   const params = await searchParams;
-  const session = await getSession();
-  const perms = await getPermissions();
-  const scope = await getDashboardScope();
-  const branding = await getAcademyBranding();
+  const [session, perms, scope, branding] = await Promise.all([
+    getSession(),
+    getPermissions(),
+    getDashboardScope(),
+    getAcademyBranding(),
+  ]);
 
   const team = params.team ?? null;
   const userName = session?.name ?? "";

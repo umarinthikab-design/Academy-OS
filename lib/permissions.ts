@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getSession } from "./getSession";
 import { prisma } from "./prisma";
 
@@ -61,7 +62,7 @@ const EMPTY: Permissions = {
 // The single source of truth for "what can the logged-in user do." Every
 // action and page should call this instead of checking session.role
 // directly, so the rules only live in one place.
-export async function getPermissions(): Promise<Permissions> {
+async function getPermissionsUncached(): Promise<Permissions> {
   const session = await getSession();
   if (!session) return EMPTY;
 
@@ -151,3 +152,6 @@ export async function getPermissions(): Promise<Permissions> {
   // PARENT - no admin/coach pages are built for this role yet.
   return { ...EMPTY, role: "PARENT", userId: session.userId };
 }
+
+// Memoized per request (see getSession).
+export const getPermissions = cache(getPermissionsUncached);

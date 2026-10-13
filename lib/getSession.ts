@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
@@ -7,7 +8,7 @@ import { verifySessionToken, SessionPayload, SESSION_COOKIE_NAME } from "./sessi
 // logged in. Do NOT import this into middleware.ts - cookies() from
 // "next/headers" combined with this file's dependency chain is meant for
 // the Node runtime, not Edge.
-export async function getSession(): Promise<SessionPayload | null> {
+async function getSessionUncached(): Promise<SessionPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -34,3 +35,7 @@ export async function getSession(): Promise<SessionPayload | null> {
   // into the JWT at login time, so a profile rename shows up immediately.
   return { ...payload, name: user.name, role: user.role };
 }
+
+// Memoized per request: the layout, the page and every component on it call
+// getSession(); without this each call is its own database round trip.
+export const getSession = cache(getSessionUncached);

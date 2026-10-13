@@ -59,16 +59,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  const branding = await getAcademyBranding();
-  const user = session ? await prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true, email: true } }) : null;
+  const [branding, user, perms] = await Promise.all([
+    getAcademyBranding(),
+    session
+      ? prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true, email: true } })
+      : Promise.resolve(null),
+    getPermissions(),
+  ]);
   const photoUrl = user?.photoUrl ?? null;
   const theme = user?.theme ?? "light";
   const currentEmail = user?.email ?? "";
-  const perms = await getPermissions();
-  const requestsBadge = await getRequestsBadge(perms);
-  const registrationsBadge = perms.isAdmin || perms.isClubManager ? await prisma.pendingRegistration.count({ where: { status: "PENDING" } }) : 0;
   const unreadUserId = perms.userId ?? "";
-  const unreadCount = await getUnreadCount(unreadUserId);
+  const [requestsBadge, registrationsBadge, unreadCount] = await Promise.all([
+    getRequestsBadge(perms),
+    perms.isAdmin || perms.isClubManager
+      ? prisma.pendingRegistration.count({ where: { status: "PENDING" } })
+      : Promise.resolve(0),
+    getUnreadCount(unreadUserId),
+  ]);
   const navItems = getNavItems(perms, requestsBadge, registrationsBadge, unreadCount);
 
   // Dev-only convenience switcher. The dynamic import sits behind a
