@@ -11,6 +11,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/Button";
+import { addMyselfAsCoach } from "@/app/coaches/actions";
 
 export default async function SessionsPage({
   searchParams,
@@ -20,6 +22,8 @@ export default async function SessionsPage({
   const params = await searchParams;
   const perms = await getPermissions();
   const canSuggest = perms.canSuggestDrills;
+  // Plans are owned by a Coach record, so creating one needs a coach profile.
+  const canCreate = canSuggest && perms.coachId !== null;
   const canApprove = perms.isAdmin || perms.canApproveRequests;
 
   // Visible plans: your own (all of them) plus team-shared ones from other
@@ -72,12 +76,39 @@ export default async function SessionsPage({
     <>
       <PageHeader
         title="Session Plans"
-        subtitle={canSuggest ? "Build training plans from the approved drill library." : "Only coaches can create session plans. You can still view shared ones below."}
+        subtitle={canCreate ? "Build training plans from the approved drill library." : perms.isAdmin ? "Add yourself as a coach to build your own plans. Shared plans are listed below." : "Only coaches can create session plans. You can still view shared ones below."}
       />
 
       <StatusBanner error={params.error} success={params.success} />
 
-      {canSuggest && (
+      {perms.isAdmin && !perms.coachId && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+            padding: 16,
+            marginBottom: 16,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 12,
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-heading)", marginBottom: 2 }}>Coach profile needed</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+              Session plans belong to a coach. Add a coach profile to your admin account to create and share your own plans. Your admin access does not change.
+            </div>
+          </div>
+          <form action={addMyselfAsCoach}>
+            <Button variant="outline">Add myself as a coach</Button>
+          </form>
+        </div>
+      )}
+
+      {canCreate && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
           <CollapsibleCreate title="Create a session plan" style={{ width: "100%", maxWidth: 640, marginBottom: 0 }}>
             <form action={createSession}>
@@ -94,9 +125,7 @@ export default async function SessionsPage({
                 {approvedDrills.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No approved drills in the library yet.</span>}
               </div>
 
-              <button type="submit" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
-                <Icon name="plus" size={15} /> Create Plan
-              </button>
+              <Button icon="plus">Create Plan</Button>
               <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>Plans start private to you. Use “Share” to request team visibility.</p>
             </form>
           </CollapsibleCreate>
@@ -123,14 +152,10 @@ export default async function SessionsPage({
                     </span>
                     <div style={{ display: "flex", gap: 6 }}>
                       <form action={approveSessionShare.bind(null, r.id)}>
-                        <button type="submit" style={{ padding: "6px 12px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                          Approve
-                        </button>
+                        <Button variant="secondary" size="sm">Approve</Button>
                       </form>
                       <form action={rejectSessionShare.bind(null, r.id)}>
-                        <button type="submit" style={{ padding: "6px 12px", background: "var(--surface)", color: "var(--error)", border: "1px solid var(--error)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                          Reject
-                        </button>
+                        <Button variant="danger" size="sm">Reject</Button>
                       </form>
                     </div>
                   </div>
@@ -166,9 +191,7 @@ export default async function SessionsPage({
 
                       <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
                         <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 13, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                        <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                          Send
-                        </button>
+                        <Button variant="secondary" size="sm">Send</Button>
                       </form>
                     </div>
                   </details>
@@ -207,16 +230,12 @@ export default async function SessionsPage({
                 <div style={{ display: "flex", gap: 6 }}>
                   {s.shareStatus === null && (
                     <form action={shareSession.bind(null, s.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                        Share
-                      </button>
+                      <Button variant="outline" size="sm" style={{ color: "var(--secondary)", borderColor: "var(--secondary)" }}>Share</Button>
                     </form>
                   )}
                   {s.shareStatus === "REJECTED" && (
                     <form action={shareSession.bind(null, s.id)}>
-                      <button type="submit" style={{ padding: "6px 12px", border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                        Resubmit
-                      </button>
+                      <Button variant="outline" size="sm" style={{ color: "var(--secondary)", borderColor: "var(--secondary)" }}>Resubmit</Button>
                     </form>
                   )}
                   <ConfirmDeleteButton

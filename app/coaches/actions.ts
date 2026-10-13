@@ -82,9 +82,20 @@ export async function createCoach(formData: FormData) {
   redirect(`/coaches?success=${encodeURIComponent(`${name} added to the roster.`)}`);
 }
 
+// Admin logins can't be managed through their coach profile: deleting,
+// archiving, revoking or resetting would hit the admin account itself.
+async function refuseIfAdminAccount(coachId: string) {
+  const c = await prisma.coach.findUnique({
+    where: { id: coachId },
+    select: { user: { select: { role: true } } },
+  });
+  if (c?.user.role === Role.ADMIN) redirect("/coaches?error=admin_account");
+}
+
 export async function deleteCoach(id: string) {
   const perms = await getPermissions();
   if (!perms || !(perms.isAdmin || perms.canEditRoster)) redirect("/coaches?error=no_permission");
+  await refuseIfAdminAccount(id);
 
   const coach = await prisma.coach.findUnique({
     where: { id },
@@ -122,6 +133,7 @@ export async function deleteCoach(id: string) {
 export async function archiveCoach(id: string) {
   const perms = await getPermissions();
   if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
+  await refuseIfAdminAccount(id);
 
   const coach = await prisma.coach.findUnique({ where: { id }, select: { userId: true, user: { select: { name: true } } } });
   if (!coach) redirect("/coaches");
@@ -223,6 +235,7 @@ export async function updateCoachPermission(coachId: string, field: PermissionFi
 export async function revokeSessions(coachId: string) {
   const perms = await getPermissions();
   if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
+  await refuseIfAdminAccount(coachId);
 
   const coach = await prisma.coach.findUnique({
     where: { id: coachId },
@@ -284,6 +297,7 @@ export async function promoteCoach(coachId: string, formData: FormData) {
 export async function resetCoachPassword(coachId: string) {
   const perms = await getPermissions();
   if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
+  await refuseIfAdminAccount(coachId);
 
   const coach = await prisma.coach.findUnique({
     where: { id: coachId },
@@ -329,4 +343,21 @@ export async function clearTempPassword() {
   // at "/" and leaves the real one at "/coaches" untouched. The path must
   // match exactly for the browser to treat it as the same cookie.
   cookieStore.delete({ name: TEMP_PASSWORD_COOKIE, path: "/coaches" });
+}
+
+// An admin (e.g. the founder) can also be a coach. This gives the logged-in
+// admin their own Coach profile so they can own session plans. It only ever
+// acts on the caller's own account and never changes role or credentials.
+export async function addMyselfAsCoach() {
+  const perms = await getPermissions();
+  if (!perms || !perms.isAdmin || !perms.userId) redirect("/coaches?error=no_permission");
+
+  const existing = await prisma.coach.findUnique({ where: { userId: perms.userId }, select: { id: true } });
+  if (!existing) {
+    await prisma.coach.create({ data: { userId: perms.userId, designation: Designation.HEAD } });
+    await logActivity(perms.userId, "added_self_as_coach", "User", perms.userId);
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/sessions?success=" + encodeURIComponent("You now have a coach profile and can create session plans."));
 }

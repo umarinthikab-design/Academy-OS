@@ -5,6 +5,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   duplicate_name: "That name is already in use.",
   no_permission: "You don't have permission to do that.",
   in_use: "Can't delete this - it's still being used elsewhere. Remove those references first.",
+  admin_account: "This is an admin login, so it can't be deleted, archived or reset from the Coaches page.",
   missing_fields: "Please fill in all required fields.",
   already_resolved: "This session's attendance is already finalized.",
   not_started: "This session hasn't started yet - you can't check in early.",

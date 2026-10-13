@@ -67,11 +67,18 @@ async function getPermissionsUncached(): Promise<Permissions> {
   if (!session) return EMPTY;
 
   if (session.role === "ADMIN") {
+    // An admin can also be a coach (e.g. the founder). If they have a Coach
+    // row, expose its id so they can own session plans like any coach.
+    const adminCoach = await prisma.coach.findUnique({
+      where: { userId: session.userId },
+      select: { id: true },
+    });
     return {
       ...EMPTY,
       role: "ADMIN",
       isAdmin: true,
       userId: session.userId,
+      coachId: adminCoach?.id ?? null,
       canEditRoster: true,
       canEditDrills: true,
       canApproveRequests: true,
