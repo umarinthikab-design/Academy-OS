@@ -28,7 +28,7 @@ export default async function BroadcastsPage() {
   const perms = await getPermissions();
   const userId = perms.userId ?? "";
   const [unread, items] = await Promise.all([getUnreadCount(userId), getInbox(userId)]);
-  const canSend = perms.isAdmin || perms.isClubManager;
+  const canSend = perms.canSendNotifications;
 
 
   return (

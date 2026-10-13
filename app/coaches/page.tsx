@@ -20,6 +20,7 @@ const PERMISSION_TOGGLES = [
   { field: "canEditSchedule", label: "Edit Schedule" },
   { field: "canEditLocations", label: "Edit Locations" },
   { field: "canEditAgeGroups", label: "Edit Age Groups" },
+  { field: "canSendBroadcasts", label: "Send Broadcasts" },
 ] as const;
 
 export default async function CoachesPage({

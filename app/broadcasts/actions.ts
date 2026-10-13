@@ -15,7 +15,7 @@ export type BroadcastState = {
 
 export async function sendBroadcast(prevState: BroadcastState, formData: FormData): Promise<BroadcastState> {
   const permissions = await getPermissions();
-  if (!permissions.isAdmin && !permissions.isClubManager) {
+  if (!permissions.canSendNotifications) {
     return { success: false, error: "You don't have permission to send broadcasts." };
   }
 

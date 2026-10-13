@@ -201,6 +201,7 @@ model Coach {
   canEditSchedule     Boolean @default(false)
   canEditLocations    Boolean @default(false)
   canEditAgeGroups    Boolean @default(false)
+  canSendBroadcasts   Boolean @default(false)
 
   primaryFocus       AgeGroup[] @relation("CoachPrimaryFocus")
   mainBatches        Batch[]    @relation("BatchMainCoaches")

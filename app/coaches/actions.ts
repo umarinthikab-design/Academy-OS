@@ -199,6 +199,7 @@ const PERMISSION_FIELDS = [
   "canEditSchedule",
   "canEditLocations",
   "canEditAgeGroups",
+  "canSendBroadcasts",
 ] as const;
 type PermissionField = (typeof PERMISSION_FIELDS)[number];
 

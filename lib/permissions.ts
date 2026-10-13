@@ -130,6 +130,7 @@ export async function getPermissions(): Promise<Permissions> {
       canEditBatches: true,
       canSuggestDrills: true,
       canAuthorDrills: true,
+      canSendNotifications: coach?.canSendBroadcasts ?? false,
     };
   }
 
@@ -143,6 +144,7 @@ export async function getPermissions(): Promise<Permissions> {
       coachId: coach?.id ?? null,
       canSuggestDrills: true,
       canAuthorDrills: true,
+      canSendNotifications: coach?.canSendBroadcasts ?? false,
     };
   }
 
