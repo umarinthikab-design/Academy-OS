@@ -1,35 +1,37 @@
 import BroadcastsCard from "./BroadcastsCard";
 import { getPermissions } from "@/lib/permissions";
-import { getSession } from "@/lib/getSession";
 import { getInbox, getUnreadCount } from "@/lib/notifications";
 
-interface MappedInboxItem {
-  id: string;
-  title: string;
-  body: string;
-  date: string;
-  readAt: string | null;
+function formatDate(d: Date) {
+  return new Date(d).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
+// Server component: reads the logged-in user's own inbox. Only UNREAD items are
+// shown, so marking a broadcast read removes it from this user's dashboard
+// without affecting anyone else (read state is stored per recipient).
 export async function BroadcastsSection() {
   const perms = await getPermissions();
-  const session = await getSession();
-  const userId = perms.userId ?? session?.userId ?? "";
+  const userId = perms.userId ?? "";
+  if (!userId) return null;
 
-  if (!userId) {
-    return null;
-  }
 
-  const rawItems = await getInbox(userId, 3);
-  const items: MappedInboxItem[] = rawItems.map((item) => ({
-    id: item.id,
-    title: item.title,
-    body: item.body,
-    date: item.createdAt.toDateString(),
-    readAt: item.readAt ? item.readAt.toISOString().split("T")[0] : null,
-  }));
+  const [rawItems, unreadCount] = await Promise.all([getInbox(userId, 50), getUnreadCount(userId)]);
 
-  const unreadCount = await getUnreadCount(userId);
+  const items = rawItems
+    .filter((item) => item.readAt === null)
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      body: item.body,
+      date: formatDate(item.createdAt),
+      readAt: null,
+    }));
 
   return <BroadcastsCard items={items} unreadCount={unreadCount} />;
 }
