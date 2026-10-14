@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill, archiveDrill, reactivateDrill, deleteDrill, createDrillCategory, renameDrillCategory, deleteDrillCategory } from "./actions";
 import { getPermissions } from "@/lib/permissions";
@@ -83,9 +84,7 @@ export default async function DrillsPage({
               <label style={fieldLabel}>New category name</label>
               <input name="name" placeholder="e.g. Set Pieces" required style={inputBase} />
             </div>
-            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-              Add Category
-            </button>
+            <Button>Add Category</Button>
           </form>
 
           {categories.length === 0 ? (
@@ -120,9 +119,7 @@ export default async function DrillsPage({
                         <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
                         <form action={renameDrillCategory.bind(null, c.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
                           <input name="name" defaultValue={c.name} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", width: 180 }} />
-                          <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                            Save
-                          </button>
+                          <Button size="sm">Save</Button>
                         </form>
                       </details>
                       {!inUse && (
@@ -183,9 +180,7 @@ export default async function DrillsPage({
                 </div>
               </div>
             </div>
-            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-              {canPublishEdit ? "Publish Drill" : "Suggest Drill"}
-            </button>
+            <Button style={{ marginTop: 14 }}>{canPublishEdit ? "Publish Drill" : "Suggest Drill"}</Button>
             <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>
               {canPublishEdit
                 ? "Published drills join the library immediately."
@@ -221,9 +216,7 @@ export default async function DrillsPage({
                 {canApprove && (
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                     <form action={approveDrill.bind(null, d.id)}>
-                      <button type="submit" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-                        <Icon name="check" size={14} /> Approve
-                      </button>
+                      <Button variant="secondary" size="sm" icon="check">Approve</Button>
                     </form>
                     <ConfirmDeleteButton
                       action={rejectDrill.bind(null, d.id)}
@@ -255,9 +248,7 @@ export default async function DrillsPage({
               {canSuggest && (
                 <form action={addFeedback.bind(null, d.id)} style={{ display: "flex", gap: 8, marginTop: 12 }}>
                   <input name="message" placeholder="Add feedback..." required style={{ ...inputBase, flex: 1, fontSize: 13 }} />
-                  <button type="submit" style={{ padding: "7px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                    Send
-                  </button>
+                  <Button size="sm">Send</Button>
                 </form>
               )}
             </div>
@@ -355,9 +346,7 @@ export default async function DrillsPage({
                             </label>
                           ))}
                         </div>
-                        <button type="submit" style={{ alignSelf: "flex-start", padding: "6px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                          Save
-                        </button>
+                        <Button size="sm" style={{ alignSelf: "flex-start" }}>Save</Button>
                       </form>
                     </details>
                   )}
@@ -400,9 +389,7 @@ export default async function DrillsPage({
                   </div>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <form action={reactivateDrill.bind(null, d.id)}>
-                      <button type="submit" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--secondary)", color: "var(--secondary)", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, padding: "4px 10px" }}>
-                        Reactivate
-                      </button>
+                      <Button variant="outline" size="sm" style={{ color: "var(--secondary)", borderColor: "var(--secondary)" }}>Reactivate</Button>
                     </form>
                     <ConfirmDeleteButton
                       action={deleteDrill.bind(null, d.id)}
