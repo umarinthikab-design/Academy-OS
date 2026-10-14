@@ -60,7 +60,7 @@ export default function BroadcastsCard({ items, unreadCount }: BroadcastsCardPro
             </span>
           )}
         </div>
-        <Link href="/broadcasts" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-brand)", textDecoration: "none" }}>
+        <Link className="text-link" href="/broadcasts" style={{ fontSize: 14, fontWeight: 600, color: "var(--text-brand)", textDecoration: "none" }}>
           View all
 
         </Link>

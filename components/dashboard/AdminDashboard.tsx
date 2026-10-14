@@ -67,7 +67,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
           </span>
         }
         actions={
-          <a
+          <a className="ui-btn"
             href="/schedule"
             style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 16px", background: "#fff", color: "var(--primary)", borderRadius: 9, fontWeight: 700, fontSize: 13, textDecoration: "none" }}
           >
@@ -100,7 +100,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>Today&apos;s Activity</h2>
-          <a href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+          <a className="text-link" href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
             View all →
           </a>
         </div>
@@ -134,7 +134,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>Club Overview</h2>
-          <a href="/batches" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+          <a className="text-link" href="/batches" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
             Manage →
           </a>
         </div>
@@ -155,7 +155,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
         <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <h2 style={{ fontSize: 17, fontWeight: 700 }}>Upcoming</h2>
-            <a href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+            <a className="text-link" href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
               View all →
             </a>
           </div>
@@ -187,7 +187,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h2 style={{ fontSize: 17, fontWeight: 700 }}>Attendance Overview</h2>
-          <a href="/attendance" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+          <a className="text-link" href="/attendance" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
             Open →
           </a>
         </div>
@@ -211,7 +211,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
         <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <h2 style={{ fontSize: 17, fontWeight: 700 }}>Recent Activity</h2>
-            <a href="/activity" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+            <a className="text-link" href="/activity" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
               View all →
             </a>
           </div>

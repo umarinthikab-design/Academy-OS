@@ -493,3 +493,19 @@ textarea:focus-visible {
     transition: none !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   Text links (View all, Clear, ...). Opt-in via className="text-link".
+   The underline fades in on hover, in the link's own colour. The
+   !important is needed because these links set textDecoration inline.
+   ------------------------------------------------------------------ */
+.text-link {
+  text-decoration-line: underline !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 1.5px !important;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--transition);
+}
+.text-link:hover {
+  text-decoration-color: currentColor !important;
+}

@@ -195,7 +195,7 @@ export default async function SchedulePage({
         <aside style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16, display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
             <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text)", margin: 0 }}>Filters</h3>
-            <a href="/schedule" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-muted)", textDecoration: "none" }}>Clear</a>
+            <a className="text-link" href="/schedule" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-muted)", textDecoration: "none" }}>Clear</a>
           </div>
 
           <div>

@@ -375,7 +375,7 @@ color: "var(--text-heading)",
         <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <h2 style={sectionHeadingStyle}>Upcoming Sessions</h2>
-            <a href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+            <a className="text-link" href="/schedule" style={{ fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
               View all
             </a>
           </div>

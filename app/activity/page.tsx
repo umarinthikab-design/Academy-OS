@@ -126,7 +126,7 @@ export default async function ActivityPage({
         </div>
         <Button variant="secondary" size="sm">Filter</Button>
         {(entityType || from || to) && (
-          <a href="/activity" style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none" }}>
+          <a className="text-link" href="/activity" style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none" }}>
             Clear
           </a>
         )}

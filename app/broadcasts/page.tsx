@@ -134,7 +134,7 @@ export default async function BroadcastsPage() {
                   <div style={{ marginTop: 6, display: "flex", gap: 12, alignItems: "center", fontSize: 13, color: "var(--text-muted)" }}>
                     <span>{formatDate(item.createdAt)}</span>
                     {item.link && (
-                      <a href={item.link} style={{ color: "var(--text-brand)", fontWeight: 600, textDecoration: "underline" }}>
+                      <a className="text-link" href={item.link} style={{ color: "var(--text-brand)", fontWeight: 600, textDecoration: "underline" }}>
                         View details
                       </a>
                     )}
