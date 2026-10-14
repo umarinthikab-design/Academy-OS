@@ -51,7 +51,7 @@ export function TempPasswordReveal({ email, password }: { email: string; passwor
       >
         {password}
       </code>
-      <button
+      <button className="ui-btn"
         type="button"
         onClick={() => {
           setDismissed(true);

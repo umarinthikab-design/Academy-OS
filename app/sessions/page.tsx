@@ -275,10 +275,10 @@ export default async function SessionsPage({
                     <span style={{ fontSize: 13, color: "var(--text-faint)" }}>{sd.drill.category.name} · {sd.drill.duration}m</span>
                     <div style={{ display: "flex", gap: 4 }}>
                       <form action={reorderSessionDrill.bind(null, s.id, sd.drillId, "up")}>
-                        <button type="submit" disabled={i === 0} style={{ padding: "2px 8px", fontSize: 13, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}>↑</button>
+                        <button className="ui-btn" type="submit" disabled={i === 0} style={{ padding: "2px 8px", fontSize: 13, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.4 : 1 }}>↑</button>
                       </form>
                       <form action={reorderSessionDrill.bind(null, s.id, sd.drillId, "down")}>
-                        <button type="submit" disabled={i === s.drills.length - 1} style={{ padding: "2px 8px", fontSize: 13, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === s.drills.length - 1 ? "default" : "pointer", opacity: i === s.drills.length - 1 ? 0.4 : 1 }}>↓</button>
+                        <button className="ui-btn" type="submit" disabled={i === s.drills.length - 1} style={{ padding: "2px 8px", fontSize: 13, border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 5, cursor: i === s.drills.length - 1 ? "default" : "pointer", opacity: i === s.drills.length - 1 ? 0.4 : 1 }}>↓</button>
                       </form>
                     </div>
                   </div>

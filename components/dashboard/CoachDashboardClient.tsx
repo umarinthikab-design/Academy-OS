@@ -38,7 +38,7 @@ export function CoachDashboardClient() {
           transition: "opacity 250ms ease, transform 250ms ease",
         }}
       >
-        <Link
+        <Link className="ui-btn"
           href="/drills/new"
           style={{
             display: "flex",
@@ -59,7 +59,7 @@ export function CoachDashboardClient() {
           Suggest Drill
           <Icon name="plus" size={18} />
         </Link>
-        <Link
+        <Link className="ui-btn"
           href="/sessions/new"
           style={{
             display: "flex",
@@ -83,7 +83,7 @@ export function CoachDashboardClient() {
       </div>
 
       {/* Main FAB */}
-      <button
+      <button className="ui-btn"
         aria-label="Quick Actions"
         onClick={() => setOpen((v) => !v)}
         style={{

@@ -89,7 +89,7 @@ export function InstallPrompt() {
           ) : null}
           <div style={{ display: "flex", gap: 8 }}>
             {deferred && (
-              <button
+              <button className="ui-btn"
                 type="button"
                 onClick={async () => {
                   await deferred.prompt();
@@ -109,7 +109,7 @@ export function InstallPrompt() {
                 Install
               </button>
             )}
-            <button
+            <button className="ui-btn"
               type="button"
               onClick={dismiss}
               style={{

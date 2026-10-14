@@ -22,7 +22,7 @@ export function ConfirmDeleteButton({
         }
       }}
     >
-      <button
+      <button className="ui-btn"
         type="submit"
         style={
           buttonStyle ?? {

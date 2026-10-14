@@ -48,7 +48,7 @@ export default async function PromotePlayersPage({
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
             {batches.map((b) => (
-              <a
+              <a className="ui-btn"
                 key={b.id}
                 href={`/squad/promote?batch=${b.id}`}
                 style={{

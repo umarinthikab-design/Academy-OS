@@ -17,7 +17,7 @@ export function TeamSelector({
   basePath?: string;
 }) {
   const pill = (label: string, active: boolean, href: string) => (
-    <Link
+    <Link className="ui-btn"
       key={href}
       href={href}
       style={{

@@ -34,7 +34,7 @@ export function MobileNav({
   return (
     <>
       <div className="mobile-topbar">
-        <button
+        <button className="ui-hover"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
           style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
@@ -139,7 +139,7 @@ export function MobileNav({
                   Powered by Touchline
                 </div>
               </div>
-              <button
+              <button className="ui-hover"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
                 style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", opacity: 0.8 }}
@@ -155,7 +155,7 @@ export function MobileNav({
               {items.map((item) => {
                 const active = pathname === item.href;
                 return (
-                  <Link
+                  <Link className="mobile-nav-hover"
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
@@ -208,7 +208,7 @@ export function MobileNav({
                 </div>
               </div>
               <form action={logoutAction}>
-                <button
+                <button className="ui-btn"
                   type="submit"
                   style={{
                     width: "100%",

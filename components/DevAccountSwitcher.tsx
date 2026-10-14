@@ -61,7 +61,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
             <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-faint)" }}>
               DEV · switch account
             </span>
-            <button
+            <button className="ui-hover"
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close account switcher"
@@ -84,7 +84,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
               <form key={a.email} action={login}>
                 <input type="hidden" name="email" value={a.email} />
                 <input type="hidden" name="password" value={a.password} />
-                <button
+                <button className="ui-btn"
                   type="submit"
                   style={{
                     width: "100%",
@@ -109,7 +109,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
           })}
         </>
       ) : (
-        <button
+        <button className="ui-btn"
           type="button"
           onClick={() => setOpen(true)}
           title={active ? `Switch account (${active.label})` : "Switch account"}

@@ -114,7 +114,7 @@ export function DrillPhotoUpload({
               }}
             >
               <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              <button
+              <button className="ui-hover"
                 type="button"
                 onClick={() => remove(i)}
                 title="Remove photo"

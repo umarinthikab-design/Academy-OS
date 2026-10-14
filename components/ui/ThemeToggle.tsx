@@ -35,7 +35,7 @@ export function ThemeToggle({ theme }: { theme: string }) {
   }
 
   return (
-    <button
+    <button className="ui-btn"
       type="button"
       onClick={toggle}
       aria-label={current === "dark" ? "Switch to light mode" : "Switch to dark mode"}

@@ -172,7 +172,7 @@ color: "var(--text-heading)",
             </div>
           </div>
           <div style={{ display: "flex", gap: 12, paddingLeft: 4 }}>
-            <a
+            <a className="ui-btn"
               href="/attendance"
               style={{
                 flex: 1,
@@ -193,7 +193,7 @@ color: "var(--text-heading)",
               <Icon name="check" size={18} />
               Confirm
             </a>
-            <button
+            <button className="ui-btn"
               type="button"
               style={{
                 flex: 1,
@@ -263,7 +263,7 @@ color: "var(--text-heading)",
                     {s._count.playerAttendance} Players Expected
                   </div>
                 </div>
-                <a
+                <a className="ui-btn"
                   href="/attendance"
                   style={{
                     display: "flex",

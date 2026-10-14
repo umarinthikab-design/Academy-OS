@@ -37,7 +37,7 @@ export default async function SessionHistoryPage() {
         title="Session History"
         subtitle={`All sessions in the last 12 months (${sessions.length}).`}
         actions={
-          <a
+          <a className="ui-btn"
             href="/schedule/history/export"
             style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", background: "var(--primary)", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: "none" }}
           >

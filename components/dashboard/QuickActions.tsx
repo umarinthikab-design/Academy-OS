@@ -62,7 +62,7 @@ export function QuickActions({
           <Link
             key={a.label}
             href={a.href}
-            className="quick-action"
+            className="quick-action ui-btn"
             style={{
               display: "flex",
               alignItems: "center",

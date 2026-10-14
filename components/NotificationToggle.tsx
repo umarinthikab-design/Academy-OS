@@ -117,7 +117,7 @@ export function NotificationToggle() {
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       <p style={{ fontSize: 13, color: "var(--text-muted)", margin: 0 }}>{copy[status]}</p>
       {(status === "off" || status === "on") && (
-        <button
+        <button className="ui-btn"
           type="button"
           onClick={status === "on" ? disable : enable}
           disabled={busy}

@@ -101,7 +101,7 @@ export function PlayerRatingCard({
       <div style={{ display: "flex", gap: 3 }}>
         {[1, 2, 3, 4, 5].map((n) =>
           canEdit ? (
-            <button
+            <button className="ui-hover"
               key={n}
               type="button"
               onClick={() => onSkillClick(skillName, n)}

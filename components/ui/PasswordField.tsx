@@ -38,7 +38,7 @@ export function PasswordField({
         defaultValue={defaultValue}
         style={{ width: "100%", padding: "10px 40px 10px 12px", border: "1px solid var(--border)", borderRadius: 8, boxSizing: "border-box", fontSize: 14, background: "var(--surface)", color: "var(--text)" }}
       />
-      <button
+      <button className="ui-hover"
         type="button"
         onClick={() => setVisible((v) => !v)}
         title={visible ? "Hide password" : "Show password"}

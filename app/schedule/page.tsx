@@ -94,7 +94,7 @@ export default async function SchedulePage({
           )
         }
         actions={
-          <a href="/schedule/history" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
+          <a className="text-link" href="/schedule/history" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}>
             Session history <span aria-hidden="true">→</span>
           </a>
         }
@@ -209,7 +209,7 @@ export default async function SchedulePage({
               {ageGroups.map((ag) => {
                 const active = activeAgeGroup === ag.id;
                 return (
-                  <a
+                  <a className="ui-hover"
                     key={ag.id}
                     href={active ? "/schedule" : `/schedule?ageGroup=${ag.id}`}
                     style={{

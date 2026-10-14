@@ -89,7 +89,7 @@ export default async function SquadPage({
           canEdit ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               {(perms.isAdmin || perms.isClubManager) && (
-                <a
+                <a className="text-link"
                   href="/squad/promote"
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}
                 >

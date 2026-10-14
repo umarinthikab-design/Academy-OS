@@ -190,12 +190,12 @@ export default async function ActivityPage({
             <span>Showing {total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, total)} of {total} {total === 1 ? "log" : "logs"}</span>
             <div style={{ display: "flex", gap: 4 }}>
               {page > 1 && (
-                <a href={buildHref({ page: String(page - 1) })} aria-label="Previous page" style={{ width: 32, height: 32, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", textDecoration: "none", transition: "background var(--transition)" }}>
+                <a className="ui-btn" href={buildHref({ page: String(page - 1) })} aria-label="Previous page" style={{ width: 32, height: 32, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", textDecoration: "none", transition: "background var(--transition)" }}>
                   ←
                 </a>
               )}
               {page < totalPages && (
-                <a href={buildHref({ page: String(page + 1) })} aria-label="Next page" style={{ width: 32, height: 32, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", textDecoration: "none", transition: "background var(--transition)" }}>
+                <a className="ui-btn" href={buildHref({ page: String(page + 1) })} aria-label="Next page" style={{ width: 32, height: 32, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)", textDecoration: "none", transition: "background var(--transition)" }}>
                   →
                 </a>
               )}

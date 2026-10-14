@@ -177,7 +177,7 @@ export default async function RootLayout({
                     </div>
                   </div>
                   <form action={logout}>
-                    <button
+                    <button className="ui-btn"
                       type="submit"
                       style={{
                         width: "100%",
@@ -251,11 +251,11 @@ export default async function RootLayout({
                 <SidebarNav items={navItems} compact />
 
                 <div style={{ padding: "12px 8px 16px", borderTop: "1px solid var(--sidebar-border)", marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                  <Link href="/settings" title={`${session.name} · ${roleLabel(session.role)}`}>
+                  <Link className="ui-hover" href="/settings" title={`${session.name} · ${roleLabel(session.role)}`}>
                     <Avatar name={session.name} src={photoUrl} size={32} />
                   </Link>
                   <form action={logout}>
-                    <button
+                    <button className="ui-btn"
                       type="submit"
                       title="Sign out"
                       aria-label="Sign out"

@@ -79,7 +79,7 @@ export default function BroadcastsCard({ items, unreadCount }: BroadcastsCardPro
       ) : (
         <div style={{ display: "flex", flexDirection: "column" }}>
           {shown.map((item, i) => (
-            <Link
+            <Link className="ui-hover"
               key={item.id}
               href="/broadcasts"
               style={{
@@ -124,7 +124,7 @@ export default function BroadcastsCard({ items, unreadCount }: BroadcastsCardPro
             </Link>
           ))}
           {hidden > 0 && (
-            <Link
+            <Link className="text-link"
               href="/broadcasts"
               style={{ paddingTop: 12, borderTop: "1px solid var(--border)", fontSize: 14, fontWeight: 600, color: "var(--text-brand)", textDecoration: "none" }}
             >

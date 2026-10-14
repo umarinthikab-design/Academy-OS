@@ -77,7 +77,7 @@ export function SearchableMultiSelect({
         <input key={id} type="hidden" name={name} value={id} />
       ))}
 
-      <button
+      <button className="ui-hover"
         type="button"
         onClick={() => setOpen((o) => !o)}
         style={{

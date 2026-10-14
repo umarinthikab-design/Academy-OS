@@ -509,3 +509,17 @@ textarea:focus-visible {
 .text-link:hover {
   text-decoration-color: currentColor !important;
 }
+
+/* Hover coverage: stationary controls preserve existing transforms. */
+.ui-btn { transition: transform var(--transition), box-shadow var(--transition), background-image var(--transition) !important; }
+.ui-hover, .mobile-nav-hover { transition: background-image var(--transition) !important; }
+@media (hover: hover) {
+  .ui-hover:not(:disabled):not([aria-disabled="true"]):hover,
+  .mobile-nav-hover:hover {
+    background-image: linear-gradient(color-mix(in srgb, currentColor 9%, transparent), color-mix(in srgb, currentColor 9%, transparent)) !important;
+  }
+}
+.text-link:focus-visible { text-decoration-color: currentColor !important; }
+@media (prefers-reduced-motion: reduce) {
+  .ui-hover, .mobile-nav-hover, .text-link { transition: none !important; }
+}
