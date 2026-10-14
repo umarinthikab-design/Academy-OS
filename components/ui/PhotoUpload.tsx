@@ -11,6 +11,7 @@
 // Usage: render inside a <form> that submits to a server action, and read
 // `name` (default "photoUrl") from the FormData as before.
 
+import { Button } from "@/components/ui/Button";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
@@ -240,47 +241,9 @@ export function PhotoUpload({
         <Avatar name="photo" src={removed ? null : value || current} size={64} />
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={busy}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "7px 14px",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text)",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontWeight: 700,
-                fontSize: 13,
-              }}
-            >
-              <Icon name="upload" size={14} /> {busy ? "Processing…" : label}
-            </button>
+            <Button variant="outline" size="sm" type="button" onClick={() => fileRef.current?.click()} disabled={busy}><Icon name="upload" size={14} /> {busy ? "Processing…" : label}</Button>
             {(value || current) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setRemoved(true);
-                  setValue("");
-                  setError(null);
-                }}
-                style={{
-                  padding: "7px 12px",
-                  border: "1px solid var(--error)",
-                  background: "var(--surface)",
-                  color: "var(--error)",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  fontSize: 13,
-                }}
-              >
-                Remove
-              </button>
+              <Button variant="danger" size="sm" type="button" onClick={() => { setRemoved(true); setValue(""); setError(null); }}>Remove</Button>
             )}
           </div>
           <span style={{ fontSize: 13, color: "var(--text-faint)" }}>JPG or PNG, up to 5 MB. Crop & rotate before uploading.</span>
@@ -361,35 +324,13 @@ export function PhotoUpload({
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", gap: 6 }}>
-                <button type="button" onClick={() => rotate(-1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13 }}>
-                  <Icon name="rotate" size={14} /> Rotate left
-                </button>
-                <button type="button" onClick={() => rotate(1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13 }}>
-                  Rotate right <Icon name="rotate" size={14} style={{ transform: "scaleX(-1)" }} />
-                </button>
+                <Button variant="outline" size="sm" type="button" onClick={() => rotate(-1)}><Icon name="rotate" size={14} /> Rotate left</Button>
+                <Button variant="outline" size="sm" type="button" onClick={() => rotate(1)}>Rotate right <Icon name="rotate" size={14} style={{ transform: "scaleX(-1)" }} /></Button>
               </div>
               <p style={{ fontSize: 13, color: "var(--text-faint)", margin: 0 }}>Drag the box to frame the photo. Use the corner handle to resize. The result is cropped to a square.</p>
               <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-                <button
-                  type="button"
-                  onClick={confirmCrop}
-                  disabled={busy}
-                  style={{ padding: "8px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-                >
-                  Apply crop
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(null);
-                    setCrop(null);
-                    setFit(null);
-                    setRotation(0);
-                  }}
-                  style={{ padding: "8px 16px", background: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-                >
-                  Cancel
-                </button>
+                <Button size="sm" type="button" onClick={confirmCrop} disabled={busy}>Apply crop</Button>
+                <Button variant="outline" size="sm" type="button" onClick={() => { setEditing(null); setCrop(null); setFit(null); setRotation(0); }} style={{ color: "var(--text-muted)" }}>Cancel</Button>
               </div>
             </div>
           </div>

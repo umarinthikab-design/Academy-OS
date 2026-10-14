@@ -5,6 +5,7 @@
 // Tigers to U11 Lions") can update as the coach picks checkboxes, without a
 // page reload. The actual move still happens through the server action.
 
+import { Button } from "@/components/ui/Button";
 import { useState } from "react";
 import { promotePlayers } from "@/app/squad/actions";
 
@@ -115,23 +116,7 @@ export function PromoteForm({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          style={{
-            padding: "10px 20px",
-            background: "var(--primary)",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: canSubmit ? "pointer" : "not-allowed",
-            opacity: canSubmit ? 1 : 0.5,
-          }}
-        >
-          Move {selected.size} {selected.size === 1 ? "player" : "players"}
-        </button>
+        <Button disabled={!canSubmit}>Move {selected.size} {selected.size === 1 ? "player" : "players"}</Button>
         {selected.size > 0 && (
           <label style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5, color: "var(--text-muted)" }}>
             <input type="checkbox" checked={showConfirm} onChange={(e) => setShowConfirm(e.target.checked)} />

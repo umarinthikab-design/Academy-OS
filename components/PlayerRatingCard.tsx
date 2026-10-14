@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { PLAYER_POSITIONS, calculateAge, getSkillBandForAge, type SkillBand } from "@/lib/skills";
@@ -157,13 +158,7 @@ export function PlayerRatingCard({
           {average > 0 && <span style={{ color: "var(--text-muted)", fontWeight: 500 }}> / 5</span>}
         </div>
         {canEdit && !customizing && (
-          <button
-            type="button"
-            onClick={openCustomize}
-            style={{ fontSize: 13, fontWeight: 700, padding: "5px 10px", border: "1px solid var(--turf)", background: "var(--surface)", color: "var(--turf)", borderRadius: 6, cursor: "pointer" }}
-          >
-            Edit / Customize Skills
-          </button>
+          <Button variant="outline" size="sm" type="button" onClick={openCustomize} style={{ color: "var(--turf)", borderColor: "var(--turf)" }}>Edit / Customize Skills</Button>
         )}
       </div>
 
@@ -194,12 +189,8 @@ export function PlayerRatingCard({
             </div>
           ))}
           <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-            <button type="button" onClick={saveCustomize} disabled={pending} style={{ fontSize: 13, fontWeight: 700, padding: "6px 14px", background: "var(--pitch)", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" }}>
-              {pending ? "Saving..." : "Save skills"}
-            </button>
-            <button type="button" onClick={() => setCustomizing(false)} style={{ fontSize: 13, fontWeight: 700, padding: "6px 14px", background: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border)", borderRadius: 6, cursor: "pointer" }}>
-              Cancel
-            </button>
+            <Button size="sm" type="button" onClick={saveCustomize} disabled={pending}>{pending ? "Saving..." : "Save skills"}</Button>
+            <Button variant="outline" size="sm" type="button" onClick={() => setCustomizing(false)} style={{ color: "var(--text-muted)" }}>Cancel</Button>
           </div>
         </div>
       ) : (

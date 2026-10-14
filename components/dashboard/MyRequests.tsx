@@ -3,6 +3,7 @@
 // feedback conversation, and lets them reply to approver feedback until the
 // request is resolved.
 
+import { Button } from "@/components/ui/Button";
 import { getMyRequests, requestCategory } from "@/lib/approvals";
 import type { Permissions } from "@/lib/permissions";
 import { Badge } from "@/components/ui/Badge";
@@ -101,9 +102,7 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
                   {r.status === "PENDING" ? (
                     <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
                       <input name="message" placeholder="Reply to feedback..." required style={{ flex: 1, fontSize: 13, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                      <button type="submit" style={{ padding: "8px 14px", background: "var(--secondary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                        Reply
-                      </button>
+                      <Button variant="secondary" size="sm">Reply</Button>
                     </form>
                   ) : (
                     <div style={{ fontSize: 13, color: "var(--text-faint)" }}>This request is {STATUS_LABEL[r.status].toLowerCase()} — no further replies.</div>

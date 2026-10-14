@@ -7,6 +7,7 @@
 // server-action form reads them with formData.getAll(name) - same storage
 // approach as Player.photoUrl (base64 data URLs).
 
+import { Button } from "@/components/ui/Button";
 import { useRef, useState } from "react";
 import { Icon } from "./Icon";
 
@@ -141,27 +142,8 @@ export function DrillPhotoUpload({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        disabled={busy}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "7px 14px",
-          border: "1px solid var(--border)",
-          background: "var(--surface)",
-          color: "var(--text)",
-          borderRadius: 8,
-          cursor: "pointer",
-          fontWeight: 700,
-          fontSize: 13,
-        }}
-      >
-        <Icon name="upload" size={14} /> {busy ? "Processing…" : label}
-        {photos.length > 0 && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>({photos.length})</span>}
-      </button>
+      <Button variant="outline" size="sm" type="button" onClick={() => fileRef.current?.click()} disabled={busy}><Icon name="upload" size={14} /> {busy ? "Processing…" : label}
+        {photos.length > 0 && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>({photos.length})</span>}</Button>
       <span style={{ fontSize: 13, color: "var(--text-faint)", marginLeft: 8 }}>JPG or PNG, up to 5 MB each. More than one photo allowed.</span>
 
       {error && <p style={{ fontSize: 13, color: "var(--error)", margin: "8px 0 0" }}>{error}</p>}

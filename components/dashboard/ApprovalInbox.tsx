@@ -9,6 +9,7 @@
 // conversation. Approvers can leave suggestions/changes feedback on the
 // thread; the requester replies from their "My Requests" section.
 
+import { Button } from "@/components/ui/Button";
 import { getApprovalInbox, REQUEST_CATEGORIES, requestCategory } from "@/lib/approvals";
 import type { Permissions } from "@/lib/permissions";
 import { Badge } from "@/components/ui/Badge";
@@ -107,44 +108,10 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                     <StatusPill tone="pending">Pending</StatusPill>
                     <form action={approveRequest.bind(null, r.id)}>
-                      <button
-                        type="submit"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "7px 14px",
-                          background: "var(--secondary)",
-                          color: "#fff",
-                          borderRadius: 8,
-                          fontWeight: 600,
-                          fontSize: 13,
-                          border: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Icon name="check" size={14} /> Approve
-                      </button>
+                      <Button variant="secondary" size="sm"><Icon name="check" size={14} /> Approve</Button>
                     </form>
                     <form action={rejectRequest.bind(null, r.id)}>
-                      <button
-                        type="submit"
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 6,
-                          padding: "7px 14px",
-                          background: "var(--surface-muted)",
-                          color: "var(--error)",
-                          borderRadius: 8,
-                          fontWeight: 600,
-                          fontSize: 13,
-                          border: "1px solid var(--border)",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Icon name="x" size={14} /> Reject
-                      </button>
+                      <Button variant="danger" size="sm"><Icon name="x" size={14} /> Reject</Button>
                     </form>
                   </div>
                 </div>
@@ -180,9 +147,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
 
                       <form action={addApprovalMessage.bind(null, r.id)} style={{ display: "flex", gap: 6 }}>
                         <input name="message" placeholder="Suggest changes or send feedback..." required style={{ flex: 1, fontSize: 13, padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)" }} />
-                        <button type="submit" style={{ padding: "8px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                          Send
-                        </button>
+                        <Button size="sm">Send</Button>
                       </form>
                     </div>
                   </details>

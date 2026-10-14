@@ -3,6 +3,7 @@
 // declines attendance ahead of time (no approval chain). Sessions whose
 // start is within the priority window get a distinct priority badge.
 
+import { Button } from "@/components/ui/Button";
 import { getMyConfirmations } from "@/lib/confirmations";
 import type { Permissions } from "@/lib/permissions";
 import { Badge } from "@/components/ui/Badge";
@@ -53,20 +54,10 @@ export async function SessionConfirmations({ perms }: { perms: Permissions }) {
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <form action={confirmSessionParticipation.bind(null, r.id, "CONFIRMED")}>
-                  <button
-                    type="submit"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", background: "var(--primary)", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}
-                  >
-                    <Icon name="check" size={14} /> Confirm
-                  </button>
+                  <Button size="sm"><Icon name="check" size={14} /> Confirm</Button>
                 </form>
                 <form action={confirmSessionParticipation.bind(null, r.id, "DECLINED")}>
-                  <button
-                    type="submit"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", background: "var(--surface-muted)", color: "var(--text-muted)", borderRadius: 8, fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer" }}
-                  >
-                    Can't make it
-                  </button>
+                  <Button variant="outline" size="sm" style={{ color: "var(--text-muted)" }}>Can't make it</Button>
                 </form>
               </div>
             </div>

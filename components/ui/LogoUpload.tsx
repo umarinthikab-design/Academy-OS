@@ -10,6 +10,7 @@
 // written to a hidden input named `name` (default "logoUrl") so the
 // surrounding server-action form reads it as a plain string.
 
+import { Button } from "@/components/ui/Button";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 
@@ -145,46 +146,9 @@ export function LogoUpload({
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={busy}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "7px 14px",
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text)",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontWeight: 700,
-                fontSize: 13,
-              }}
-            >
-              <Icon name="upload" size={14} /> {busy ? "Uploading…" : value ? "Replace logo" : "Upload logo"}
-            </button>
+            <Button variant="outline" size="sm" type="button" onClick={() => fileRef.current?.click()} disabled={busy}><Icon name="upload" size={14} /> {busy ? "Uploading…" : value ? "Replace logo" : "Upload logo"}</Button>
             {value && (
-              <button
-                type="button"
-                onClick={() => {
-                  setValue("");
-                  setError(null);
-                }}
-                style={{
-                  padding: "7px 12px",
-                  border: "1px solid var(--error)",
-                  background: "var(--surface)",
-                  color: "var(--error)",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  fontSize: 13,
-                }}
-              >
-                Remove
-              </button>
+              <Button variant="danger" size="sm" type="button" onClick={() => { setValue(""); setError(null); }}>Remove</Button>
             )}
           </div>
           <span style={{ fontSize: 13, color: "var(--text-faint)" }}>
