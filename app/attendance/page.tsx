@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -185,7 +186,7 @@ export default async function AttendancePage({
                   </div>
                   {canFinalize(s) && (
                     <form action={finalizeAttendance.bind(null, s.id)}>
-                      <button type="submit" style={btnOutline}>Finalize</button>
+                      <Button variant="outline" size="sm">Finalize</Button>
                     </form>
                   )}
                 </div>
@@ -206,7 +207,7 @@ export default async function AttendancePage({
                     </span>
                     {selfCheckIn?.status !== "CHECKED_IN" && (
                       <form action={checkInCoach.bind(null, s.id)}>
-                        <button type="submit" style={btnPrimary}>Check in</button>
+                        <Button size="sm">Check in</Button>
                       </form>
                     )}
                   </div>
@@ -229,9 +230,7 @@ export default async function AttendancePage({
                             <option value="CHECKED_IN">Checked in</option>
                             <option value="ABSENT">Absent</option>
                           </select>
-                          <button type="submit" style={{ padding: "3px 8px", fontSize: 13, borderRadius: 5, border: "1px solid var(--border)", background: "var(--surface)", cursor: "pointer" }}>
-                            Set
-                          </button>
+                          <Button variant="outline" size="sm">Set</Button>
                         </form>
                       ))}
                     </div>
@@ -256,10 +255,10 @@ export default async function AttendancePage({
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <form action={approveAttendanceRequest.bind(null, requests.id)}>
-                        <button type="submit" style={btnPrimary}>Approve</button>
+                        <Button size="sm">Approve</Button>
                       </form>
                       <form action={rejectAttendanceRequest.bind(null, requests.id)}>
-                        <button type="submit" style={btnDanger}>Reject</button>
+                        <Button variant="danger" size="sm">Reject</Button>
                       </form>
                     </div>
                   </div>
@@ -293,9 +292,9 @@ export default async function AttendancePage({
                         </div>
                       ))}
                     </div>
-                    <button type="submit" style={{ ...btnPrimary, marginTop: 14, width: "100%", padding: "12px 18px", fontSize: 14 }}>
+                    <Button full style={{ marginTop: 14, padding: "12px 18px", fontSize: 14 }}>
                       {isAdmin ? "Record attendance" : "Submit for approval"}
-                    </button>
+                    </Button>
                     <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>
                       {isAdmin
                         ? "Records directly — no approval needed."
@@ -318,7 +317,7 @@ export default async function AttendancePage({
               <option value="month">This month</option>
               <option value="term">Last 90 days</option>
             </select>
-            <button type="submit" style={btnOutline}>Apply</button>
+            <Button variant="outline" size="sm">Apply</Button>
           </form>
         </div>
 
