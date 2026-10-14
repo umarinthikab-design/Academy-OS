@@ -88,13 +88,13 @@ export function Button({
 
   if (href) {
     return (
-      <a href={href} style={styles}>
+      <a href={href} className="ui-btn" style={styles}>
         {content}
       </a>
     );
   }
   return (
-    <button type="submit" style={styles} {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}>
+    <button type="submit" className="ui-btn" style={styles} {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}>
       {content}
     </button>
   );

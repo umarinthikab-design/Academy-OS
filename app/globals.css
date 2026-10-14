@@ -458,3 +458,38 @@ textarea:focus-visible {
 .sidebar-nav-item:hover {
   background: var(--sidebar-hover-bg);
 }
+
+/* ------------------------------------------------------------------
+   Shared Button (components/ui/Button.tsx) hover / press effects.
+   Colours are set inline by the component, so the hover tint is an
+   overlay image (!important) built from the button's own text colour.
+   Keyboard focus ring is handled by the global :focus-visible rule.
+   ------------------------------------------------------------------ */
+.ui-btn {
+  will-change: transform;
+}
+.ui-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  background-image: linear-gradient(
+    color-mix(in srgb, currentColor 9%, transparent),
+    color-mix(in srgb, currentColor 9%, transparent)
+  ) !important;
+}
+.ui-btn:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+.ui-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn,
+  .ui-btn:not(:disabled):hover,
+  .ui-btn:not(:disabled):active {
+    transform: none !important;
+    transition: none !important;
+  }
+}
