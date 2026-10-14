@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createBatch, deleteBatch } from "./actions";
 import { getPermissions } from "@/lib/permissions";
@@ -119,9 +120,7 @@ export default async function BatchesPage({
                 />
               </div>
             </div>
-            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-              Create Batch
-            </button>
+            <Button style={{ marginTop: 14 }}>Create Batch</Button>
           </form>
         </CollapsibleCreate>
       )}

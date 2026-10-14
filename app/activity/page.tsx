@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -123,9 +124,7 @@ export default async function ActivityPage({
           <label style={fieldLabel}>To</label>
           <input name="to" type="date" defaultValue={params.to ?? ""} style={inputBase} />
         </div>
-        <button type="submit" style={{ padding: "7px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "var(--shadow-sm)" }}>
-          Filter
-        </button>
+        <Button variant="secondary" size="sm">Filter</Button>
         {(entityType || from || to) && (
           <a href="/activity" style={{ fontSize: 13, fontWeight: 600, color: "var(--text-muted)", textDecoration: "none" }}>
             Clear

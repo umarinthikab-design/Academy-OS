@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { login } from "./actions";
 import { Icon } from "@/components/ui/Icon";
 import { PasswordField } from "@/components/ui/PasswordField";
@@ -157,23 +158,7 @@ export default async function LoginPage({
             style={{ marginBottom: 22 }}
           />
 
-          <button
-            type="submit"
-            style={{
-              width: "100%",
-              padding: "12px 12px",
-              background: "var(--secondary)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 15,
-              cursor: "pointer",
-              transition: "background var(--transition), transform var(--transition)",
-            }}
-          >
-            Log In to Touchline
-          </button>
+          <Button variant="secondary" full style={{ padding: "12px 12px", fontSize: 15 }}>Log In to Touchline</Button>
         </form>
 
         {/* Footer strip */}

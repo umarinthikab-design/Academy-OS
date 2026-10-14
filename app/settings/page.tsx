@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/getSession";
 import { redirect } from "next/navigation";
@@ -76,9 +77,7 @@ export default async function SettingsPage({
               <label style={labelCaps}>Profile Photo</label>
               <PhotoUpload name="photoUrl" current={user.photoUrl} label="Upload from device" />
             </div>
-            <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 22px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
-              Save profile
-            </button>
+            <Button style={{ alignSelf: "flex-start" }}>Save profile</Button>
           </form>
         </section>
 
@@ -114,9 +113,7 @@ export default async function SettingsPage({
               <label style={labelCaps}>Confirm New Password</label>
               <PasswordField name="confirmPassword" required minLength={8} autoComplete="new-password" />
             </div>
-            <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 22px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
-              Change password
-            </button>
+            <Button style={{ alignSelf: "flex-start" }}>Change password</Button>
           </form>
         </section>
       </div>

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { getSession } from "@/lib/getSession";
 import { redirect } from "next/navigation";
 import { changePasswordOnFirstLogin } from "./actions";
@@ -67,22 +68,7 @@ export default async function ChangePasswordPage({
           <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Confirm new password</label>
           <PasswordField name="confirmPassword" required minLength={8} autoComplete="new-password" style={{ marginBottom: 18 }} />
 
-          <button
-            type="submit"
-            style={{
-              width: "100%",
-              padding: "11px 12px",
-              background: "var(--primary)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
-            Save password and continue
-          </button>
+          <Button full style={{ padding: "11px 12px", fontSize: 14 }}>Save password and continue</Button>
         </form>
       </div>
     </main>

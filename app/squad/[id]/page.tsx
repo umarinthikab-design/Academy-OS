@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { createNote, updatePlayerInfo, updatePlayerStatus } from "../actions";
@@ -180,7 +181,7 @@ export default async function PlayerDetailPage({
           {canEdit && (
             <form action={createNote.bind(null, player.id)} style={{ display: "flex", gap: 6 }}>
               <input name="content" placeholder="Add a note..." required style={{ ...inputBase, flex: 1, fontSize: 13 }} />
-              <button type="submit" style={{ padding: "9px 14px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>Add</button>
+              <Button>Add</Button>
             </form>
           )}
         </section>
@@ -244,7 +245,7 @@ export default async function PlayerDetailPage({
               <input name="emergencyContactPhone" placeholder="Emergency contact phone" defaultValue={player.emergencyContactPhone ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />
             </div>
             <textarea name="medicalNotes" placeholder="Medical notes (allergies, conditions...)" defaultValue={player.medicalNotes ?? ""} style={{ ...inputBase, minHeight: 50, fontSize: 13 }} />
-            <button type="submit" style={{ alignSelf: "flex-start", padding: "9px 16px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>Save details</button>
+            <Button style={{ alignSelf: "flex-start" }}>Save details</Button>
           </form>
         )}
       </section>

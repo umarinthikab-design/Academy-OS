@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { getAcademySettings } from "@/lib/confirmations";
@@ -169,12 +170,7 @@ export default async function AcademySettingsPage({
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button
-            type="submit"
-            style={{ padding: "9px 24px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}
-          >
-            Save club settings
-          </button>
+          <Button>Save club settings</Button>
         </div>
       </form>
     </>

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createPlayer, deletePlayer, updatePlayerStatus, promotePlayers, createSkillDefinition, renameSkillDefinition, deleteSkillDefinition } from "./actions";
 import { getPermissions } from "@/lib/permissions";
@@ -123,9 +124,7 @@ export default async function SquadPage({
                 ))}
               </select>
             </div>
-            <button type="submit" style={{ padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-              Add Skill
-            </button>
+            <Button>Add Skill</Button>
           </form>
 
           {SKILL_BAND_META.map((bandMeta) => {
@@ -168,9 +167,7 @@ export default async function SquadPage({
                               <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
                               <form action={renameSkillDefinition.bind(null, s.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
                                 <input name="name" defaultValue={s.name} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", width: 180 }} />
-                                <button type="submit" style={{ padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                                  Save
-                                </button>
+                                <Button size="sm">Save</Button>
                               </form>
                             </details>
                             {!inUse && (
@@ -217,12 +214,7 @@ export default async function SquadPage({
                 <PhotoUpload name="photoUrl" label="Upload photo" />
               </div>
             </div>
-            <button
-              type="submit"
-              style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-            >
-              Add Player
-            </button>
+            <Button style={{ marginTop: 14 }}>Add Player</Button>
           </form>
         </CollapsibleCreate>
       )}
@@ -267,9 +259,7 @@ export default async function SquadPage({
             <option value="INACTIVE">Inactive</option>
           </select>
           <input name="age" type="number" min={1} defaultValue={params.age ?? ""} placeholder="Age (e.g. 16)" style={{ width: 96, padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }} />
-          <button type="submit" style={{ padding: "6px 16px", border: "none", background: "var(--secondary)", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
-            Filter
-          </button>
+          <Button variant="secondary" size="sm">Filter</Button>
           <a href="/squad" style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--secondary)", textDecoration: "none" }}>
             Clear
           </a>
