@@ -304,25 +304,6 @@ a {
   }
 }
 
-/* ── Settings profile/appearance split ─────────────────────
-   8:4 columns on desktop; stacks to full-width once the tablet nav rail
-   (see .tablet-sidebar above) eats into the available content width. */
-
-.settings-col-profile {
-  grid-column: span 8;
-}
-
-.settings-col-appearance {
-  grid-column: span 4;
-}
-
-@media (max-width: 900px) {
-  .settings-col-profile,
-  .settings-col-appearance {
-    grid-column: span 12;
-  }
-}
-
 /* ── Schedule filters + list bento ─────────────────────────
    Fixed 260px filter rail beside the schedule list on desktop; stacks
    above the list on narrower tablets and phones rather than squeezing the

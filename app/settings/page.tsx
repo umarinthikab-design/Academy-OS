@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { StatusBanner } from "@/components/StatusBanner";
 import { updateProfile, changePassword } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SettingsSection } from "@/components/ui/SettingsSection";
 import { Avatar } from "@/components/ui/Avatar";
 import { inputBase } from "@/components/ui/Form";
 import { roleLabel } from "@/lib/roleLabel";
@@ -32,14 +33,6 @@ export default async function SettingsPage({
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!user) redirect("/login");
 
-  const card: React.CSSProperties = {
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius-lg)",
-    boxShadow: "var(--shadow-sm)",
-    padding: 24,
-  };
-
   const labelCaps: React.CSSProperties = {
     fontFamily: "var(--font-mono-label)",
     fontSize: 13,
@@ -57,9 +50,9 @@ export default async function SettingsPage({
 
       <StatusBanner error={p.error ? ERROR_MESSAGES[p.error] ?? p.error : undefined} success={p.success} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 16, alignItems: "start" }}>
-        <section className="settings-col-profile" style={{ ...card, display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 900 }}>
+        <SettingsSection title="Profile">
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
             <Avatar name={user.name} src={user.photoUrl} size={72} style={{ border: "2px solid var(--border)" }} />
             <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
               <div style={{ fontWeight: 800, color: "var(--text-heading)", fontSize: 15 }}>{user.name}</div>
@@ -68,7 +61,7 @@ export default async function SettingsPage({
             </div>
           </div>
 
-          <form action={updateProfile} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <form action={updateProfile} style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 520 }}>
             <div>
               <label style={labelCaps}>Full Name</label>
               <input name="name" defaultValue={user.name} required style={inputBase} />
@@ -79,27 +72,23 @@ export default async function SettingsPage({
             </div>
             <Button style={{ alignSelf: "flex-start" }}>Save profile</Button>
           </form>
-        </section>
+        </SettingsSection>
 
-        <section className="settings-col-appearance" style={{ ...card, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 180 }}>
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>Appearance</h2>
-            <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 16px", lineHeight: 1.5 }}>Select your preferred viewing mode. Saved to your account.</p>
-          </div>
+        <SettingsSection title="Appearance" description="Select your preferred viewing mode. Saved to your account.">
           <ThemeToggle theme={user.theme} />
-        </section>
+        </SettingsSection>
 
-        <section style={{ ...card, gridColumn: "span 12", display: "flex", flexDirection: "column", gap: 4 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--text-heading)" }}>Notifications</h2>
-          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "6px 0 10px", lineHeight: 1.5 }}>
-            Push notifications for drill suggestions awaiting your approval and session confirmations you haven't answered yet.
-          </p>
+        <SettingsSection
+          title="Notifications"
+          description="Push notifications for drill suggestions awaiting your approval and session confirmations you haven't answered yet."
+        >
           <NotificationToggle />
-        </section>
+        </SettingsSection>
 
-        <section style={{ ...card, gridColumn: "span 12" }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--text-heading)", marginBottom: 4 }}>Change password</h2>
-          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 20px" }}>You'll stay signed in on this device; all other sessions are signed out.</p>
+        <SettingsSection
+          title="Change password"
+          description="You'll stay signed in on this device; all other sessions are signed out."
+        >
           <form action={changePassword} style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 520 }}>
             <div>
               <label style={labelCaps}>Current Password</label>
@@ -115,7 +104,7 @@ export default async function SettingsPage({
             </div>
             <Button style={{ alignSelf: "flex-start" }}>Change password</Button>
           </form>
-        </section>
+        </SettingsSection>
       </div>
     </>
   );

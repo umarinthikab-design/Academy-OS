@@ -5,6 +5,7 @@ import { getAcademySettings } from "@/lib/confirmations";
 import { StatusBanner } from "@/components/StatusBanner";
 import { updateAcademySettings } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SettingsSection } from "@/components/ui/SettingsSection";
 import { Field, Input } from "@/components/ui/Form";
 import { LogoUpload } from "@/components/ui/LogoUpload";
 
@@ -19,26 +20,6 @@ export default async function AcademySettingsPage({
 
   const settings = await getAcademySettings();
 
-  const card = {
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius-lg)",
-    boxShadow: "var(--shadow-sm)",
-    padding: 24,
-  };
-
-  const sectionTitle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    fontSize: 20,
-    fontWeight: 600,
-    color: "var(--text-heading)",
-    paddingBottom: 12,
-    borderBottom: "1px solid var(--border)",
-    marginBottom: 20,
-  };
-
   return (
     <>
       <PageHeader
@@ -52,8 +33,7 @@ export default async function AcademySettingsPage({
         action={updateAcademySettings}
         style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 900 }}
       >
-        <section style={card}>
-          <h2 style={sectionTitle}>Identity &amp; Branding</h2>
+        <SettingsSection title="Identity &amp; Branding">
           <div className="form-grid-2col" style={{ gap: 20 }}>
             <Field
               label="Academy Name"
@@ -68,10 +48,9 @@ export default async function AcademySettingsPage({
               <LogoUpload name="logoUrl" current={settings.logoUrl} />
             </Field>
           </div>
-        </section>
+        </SettingsSection>
 
-        <section style={card}>
-          <h2 style={sectionTitle}>Session Workflow</h2>
+        <SettingsSection title="Session Workflow">
           <div
             style={{
               display: "flex",
@@ -162,7 +141,7 @@ export default async function AcademySettingsPage({
               />
             </Field>
           </div>
-        </section>
+        </SettingsSection>
 
         <div style={{ fontSize: 13, color: "var(--text-faint)" }}>
           A coach declining or failing to confirm appears in the "Needs attention" section on admin and head-coach
