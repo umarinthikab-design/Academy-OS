@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createScheduledSession, deleteScheduledSession, updateScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
 import { getPermissions } from "@/lib/permissions";
@@ -182,9 +183,7 @@ export default async function SchedulePage({
                   </div>
                 </div>
               </div>
-              <button type="submit" style={{ ...smallBtn, marginTop: 14, padding: "9px 18px" }}>
-                Schedule Session
-              </button>
+              <Button style={{ marginTop: 14 }}>Schedule Session</Button>
             </form>
           </CollapsibleCreate>
         </div>
@@ -378,12 +377,7 @@ export default async function SchedulePage({
                                     )}
                                   </div>
                                 </div>
-                                <button
-                                  type="submit"
-                                  style={{ marginTop: 12, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-                                >
-                                  Save changes
-                                </button>
+                                <Button style={{ marginTop: 12 }}>Save changes</Button>
                               </form>
                             </div>
                           </details>
@@ -411,9 +405,7 @@ export default async function SchedulePage({
                           </div>
                           {canEdit && inAttachWindow(s) && (
                             <form action={detachSessionPlan.bind(null, s.id)} style={{ marginTop: 6 }}>
-                              <button type="submit" style={{ fontSize: 13, padding: "4px 10px", border: "1px solid var(--border)", background: "var(--surface)", borderRadius: 6, cursor: "pointer", color: "var(--text-muted)" }}>
-                                Remove plan
-                              </button>
+                              <Button variant="outline" size="sm" style={{ color: "var(--text-muted)" }}>Remove plan</Button>
                             </form>
                           )}
                         </div>
@@ -425,7 +417,7 @@ export default async function SchedulePage({
                               <option key={sp.id} value={sp.id}>{sp.name}</option>
                             ))}
                           </select>
-                          <button type="submit" style={smallBtn}>Attach</button>
+                          <Button size="sm">Attach</Button>
                         </form>
                       ) : undefined
                     }
