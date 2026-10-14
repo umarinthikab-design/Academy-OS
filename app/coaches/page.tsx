@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createCoach, deleteCoach, updateCoachPermission, revokeSessions, promoteCoach, resetCoachPassword, archiveCoach, reactivateCoach, archiveStaffMember, reactivateStaffMember } from "./actions";
@@ -95,9 +96,7 @@ export default async function CoachesPage({
         <CollapsibleCreate title="Add a coach">
           <form action={createCoach}>
             <CoachCreateFields ageGroups={ageGroups} />
-            <button type="submit" style={{ marginTop: 14, padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-              Add Coach
-            </button>
+            <Button style={{ marginTop: 14 }}>Add Coach</Button>
           </form>
         </CollapsibleCreate>
       )}
@@ -150,38 +149,10 @@ export default async function CoachesPage({
                           {canManageStaff && (
                             <>
                               <form action={resetCoachPassword.bind(null, c.id)}>
-                                <button
-                                  type="submit"
-                                  title="Reset this coach's password to a temporary value they must change on next login"
-                                  style={{
-                                    fontSize: 13,
-                                    padding: "6px 12px",
-                                    borderRadius: 8,
-                                    border: "1px solid var(--border)",
-                                    background: "var(--surface)",
-                                    color: "var(--text-muted)",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  Reset password
-                                </button>
+                                <Button variant="outline" size="sm" title="Reset this coach's password to a temporary value they must change on next login" style={{ color: "var(--text-muted)" }}>Reset password</Button>
                               </form>
                               <form action={revokeSessions.bind(null, c.id)}>
-                                <button
-                                  type="submit"
-                                  title="Invalidate all of this coach's active sessions so they must log in again"
-                                  style={{
-                                    fontSize: 13,
-                                    padding: "6px 12px",
-                                    borderRadius: 8,
-                                    border: "1px solid var(--border)",
-                                    background: "var(--surface)",
-                                    color: "var(--text-muted)",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  Revoke sessions
-                                </button>
+                                <Button variant="outline" size="sm" title="Invalidate all of this coach's active sessions so they must log in again" style={{ color: "var(--text-muted)" }}>Revoke sessions</Button>
                               </form>
                             </>
                           )}
@@ -213,6 +184,7 @@ export default async function CoachesPage({
                         <form key={t.field} action={updateCoachPermission.bind(null, c.id, t.field, !c[t.field])}>
                           <button
                             type="submit"
+                            className="ui-btn"
                             style={{
                               fontSize: 13,
                               padding: "5px 12px",
@@ -245,21 +217,7 @@ export default async function CoachesPage({
                           <input type="checkbox" name={t.field} defaultChecked={c[t.field]} /> {t.label}
                         </label>
                       ))}
-                      <button
-                        type="submit"
-                        style={{
-                          fontSize: 13,
-                          padding: "6px 14px",
-                          borderRadius: 8,
-                          border: "none",
-                          background: "var(--primary)",
-                          color: "#fff",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Promote to Head Coach
-                      </button>
+                      <Button size="sm">Promote to Head Coach</Button>
                     </form>
                   </CollapsibleCreate>
                 )}
