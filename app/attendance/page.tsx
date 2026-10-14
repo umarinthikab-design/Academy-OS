@@ -1,3 +1,6 @@
+import { playerBelongsToSession } from "@/lib/sessionRoster";
+import { ListView } from "@/components/ui/ListView";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
@@ -37,6 +40,7 @@ export default async function AttendancePage({
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
+  if (!perms.role || perms.role === "PARENT") redirect("/?error=no_permission");
 
   const range = params.range === "term" ? "term" : "month";
   const now = new Date();
@@ -45,7 +49,7 @@ export default async function AttendancePage({
       ? new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
       : new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [sessions, pendingRequests, allBatches] = await Promise.all([
+  const [sessions, pendingRequests, rosterPlayers] = await Promise.all([
     prisma.scheduledSession.findMany({
       where: { date: { lte: now }, status: { not: "cancelled" }, resolvedAt: null },
       include: {
@@ -64,7 +68,7 @@ export default async function AttendancePage({
       include: { requestedBy: { include: { user: true } } },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.batch.findMany({ include: { players: { orderBy: { name: "asc" } } } }),
+    prisma.player.findMany({ include: { batches: { select: { id: true, ageGroupId: true } } }, orderBy: { name: "asc" } }),
   ]);
 
   const requestsBySession = new Map<string, (typeof pendingRequests)[number]>();
@@ -76,11 +80,7 @@ export default async function AttendancePage({
   }
 
   function playersForSession(s: (typeof sessions)[number]) {
-    if (s.batchId) {
-      const batch = allBatches.find((b) => b.id === s.batchId);
-      return batch ? batch.players : [];
-    }
-    return allBatches.filter((b) => b.ageGroupId === s.ageGroupId).flatMap((b) => b.players);
+    return rosterPlayers.filter(player => playerBelongsToSession(player, s));
   }
 
   const isAdmin = perms.isAdmin;
@@ -140,10 +140,6 @@ export default async function AttendancePage({
 
       <StatusBanner error={params.error} success={params.success} />
 
-      {perms.role === "PARENT" && (
-        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>This page is for coaching staff.</p>
-      )}
-
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
         <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)" }}>
           Needs review
@@ -163,7 +159,7 @@ export default async function AttendancePage({
           />
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <ListView storageKey="touchline-attendance-view">
           {sessions.map((s) => {
             const players = playersForSession(s);
             const requests = requestsBySession.get(s.id);
@@ -172,7 +168,13 @@ export default async function AttendancePage({
             const started = coachId ? new Date() >= sessionStart(s.date, s.startTime) : false;
 
             return (
-              <div key={s.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 18, boxShadow: "var(--shadow-sm)" }}>
+              <details key={s.id} className="session-details">
+                <summary>
+                  <strong style={{ display: "block", fontSize: 15 }}>{s.batch?.name || s.ageGroup.name}</strong>
+                  <span style={{ display: "block", fontSize: 13 }}>{s.date.toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric" })} · {s.startTime} · {s.location.name}</span>
+                  <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{marked.size}/{players.length} marked{requests ? " · Pending proposal" : ""} · Expand to review</span>
+                </summary>
+                <div style={{ marginTop: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
@@ -255,7 +257,7 @@ export default async function AttendancePage({
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <form action={approveAttendanceRequest.bind(null, requests.id)}>
-                        <Button size="sm">Approve</Button>
+                        <Button variant="approval" size="sm">Approve</Button>
                       </form>
                       <form action={rejectAttendanceRequest.bind(null, requests.id)}>
                         <Button variant="danger" size="sm">Reject</Button>
@@ -302,10 +304,11 @@ export default async function AttendancePage({
                     </p>
                   </form>
                 )}
-              </div>
+                </div>
+              </details>
             );
           })}
-        </div>
+        </ListView>
       )}
 
       {/* ── Rollup ─────────────────────────────────────────────────── */}

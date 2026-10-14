@@ -1,5 +1,7 @@
 "use server";
 
+import { parseCalendarDate, eligibleAgeGroupIds } from "@/lib/ageGroupRules";
+
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -25,7 +27,21 @@ export async function approveRegistration(id: string, formData: FormData) {
   const batchId = (formData.get("batchId") as string) || null;
   if (!name || !dobRaw) redirect("/registrations?error=missing_fields");
 
-  const dateOfBirth = new Date(dobRaw);
+  const dateOfBirth = parseCalendarDate(dobRaw);
+  if (!dateOfBirth || dateOfBirth.toISOString().slice(0, 10) > new Date().toISOString().slice(0, 10)) redirect("/registrations?error=invalid_dob");
+  const settings = await prisma.academySettings.findFirst();
+  const groups = await prisma.ageGroup.findMany();
+  const batch = batchId ? await prisma.batch.findUnique({ where: { id: batchId } }) : null;
+  if (batchId && !batch) redirect("/registrations?error=missing_fields");
+  let ageGroupId = String(formData.get("ageGroupId") ?? "") || batch?.ageGroupId || "";
+  if (settings?.autoAssignPlayerAgeGroup) {
+    const matches = eligibleAgeGroupIds(dateOfBirth, groups);
+    if (matches.length > 1) redirect("/registrations?error=age_group_overlap");
+    if (!matches.length) redirect("/registrations?error=age_group_no_match");
+    ageGroupId = matches[0];
+  }
+  if (!groups.some(group => group.id === ageGroupId)) redirect("/registrations?error=age_group_required");
+  if (batch && batch.ageGroupId !== ageGroupId) redirect("/registrations?error=batch_age_group");
 
   // Same age-band -> default skill rows logic as createPlayer - pulled from
   // the live SkillDefinition data, never hardcoded here, so a registration
@@ -38,6 +54,7 @@ export async function approveRegistration(id: string, formData: FormData) {
     data: {
       name,
       dateOfBirth,
+      ageGroupId,
       emergencyContactName,
       emergencyContactPhone,
       batches: batchId ? { connect: { id: batchId } } : undefined,

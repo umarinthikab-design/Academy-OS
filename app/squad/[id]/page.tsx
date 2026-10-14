@@ -1,7 +1,10 @@
+import { BackToSquad } from "@/components/SquadNavigation";
+import { safeSquadReturn } from "@/lib/squadReturn";
+import { PlayerPhotoForm } from "@/components/PlayerPhotoForm";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { createNote, updatePlayerInfo, updatePlayerStatus } from "../actions";
+import { createNote, updatePlayerInfo, updatePlayerAgeGroup, updatePlayerStatus } from "../actions";
 import { getPermissions } from "@/lib/permissions";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PlayerRatingCard } from "@/components/PlayerRatingCard";
@@ -13,14 +16,13 @@ import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
 import { PlayerStatusSelect } from "@/components/ui/PlayerStatusSelect";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { inputBase } from "@/components/ui/Form";
-import { PhotoUpload } from "@/components/ui/PhotoUpload";
 
 export default async function PlayerDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; success?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; returnTo?: string }>;
 }) {
   const { id } = await params;
   const p = await searchParams;
@@ -30,6 +32,7 @@ export default async function PlayerDetailPage({
   const player = await prisma.player.findUnique({
     where: { id },
     include: {
+      ageGroup: true,
       batches: { include: { ageGroup: true } },
       skills: true,
       skillHistory: { orderBy: { recordedAt: "asc" } },
@@ -51,6 +54,7 @@ export default async function PlayerDetailPage({
   });
 
   if (!player) notFound();
+  const ageGroups = canEdit ? await prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }) : [];
 
   const categoryCounts = new Map<string, number>();
   for (const att of player.attendance) {
@@ -97,6 +101,7 @@ export default async function PlayerDetailPage({
 
   return (
     <>
+      <BackToSquad playerId={player.id} returnTo={safeSquadReturn(p.returnTo)} />
       <StatusBanner error={p.error} success={p.success} />
 
       {/* Hero card */}
@@ -111,6 +116,7 @@ export default async function PlayerDetailPage({
             <PlayerStatusBadge status={player.status} statusUpdatedAt={player.statusUpdatedAt} />
             <Badge tone="muted">Age {age}</Badge>
             {player.gender && <Badge tone="accent">{player.gender === "MALE" ? "Male" : player.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
+            {player.ageGroup && <Badge tone="green">{player.ageGroup.name}</Badge>}
             {player.batches.map((b) => (
               <Badge key={b.id} tone="blue">{b.name}</Badge>
             ))}
@@ -187,6 +193,23 @@ export default async function PlayerDetailPage({
         </section>
       </div>
 
+      {canEdit && (
+        <section style={{ ...card, marginBottom: 20 }}>
+          <SectionHeader title="Player photo & age group" />
+          <PlayerPhotoForm playerId={player.id} current={player.photoUrl} returnTo={safeSquadReturn(p.returnTo)} />
+          <form action={updatePlayerAgeGroup.bind(null, player.id)} style={{ display: "flex", gap: 10, alignItems: "end", flexWrap: "wrap", marginTop: 18 }}>
+            <label style={{ fontSize: 13 }}>Assigned age group
+              <select name="ageGroupId" required defaultValue={player.ageGroupId ?? ""} style={inputBase}>
+                <option value="" disabled>Select age group</option>
+                {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+              </select>
+            </label>
+            <Button size="sm" variant="outline">Save age group</Button>
+          </form>
+          <p style={{ color: "var(--text-muted)", fontSize: 12 }}>This updates the player's assigned age group. Existing batch memberships remain unchanged.</p>
+        </section>
+      )}
+
       {/* Sessions attended */}
       <section style={{ ...card, marginBottom: 20 }}>
         <SectionHeader title={`Sessions attended (${player.attendance.length})`} />
@@ -239,7 +262,6 @@ export default async function PlayerDetailPage({
 
         {canEdit && (
           <form action={updatePlayerInfo.bind(null, player.id)} style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-            <PhotoUpload name="photoUrl" current={player.photoUrl} label="Upload photo from device" />
             <div style={{ display: "flex", gap: 8 }}>
               <input name="emergencyContactName" placeholder="Emergency contact name" defaultValue={player.emergencyContactName ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />
               <input name="emergencyContactPhone" placeholder="Emergency contact phone" defaultValue={player.emergencyContactPhone ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />

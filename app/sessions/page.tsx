@@ -152,7 +152,7 @@ export default async function SessionsPage({
                     </span>
                     <div style={{ display: "flex", gap: 6 }}>
                       <form action={approveSessionShare.bind(null, r.id)}>
-                        <Button variant="secondary" size="sm">Approve</Button>
+                        <Button variant="approval" size="sm">Approve</Button>
                       </form>
                       <form action={rejectSessionShare.bind(null, r.id)}>
                         <Button variant="danger" size="sm">Reject</Button>

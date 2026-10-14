@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { parseCalendarDate } from "@/lib/ageGroupRules";
+import { startOfTodayInZone } from "@/lib/time";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createScheduledSession, deleteScheduledSession, updateScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
@@ -31,18 +34,23 @@ function toDateInputValue(date: Date): string {
 export default async function SchedulePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string; ageGroup?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; ageGroup?: string; location?: string; coach?: string; from?: string; to?: string }>;
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
   const canEdit = perms.isAdmin || perms.canEditSchedule;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const dateFilter: { gte: Date; lt?: Date } = canEdit
-    ? { gte: today }
-    : { gte: startOfMonth, lt: new Date(today.getFullYear(), today.getMonth() + 1, 1) };
+  const settings = await prisma.academySettings.findFirst();
+  const today = startOfTodayInZone(settings?.timeZone ?? "UTC");
+  const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+  const from = params.from ? parseCalendarDate(params.from) : null;
+  const to = params.to ? parseCalendarDate(params.to) : null;
+  if ((params.from && !from) || (params.to && !to) || (from && to && from > to)) redirect("/schedule?error=invalid_filters");
+  const dateFilter = {
+    gte: from ?? (canEdit ? today : startOfMonth),
+    ...(to ? { lte: to } : !canEdit && !from ? { lt: new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1)) } : {}),
+  };
+  const hasFilters = !!(params.ageGroup || params.location || params.coach || params.from || params.to);
 
   const [ageGroups, locations, headCoaches, assistantCoaches, sessions, sessionPlans] = await Promise.all([
     prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
@@ -50,7 +58,12 @@ export default async function SchedulePage({
     prisma.coach.findMany({ where: { designation: "HEAD", user: { archivedAt: null } }, include: { user: true } }),
     prisma.coach.findMany({ where: { designation: "ASSISTANT", user: { archivedAt: null } }, include: { user: true } }),
     prisma.scheduledSession.findMany({
-      where: { date: dateFilter },
+      where: {
+        date: dateFilter,
+        ...(params.ageGroup ? { ageGroupId: params.ageGroup } : {}),
+        ...(params.location ? { locationId: params.location } : {}),
+        ...(params.coach ? { OR: [{ headCoaches: { some: { id: params.coach } } }, { assistantCoaches: { some: { id: params.coach } } }] } : {}),
+      },
       include: {
         ageGroup: true,
         location: true,
@@ -189,70 +202,25 @@ export default async function SchedulePage({
         </div>
       )}
 
-      {/* Bento layout: Filters sidebar + Schedule list */}
-      <div className="schedule-bento" style={{ display: "grid", gap: 20, alignItems: "start" }}>
-        {/* Filters sidebar */}
-        <aside style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16, display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 8, borderBottom: "1px solid var(--border)" }}>
-            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text)", margin: 0 }}>Filters</h3>
-            <a className="text-link" href="/schedule" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-muted)", textDecoration: "none" }}>Clear</a>
-          </div>
-
-          <div>
-            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-              Age Group / Batch
-            </span>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-              {ageGroups.length === 0 && (
-                <p style={{ fontSize: 13, color: "var(--text-faint)" }}>No age groups yet.</p>
-              )}
-              {ageGroups.map((ag) => {
-                const active = activeAgeGroup === ag.id;
-                return (
-                  <a className="ui-hover"
-                    key={ag.id}
-                    href={active ? "/schedule" : `/schedule?ageGroup=${ag.id}`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      fontSize: 13,
-                      color: "var(--text)",
-                      textDecoration: "none",
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: 4,
-                        border: active ? "6px solid var(--secondary)" : "1px solid var(--border)",
-                        background: active ? "var(--secondary)" : "var(--surface)",
-                        flexShrink: 0,
-                      }}
-                    />
-                    {ag.name}
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-              Location
-            </span>
-            <div style={{ marginTop: 8 }}>
-              <select style={inputBase}>
-                <option>All Pitches</option>
-                {locations.map((l) => (
-                  <option key={l.id}>{l.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </aside>
-
+      <form method="get" className="filter-bar" aria-label="Filter schedule">
+        <label>From date<input name="from" type="date" defaultValue={params.from ?? ""} /></label>
+        <label>Through date<input name="to" type="date" defaultValue={params.to ?? ""} /></label>
+        <label>Age group<select name="ageGroup" defaultValue={params.ageGroup ?? ""}>
+          <option value="">All age groups</option>
+          {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+        </select></label>
+        <label>Location<select name="location" defaultValue={params.location ?? ""}>
+          <option value="">All locations</option>
+          {locations.map(location => <option key={location.id} value={location.id}>{location.name}</option>)}
+        </select></label>
+        <label>Coach<select name="coach" defaultValue={params.coach ?? ""}>
+          <option value="">All coaches</option>
+          {[...headCoaches, ...assistantCoaches].map(coach => <option key={coach.id} value={coach.id}>{coach.user.name}</option>)}
+        </select></label>
+        <Button variant="outline" size="sm">Apply</Button>
+        <a className="text-link" href="/schedule">Clear</a>
+      </form>
+      <div>
         {/* Schedule list */}
         <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid var(--border)", background: "var(--surface-muted)" }}>
@@ -265,8 +233,8 @@ export default async function SchedulePage({
             {sessions.length === 0 ? (
               <EmptyState
                 icon="calendar"
-                title="Nothing scheduled yet"
-                message="Create your first session and it will show up here."
+                title={hasFilters ? "No sessions match these filters" : "Nothing scheduled yet"}
+                message={hasFilters ? "Adjust the filters or clear them to see more sessions." : "Create your first session and it will show up here."}
               />
             ) : (
               sessions.map((s) => (
@@ -429,7 +397,7 @@ export default async function SchedulePage({
         </div>
       </div>
 
-      {!canEdit && (
+      {!canEdit && !hasFilters && (
         <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 16 }}>
           Showing this calendar month only. Past sessions are available on the history page.
         </p>

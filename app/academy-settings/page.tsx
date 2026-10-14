@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
@@ -19,6 +20,7 @@ export default async function AcademySettingsPage({
   if (!perms.isAdmin && !perms.isClubManager) redirect("/?error=no_permission");
 
   const settings = await getAcademySettings();
+  const ageGroups = await prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } });
 
   return (
     <>
@@ -48,6 +50,25 @@ export default async function AcademySettingsPage({
               <LogoUpload name="logoUrl" current={settings.logoUrl} />
             </Field>
           </div>
+        </SettingsSection>
+
+        <SettingsSection title="Player age-group assignment">
+          <label style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+            <input type="checkbox" name="autoAssignPlayerAgeGroup" defaultChecked={settings.autoAssignPlayerAgeGroup} />
+            Automatically assign new players from their date of birth
+          </label>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>When enabled, one inclusive birth-date range must match. Gaps require a rule update; overlapping ranges are rejected. When disabled, staff choose the age group. Existing players are not reassigned when these rules change.</p>
+          {ageGroups.length === 0 && <p>Create age groups before configuring assignment.</p>}
+          {ageGroups.map(group => (
+            <div key={group.id} className="form-grid-2col" style={{ marginBottom: 14 }}>
+              <Field label={`${group.name}: born from (inclusive)`}>
+                <Input name={`dobFrom_${group.id}`} type="date" defaultValue={group.birthDateFrom?.toISOString().slice(0, 10) ?? ""} />
+              </Field>
+              <Field label="Born through (inclusive)">
+                <Input name={`dobTo_${group.id}`} type="date" defaultValue={group.birthDateTo?.toISOString().slice(0, 10) ?? ""} />
+              </Field>
+            </div>
+          ))}
         </SettingsSection>
 
         <SettingsSection title="Session Workflow">

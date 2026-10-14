@@ -216,7 +216,7 @@ export default async function DrillsPage({
                 {canApprove && (
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                     <form action={approveDrill.bind(null, d.id)}>
-                      <Button variant="secondary" size="sm" icon="check">Approve</Button>
+                      <Button variant="approval" size="sm" icon="check">Approve</Button>
                     </form>
                     <ConfirmDeleteButton
                       action={rejectDrill.bind(null, d.id)}

@@ -57,13 +57,15 @@ export default async function RegistrationsPage({
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.isClubManager)) redirect("/?error=no_permission");
 
-  const [registrations, batches] = await Promise.all([
+  const [registrations, batches, ageGroups, settings] = await Promise.all([
 
     prisma.pendingRegistration.findMany({
       where: { status: "PENDING" },
       orderBy: { createdAt: "asc" },
     }),
     prisma.batch.findMany({ include: { ageGroup: true }, orderBy: { name: "asc" } }),
+    prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.academySettings.findFirst(),
   ]);
 
   return (
@@ -147,6 +149,15 @@ export default async function RegistrationsPage({
                         <input name="emergencyContactPhone" defaultValue={r.emergencyContactPhone ?? ""} style={inputBase} />
                       </div>
                       <div>
+                        <label style={fieldLabel}>Age group</label>
+                        {settings?.autoAssignPlayerAgeGroup ? <p style={{ fontSize: 13 }}>Assigned automatically from the club's DOB rules.</p> : (
+                          <select name="ageGroupId" defaultValue="" style={inputBase}>
+                            <option value="">Use selected batch's age group</option>
+                            {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+                          </select>
+                        )}
+                      </div>
+                      <div>
                         <label style={fieldLabel}>Assign to batch (optional)</label>
                         <select name="batchId" defaultValue="" style={inputBase}>
                           <option value="">No batch yet</option>
@@ -168,7 +179,7 @@ export default async function RegistrationsPage({
                     </details>
 
                     <div>
-                      <Button type="submit">Approve & add to squad</Button>
+                      <Button variant="approval" type="submit">Approve & add to squad</Button>
                     </div>
                   </form>
 

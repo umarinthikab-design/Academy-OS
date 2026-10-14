@@ -92,11 +92,12 @@ export async function deleteAgeGroup(id: string) {
   // Batches and Schedule entries require an age group (it's not optional in
   // the schema), so deleting one that's in use would fail with a database
   // error. Checked first to avoid that.
-  const [batchCount, sessionCount] = await Promise.all([
+  const [batchCount, sessionCount, playerCount] = await Promise.all([
     prisma.batch.count({ where: { ageGroupId: id } }),
     prisma.scheduledSession.count({ where: { ageGroupId: id } }),
+    prisma.player.count({ where: { ageGroupId: id } }),
   ]);
-  if (batchCount > 0 || sessionCount > 0) redirect("/age-groups?error=in_use");
+  if (batchCount > 0 || sessionCount > 0 || playerCount > 0) redirect("/age-groups?error=in_use");
 
   await prisma.ageGroup.delete({ where: { id } });
   if (perms.userId) await logActivity(perms.userId, "deleted_age_group", "AgeGroup", id);

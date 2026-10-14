@@ -8,7 +8,7 @@
 
 import { Icon } from "./Icon";
 
-type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "approval";
 type Size = "sm" | "md";
 
 const VARIANTS: Record<Variant, React.CSSProperties> = {
@@ -19,8 +19,13 @@ const VARIANTS: Record<Variant, React.CSSProperties> = {
   },
   secondary: {
     background: "var(--secondary)",
-    color: "#fff",
+    color: "var(--btn-secondary-text)",
     border: "1px solid var(--secondary)",
+  },
+  approval: {
+    background: "var(--btn-approval-bg)",
+    color: "var(--btn-approval-text)",
+    border: "1px solid var(--btn-approval-bg)",
   },
   outline: {
     background: "var(--surface)",
@@ -73,6 +78,7 @@ export function Button({
     transition: "all var(--transition)",
     lineHeight: 1.3,
     whiteSpace: "nowrap",
+    textDecoration: "none",
     ...VARIANTS[variant],
     ...SIZES[size],
     ...(full ? { width: "100%" } : {}),

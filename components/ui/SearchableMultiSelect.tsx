@@ -184,7 +184,7 @@ export function SearchableMultiSelect({
                       cursor: "pointer",
                       fontSize: 13,
                       background: checked ? "var(--secondary)" : undefined,
-                      color: checked ? "#fff" : "var(--text)",
+                      color: checked ? "var(--btn-secondary-text)" : "var(--text)",
                     }}
                   >
                     <input type="checkbox" checked={checked} onChange={() => toggle(o.id)} style={{ accentColor: "var(--secondary)" }} />

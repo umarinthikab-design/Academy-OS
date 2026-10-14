@@ -294,7 +294,7 @@ export async function promoteCoach(coachId: string, formData: FormData) {
 // password is handed to the admin via a short-lived httpOnly cookie (see
 // TEMP_PASSWORD_COOKIE) rather than the redirect URL, and the success banner
 // carries no secret.
-export async function resetCoachPassword(coachId: string) {
+export async function resetCoachPassword(coachId: string, formData: FormData) {
   const perms = await getPermissions();
   if (!perms || !(perms.isAdmin || perms.isClubManager)) redirect("/coaches?error=no_permission");
   await refuseIfAdminAccount(coachId);
@@ -305,22 +305,33 @@ export async function resetCoachPassword(coachId: string) {
   });
   if (!coach) redirect("/coaches");
 
+  const email = String(formData.get("email") ?? coach.user.email).trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) redirect("/coaches?error=invalid_email");
+  const conflict = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (conflict && conflict.id !== coach.userId) redirect("/coaches?error=duplicate_email");
+
   // crypto.randomBytes, not Math.random() - Math.random() is not a
   // cryptographically secure source and its output is predictable enough to
   // brute-force the generator state from a few samples.
   const temporary = `tl-${crypto.randomBytes(9).toString("base64url")}`;
   const hashed = await bcrypt.hash(temporary, 10);
-  await prisma.user.update({
-    where: { id: coach.userId },
-    data: {
-      password: hashed,
-      mustChangePassword: true,
-      sessionVersion: { increment: 1 },
-    },
-  });
+  try {
+    await prisma.user.update({
+      where: { id: coach.userId },
+      data: {
+        email,
+        password: hashed,
+        mustChangePassword: true,
+        sessionVersion: { increment: 1 },
+      },
+    });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2002") redirect("/coaches?error=duplicate_email");
+    throw error;
+  }
 
   const cookieStore = await cookies();
-  cookieStore.set(TEMP_PASSWORD_COOKIE, JSON.stringify({ email: coach.user.email, password: temporary }), {
+  cookieStore.set(TEMP_PASSWORD_COOKIE, JSON.stringify({ email, password: temporary }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -330,7 +341,7 @@ export async function resetCoachPassword(coachId: string) {
 
   if (perms.userId) await logActivity(perms.userId, "reset_password", "User", coach.userId);
   revalidatePath("/coaches");
-  redirect(`/coaches?success=${encodeURIComponent(`Password reset for ${coach.user.email} — see the temporary password below (must change on next login).`)}`);
+  redirect(`/coaches?success=${encodeURIComponent(`Password reset for ${email} — see the temporary password below (must change on next login).`)}`);
 }
 
 // Deletes the one-time temporary-password cookie once the coaches page has

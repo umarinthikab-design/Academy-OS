@@ -48,6 +48,8 @@ const SURFACES = ["--bg", "--surface", "--surface-muted"];
 const PAIRS = [];
 for (const t of TEXTS) for (const s of SURFACES) PAIRS.push([t, s, 4.5]);
 PAIRS.push(["--btn-primary-text", "--btn-primary-bg", 4.5]);
+PAIRS.push(["--btn-approval-text", "--btn-approval-bg", 4.5]);
+PAIRS.push(["--btn-secondary-text", "--secondary", 4.5]);
 PAIRS.push(["--sidebar-text", "--sidebar-bg", 4.5]);
 PAIRS.push(["--sidebar-text-strong", "--sidebar-bg", 4.5]);
 PAIRS.push(["--sidebar-active-text", "--sidebar-active-bg", 4.5]);

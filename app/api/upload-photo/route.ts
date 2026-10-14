@@ -45,11 +45,15 @@ export async function POST(request: Request) {
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : file.type === "image/gif" ? "gif" : file.type === "image/avif" ? "avif" : "jpg";
   const key = `${folder}/${crypto.randomUUID()}.${ext}`;
 
-  const blob = await put(key, file, {
+  try {
+    const blob = await put(key, file, {
     access: "public",
     addRandomSuffix: false,
     contentType: file.type,
   });
 
-  return NextResponse.json({ url: blob.url });
+    return NextResponse.json({ url: blob.url });
+  } catch {
+    return NextResponse.json({ error: "Photo storage is unavailable. Please contact your club administrator." }, { status: 503 });
+  }
 }

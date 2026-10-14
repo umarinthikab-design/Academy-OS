@@ -1,3 +1,4 @@
+import { SquadPlayerLink, SquadScrollRestore } from "@/components/SquadNavigation";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createPlayer, deletePlayer, updatePlayerStatus, promotePlayers, createSkillDefinition, renameSkillDefinition, deleteSkillDefinition } from "./actions";
@@ -25,7 +26,7 @@ import { Icon } from "@/components/ui/Icon";
 export default async function SquadPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; success?: string; age?: string; batch?: string; status?: string; dobFrom?: string; dobTo?: string; joinedFrom?: string; joinedTo?: string }>;
+  searchParams: Promise<{ error?: string; success?: string; age?: string; ageGroup?: string; batch?: string; status?: string; dobFrom?: string; dobTo?: string; joinedFrom?: string; joinedTo?: string }>;
 }) {
   const params = await searchParams;
   const perms = await getPermissions();
@@ -45,12 +46,13 @@ export default async function SquadPage({
   const joinedTo = params.joinedTo ? new Date(params.joinedTo) : null;
 
   const players = await prisma.player.findMany({
-    include: { skills: true, batches: { include: { ageGroup: true } } },
+    include: { ageGroup: true, skills: true, batches: { include: { ageGroup: true } } },
     orderBy: { name: "asc" },
   });
 
   const filtered = players.filter((p) => {
     if (ageFilter !== null && calculateAge(p.dateOfBirth) !== ageFilter) return false;
+    if (params.ageGroup && p.ageGroupId !== params.ageGroup && !p.batches.some(b => b.ageGroupId === params.ageGroup)) return false;
     if (batchFilter && !p.batches.some((b) => b.id === batchFilter)) return false;
     if (statusFilter && p.status !== statusFilter) return false;
     if (dobFrom && p.dateOfBirth < dobFrom) return false;
@@ -60,6 +62,8 @@ export default async function SquadPage({
     return true;
   });
 
+  const settings = await prisma.academySettings.findFirst();
+  const ageGroups = await prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } });
   const batches = await prisma.batch.findMany({ orderBy: { name: "asc" }, include: { ageGroup: true } });
 
   // No foreign key from PlayerSkill/PlayerSkillHistory to SkillDefinition
@@ -76,7 +80,7 @@ export default async function SquadPage({
   const skillRatingCountByName = new Map(skillRatingCounts.map((s) => [s.skillName, s._count._all]));
   const skillInUseNames = new Set([...skillRatingCounts.map((s) => s.skillName), ...historyNames.map((h) => h.skillName)]);
 
-  const hasFilters = !!params.age || !!params.batch || !!params.status || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
+  const hasFilters = !!params.ageGroup || !!params.age || !!params.batch || !!params.status || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
 
   const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
 
@@ -105,6 +109,7 @@ export default async function SquadPage({
       />
 
       <StatusBanner error={params.error} success={params.success} />
+      <SquadScrollRestore />
 
       {canManageSkills && (
         <CollapsibleCreate title="Manage skill dimensions" subtitle={`${skillDefinitions.length}`}>
@@ -206,8 +211,18 @@ export default async function SquadPage({
                   <option value="" disabled>Select gender</option>
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
                 </select>
+              </div>
+              <div>
+                <label style={fieldLabel}>Age group</label>
+                {settings?.autoAssignPlayerAgeGroup ? (
+                  <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Assigned automatically from the club's date-of-birth rules.</p>
+                ) : (
+                  <select name="ageGroupId" defaultValue="" required style={inputBase}>
+                    <option value="" disabled>Select age group</option>
+                    {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+                  </select>
+                )}
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={{ ...fieldLabel, marginBottom: 8 }}>Photo (optional)</label>
@@ -246,19 +261,23 @@ export default async function SquadPage({
             alignItems: "center",
           }}
         >
-          <select name="batch" defaultValue={params.batch ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+          <select name="ageGroup" aria-label="Age group" defaultValue={params.ageGroup ?? ""} style={{ ...inputBase, width: "auto" }}>
+            <option value="">All age groups</option>
+            {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+          </select>
+          <select aria-label="Batch" name="batch" defaultValue={params.batch ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
             <option value="">All Batches</option>
             {batches.map((b) => (
               <option key={b.id} value={b.id}>{b.name} ({b.ageGroup.name})</option>
             ))}
           </select>
-          <select name="status" defaultValue={params.status ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+          <select aria-label="Player status" name="status" defaultValue={params.status ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
             <option value="">Status: All</option>
             <option value="ACTIVE">Available</option>
             <option value="INJURED">Injured</option>
             <option value="INACTIVE">Inactive</option>
           </select>
-          <input name="age" type="number" min={1} defaultValue={params.age ?? ""} placeholder="Age (e.g. 16)" style={{ width: 96, padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }} />
+          <input aria-label="Player age" name="age" type="number" min={1} defaultValue={params.age ?? ""} placeholder="Age (e.g. 16)" style={{ width: 96, padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }} />
           <Button variant="secondary" size="sm">Filter</Button>
           <a className="text-link" href="/squad" style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--secondary)", textDecoration: "none" }}>
             Clear
@@ -273,10 +292,11 @@ export default async function SquadPage({
           message={hasFilters ? "Try removing a filter to see more results." : "Add your first player above to start building the squad."}
         />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="squad-grid">
           {filtered.map((p) => (
             <div
               key={p.id}
+              id={`player-card-${p.id}`}
               style={{
                 background: "var(--surface)",
                 border: "1px solid var(--border)",
@@ -288,7 +308,7 @@ export default async function SquadPage({
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <EntityHero
                   name={p.name}
-                  href={`/squad/${p.id}`}
+                  heading={<SquadPlayerLink playerId={p.id} appearance="name">{p.name}</SquadPlayerLink>}
                   src={p.photoUrl}
                   badges={
                     <>
@@ -296,6 +316,7 @@ export default async function SquadPage({
                       <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
                       {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
+                      {p.ageGroup && <Badge tone="green">{p.ageGroup.name}</Badge>}
                       {p.batches.map((b) => (
                         <Badge key={b.id} tone="blue">{b.name}</Badge>
                       ))}
@@ -318,7 +339,12 @@ export default async function SquadPage({
                 />
               </div>
 
-              <div style={{ marginTop: 12 }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
+                <SquadPlayerLink playerId={p.id}>View player</SquadPlayerLink>
+              </div>
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>Expand skills</summary>
+                <div style={{ marginTop: 10 }}>
                 <PlayerRatingCard
                   playerId={p.id}
                   dateOfBirth={p.dateOfBirth.toISOString()}
@@ -327,7 +353,8 @@ export default async function SquadPage({
                   canEdit={canEdit}
                   skillBands={skillBands}
                 />
-              </div>
+                </div>
+              </details>
             </div>
           ))}
         </div>

@@ -108,7 +108,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                     <StatusPill tone="pending">Pending</StatusPill>
                     <form action={approveRequest.bind(null, r.id)}>
-                      <Button variant="secondary" size="sm"><Icon name="check" size={14} /> Approve</Button>
+                      <Button variant="approval" size="sm"><Icon name="check" size={14} /> Approve</Button>
                     </form>
                     <form action={rejectRequest.bind(null, r.id)}>
                       <Button variant="danger" size="sm"><Icon name="x" size={14} /> Reject</Button>

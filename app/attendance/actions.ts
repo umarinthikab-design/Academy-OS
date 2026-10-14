@@ -1,5 +1,6 @@
 "use server";
 
+import { sessionRosterWhere } from "@/lib/sessionRoster";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -57,6 +58,10 @@ export async function submitAttendance(formData: FormData) {
   });
   if (!session) redirect("/attendance");
   if (session.resolvedAt) redirect("/attendance?error=already_resolved");
+
+  const roster = await prisma.player.findMany({ where: sessionRosterWhere(session), select: { id: true } });
+  const validIds = new Set(roster.map(player => player.id));
+  if (playerIds.length !== statuses.length || new Set(playerIds).size !== playerIds.length || playerIds.some(id => !validIds.has(id)) || statuses.some(status => !["", "ATTENDED", "ABSENT"].includes(status))) redirect("/attendance?error=invalid_roster");
 
   const pairs = playerIds
     .map((playerId, i) => ({ playerId, status: statuses[i] }))
@@ -177,6 +182,12 @@ export async function approveAttendanceRequest(requestId: string) {
   } else if (!isHeadOfSession || !perms.canApproveRequests) {
     redirect("/attendance?error=no_permission");
   }
+
+  if (session.resolvedAt) redirect("/attendance?error=already_resolved");
+  if (request.requestedById === perms.coachId) redirect("/attendance?error=no_permission");
+  const roster = await prisma.player.findMany({ where: sessionRosterWhere(session), select: { id: true } });
+  const validIds = new Set(roster.map(player => player.id));
+  if (!Array.isArray(payload.statuses) || new Set(payload.statuses.map(p => p.playerId)).size !== payload.statuses.length || payload.statuses.some(p => !validIds.has(p.playerId) || !["ATTENDED", "ABSENT"].includes(p.status))) redirect("/attendance?error=invalid_roster");
 
   const deadline = await sessionDeadline(session);
   for (const { playerId, status } of payload.statuses) {

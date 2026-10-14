@@ -32,7 +32,7 @@ export function TeamSelector({
         whiteSpace: "nowrap",
         border: active ? "1px solid var(--secondary)" : "1px solid var(--border)",
         background: active ? "var(--secondary)" : "var(--surface)",
-        color: active ? "#fff" : "var(--text-muted)",
+        color: active ? "var(--btn-secondary-text)" : "var(--text-muted)",
         transition: "background var(--transition), color var(--transition), border-color var(--transition)",
       }}
     >

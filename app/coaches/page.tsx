@@ -1,3 +1,4 @@
+import { inputBase } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -148,9 +149,16 @@ export default async function CoachesPage({
                         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                           {canManageStaff && (
                             <>
-                              <form action={resetCoachPassword.bind(null, c.id)}>
-                                <Button variant="outline" size="sm" title="Reset this coach's password to a temporary value they must change on next login" style={{ color: "var(--text-muted)" }}>Reset password</Button>
-                              </form>
+                              <details>
+                                <summary className="ui-btn" style={{ cursor: "pointer", padding: "5px 12px", border: "1px solid var(--border)", borderRadius: 8, fontSize: 13 }}>Reset password / email</summary>
+                                <form action={resetCoachPassword.bind(null, c.id)} style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                                  <label style={{ fontSize: 13 }}>Login email
+                                    <input name="email" type="email" required defaultValue={c.user.email} style={inputBase} />
+                                  </label>
+                                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Saves the email and resets the password together. Existing sessions are revoked.</span>
+                                  <Button variant="outline" size="sm">Save email &amp; reset password</Button>
+                                </form>
+                              </details>
                               <form action={revokeSessions.bind(null, c.id)}>
                                 <Button variant="outline" size="sm" title="Invalidate all of this coach's active sessions so they must log in again" style={{ color: "var(--text-muted)" }}>Revoke sessions</Button>
                               </form>
@@ -191,7 +199,7 @@ export default async function CoachesPage({
                               borderRadius: 20,
                               border: `1px solid ${c[t.field] ? "var(--secondary)" : "var(--border)"}`,
                               background: c[t.field] ? "var(--secondary)" : "var(--surface)",
-                              color: c[t.field] ? "#fff" : "var(--text)",
+                              color: c[t.field] ? "var(--btn-secondary-text)" : "var(--text)",
                               cursor: "pointer",
                             }}
                           >

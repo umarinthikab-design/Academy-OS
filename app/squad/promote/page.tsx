@@ -56,7 +56,7 @@ export default async function PromotePlayersPage({
                   borderRadius: "var(--radius-pill)",
                   border: `1px solid ${b.id === sourceBatch.id ? "var(--secondary)" : "var(--border)"}`,
                   background: b.id === sourceBatch.id ? "var(--secondary)" : "var(--surface)",
-                  color: b.id === sourceBatch.id ? "#fff" : "var(--text)",
+                  color: b.id === sourceBatch.id ? "var(--btn-secondary-text)" : "var(--text)",
                   fontSize: 13,
                   fontWeight: 700,
                   textDecoration: "none",

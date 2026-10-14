@@ -274,6 +274,9 @@ model AgeGroup {
   batches           Batch[]
   drills            Drill[]            @relation("DrillAgeGroups")
   scheduledSessions ScheduledSession[]
+  players Player[]
+  birthDateFrom DateTime? @db.Date
+  birthDateTo DateTime? @db.Date
 }
 
 model Location {
@@ -302,6 +305,8 @@ model Player {
   id          String   @id @default(cuid())
   name        String
   dateOfBirth DateTime
+  ageGroupId String?
+  ageGroup AgeGroup? @relation(fields: [ageGroupId], references: [id], onDelete: SetNull)
   // Mirrors Coach.dateJoined - set automatically on creation. Added for the
   // Squad date-joined filter and the player detail page.
   dateJoined  DateTime @default(now())
@@ -343,6 +348,8 @@ model Player {
   skillHistory  PlayerSkillHistory[]
   attendance    PlayerAttendance[]
   notes         Note[]
+
+  @@index([ageGroupId])
 }
 
 // Admin-managed skill rating dimensions, grouped by age band. `band` matches
@@ -588,6 +595,7 @@ model SessionCoachConfirmation {
 // app/settings page. A singleton row - only one should exist, enforced in
 // the update action (Prisma has no clean "exactly one row" constraint).
 model AcademySettings {
+  autoAssignPlayerAgeGroup Boolean @default(false)
   id                            String  @id @default(cuid())
   // Master switch for the pre-session confirmation feature.
   preSessionConfirmationEnabled Boolean @default(true)

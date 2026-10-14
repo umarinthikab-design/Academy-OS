@@ -11,7 +11,7 @@ import type { CSSProperties } from "react";
 
 const TONES: Record<"pending" | "approved" | "rejected", CSSProperties> = {
   pending: { background: "var(--warning)", color: "#3d2b00" },
-  approved: { background: "var(--secondary)", color: "#ffffff" },
+  approved: { background: "var(--secondary)", color: "var(--btn-secondary-text)" },
   rejected: { background: "var(--error)", color: "#ffffff" },
 };
 

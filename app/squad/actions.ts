@@ -1,5 +1,6 @@
 "use server";
 
+import { safeSquadReturn } from "@/lib/squadReturn";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -7,6 +8,7 @@ import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { getSkillBandForAge, getSkillBandMetaForAge, PLAYER_POSITIONS, SKILL_BAND_META } from "@/lib/skills";
 import { getSkillBands, getAllSkillNames } from "@/lib/skillDefinitions";
+import { parseCalendarDate, eligibleAgeGroupIds } from "@/lib/ageGroupRules";
 import { sanitizePhotoUrl } from "@/lib/photo";
 
 function calculateAge(dob: Date): number {
@@ -28,10 +30,21 @@ export async function createPlayer(formData: FormData) {
   const genderRaw = formData.get("gender") as string;
   if (!name || !dobRaw || !genderRaw) redirect("/squad?error=missing_fields");
 
-  const gender = genderRaw as "MALE" | "FEMALE" | "OTHER";
-  if (!["MALE", "FEMALE", "OTHER"].includes(gender)) redirect("/squad?error=missing_fields");
+  const gender = genderRaw as "MALE" | "FEMALE";
+  if (!["MALE", "FEMALE"].includes(gender)) redirect("/squad?error=missing_fields");
 
-  const dob = new Date(dobRaw);
+  const dob = parseCalendarDate(dobRaw);
+  if (!dob || dob.toISOString().slice(0, 10) > new Date().toISOString().slice(0, 10)) redirect("/squad?error=invalid_dob");
+  const settings = await prisma.academySettings.findFirst();
+  const groups = await prisma.ageGroup.findMany();
+  let ageGroupId = String(formData.get("ageGroupId") ?? "");
+  if (settings?.autoAssignPlayerAgeGroup) {
+    const matches = eligibleAgeGroupIds(dob, groups);
+    if (matches.length > 1) redirect("/squad?error=age_group_overlap");
+    if (!matches.length) redirect("/squad?error=age_group_no_match");
+    ageGroupId = matches[0];
+  }
+  if (!groups.some(group => group.id === ageGroupId)) redirect("/squad?error=age_group_required");
   const photoUrl = sanitizePhotoUrl(formData.get("photoUrl") as string) || null;
   const bands = await getSkillBands();
   const band = getSkillBandForAge(bands, calculateAge(dob));
@@ -39,6 +52,7 @@ export async function createPlayer(formData: FormData) {
     data: {
       name,
       dateOfBirth: dob,
+      ageGroupId,
       gender,
       photoUrl,
       // New players start with their age-band skills active at a baseline
@@ -170,7 +184,7 @@ export async function updatePlayerInfo(playerId: string, formData: FormData) {
   await prisma.player.update({
     where: { id: playerId },
     data: {
-      photoUrl,
+      ...(formData.has("photoUrl") ? { photoUrl } : {}),
       emergencyContactName: emergencyContactName || null,
       emergencyContactPhone: emergencyContactPhone || null,
       medicalNotes: medicalNotes || null,
@@ -179,6 +193,7 @@ export async function updatePlayerInfo(playerId: string, formData: FormData) {
 
   if (perms.userId) await logActivity(perms.userId, "updated_player_profile", "Player", playerId);
   revalidatePath(`/squad/${playerId}`);
+  revalidatePath("/squad");
   redirect(`/squad/${playerId}?success=Player details updated.`);
 }
 
@@ -209,7 +224,7 @@ export async function promotePlayers(formData: FormData) {
   const playerIds = formData.getAll("playerIds") as string[];
   if (!targetBatchId || playerIds.length === 0) redirect("/squad/promote?error=missing_fields");
 
-  const targetBatch = await prisma.batch.findUnique({ where: { id: targetBatchId }, select: { name: true } });
+  const targetBatch = await prisma.batch.findUnique({ where: { id: targetBatchId }, select: { name: true, ageGroupId: true } });
   if (!targetBatch) redirect("/squad/promote?error=missing_fields");
 
   // Disconnect from all current batches, then connect to the target. Using a
@@ -219,6 +234,7 @@ export async function promotePlayers(formData: FormData) {
       prisma.player.update({
         where: { id: playerId },
         data: {
+          ageGroupId: targetBatch.ageGroupId,
           batches: { set: [{ id: targetBatchId }] },
         },
       })
@@ -311,4 +327,32 @@ export async function deleteSkillDefinition(id: string) {
   if (perms.userId) await logActivity(perms.userId, "deleted_skill_definition", "SkillDefinition", id, skill.name);
   revalidatePath("/squad");
   redirect("/squad?success=Skill removed.");
+}
+
+// Photo saves are independent of medical/emergency fields.
+export async function updatePlayerPhoto(playerId: string, formData: FormData) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSquad)) redirect(`/squad/${playerId}?error=no_permission`);
+  const raw = String(formData.get("photoUrl") ?? "");
+  const photoUrl = sanitizePhotoUrl(raw);
+  if (raw && !photoUrl) redirect(`/squad/${playerId}?error=photo_invalid`);
+  await prisma.player.update({ where: { id: playerId }, data: { photoUrl } });
+  if (perms.userId) await logActivity(perms.userId, "updated_player_photo", "Player", playerId);
+  revalidatePath("/squad");
+  revalidatePath(`/squad/${playerId}`);
+  const returnTo = safeSquadReturn(formData.get("returnTo"));
+  redirect(`/squad/${playerId}?success=Player%20photo%20saved.&returnTo=${encodeURIComponent(returnTo)}`);
+}
+
+export async function updatePlayerAgeGroup(playerId: string, formData: FormData) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSquad)) redirect(`/squad/${playerId}?error=no_permission`);
+  const ageGroupId = String(formData.get("ageGroupId") ?? "");
+  if (!await prisma.ageGroup.findUnique({ where: { id: ageGroupId } })) redirect(`/squad/${playerId}?error=age_group_required`);
+  await prisma.player.update({ where: { id: playerId }, data: { ageGroupId } });
+  if (perms.userId) await logActivity(perms.userId, "updated_player_age_group", "Player", playerId);
+  revalidatePath("/squad");
+  revalidatePath(`/squad/${playerId}`);
+  revalidatePath("/attendance");
+  redirect(`/squad/${playerId}?success=Age group updated. Batch memberships are unchanged.`);
 }

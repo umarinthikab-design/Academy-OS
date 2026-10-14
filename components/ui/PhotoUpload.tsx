@@ -3,10 +3,8 @@
 // Upload a photo from the device and put the result into the surrounding
 // form as a hidden field. The image is read client-side and opened in a small
 // crop/align editor: rotate in 90° steps, drag a square crop box (and resize
-// it) over the preview, then confirm. The cropped result is uploaded to the
-// Vercel Blob-backed /api/upload-photo route, and the returned public URL is
-// written to a hidden input so the existing server actions keep working with
-// a plain `photoUrl` string.
+// it) over the preview, then confirm. The small cropped JPEG is written to
+// a hidden input and persisted by the surrounding profile save action.
 //
 // Usage: render inside a <form> that submits to a server action, and read
 // `name` (default "photoUrl") from the FormData as before.
@@ -29,28 +27,9 @@ function readFile(file: File): Promise<string> {
   });
 }
 
-// Upload a cropped data-URL image to the Blob-backed route and return the
-// public URL. Throws with a human message on failure.
-async function uploadImage(dataUrl: string): Promise<string> {
-  const blob = await (await fetch(dataUrl)).blob();
-  const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
-  const form = new FormData();
-  form.set("file", file);
-  const res = await fetch("/api/upload-photo", {
-    method: "POST",
-    body: form,
-  });
-  if (!res.ok) {
-    let message = "Upload failed.";
-    try {
-      const body = await res.json();
-      if (body?.error) message = `Upload failed (${body.error}).`;
-    } catch {}
-    throw new Error(message);
-  }
-  const body = await res.json();
-  return body.url as string;
-}
+// Cropped profile photos stay small (256px JPEG) and are saved with the
+// profile. This does not depend on a Blob token or a separate upload request.
+const MAX_CROPPED_BYTES = 256 * 1024;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -82,10 +61,12 @@ export function PhotoUpload({
   name = "photoUrl",
   current,
   label = "Upload photo",
+  onReadyChange,
 }: {
   name?: string;
   current?: string | null;
   label?: string;
+  onReadyChange?: (ready: boolean) => void;
 }) {
   const [value, setValue] = useState<string>(current ?? "");
   const [removed, setRemoved] = useState(false);
@@ -101,6 +82,8 @@ export function PhotoUpload({
   const [drag, setDrag] = useState<null | "move" | "resize">(null);
   const [dragStart, setDragStart] = useState<{ px: number; py: number; x: number; y: number; size: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { onReadyChange?.(!busy && !editing); }, [busy, editing, onReadyChange]);
 
   // After a save+redirect the server may pass back a fresh `current`;
   // reflect it so the preview matches what's actually stored.
@@ -221,8 +204,9 @@ export function PhotoUpload({
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(rotated, sx, sy, sSize, sSize, 0, 0, MAX_DIMENSION, MAX_DIMENSION);
       const dataUrl = out.toDataURL("image/jpeg", 0.85);
-      const url = await uploadImage(dataUrl);
-      setValue(url);
+      if (dataUrl.length > MAX_CROPPED_BYTES) throw new Error("The cropped photo is too large. Choose a smaller image.");
+      setRemoved(false);
+      setValue(dataUrl);
       setEditing(null);
       setCrop(null);
       setFit(null);

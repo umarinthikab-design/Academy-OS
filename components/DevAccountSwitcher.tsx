@@ -94,7 +94,7 @@ export function DevAccountSwitcher({ currentEmail }: { currentEmail: string }) {
                     padding: "6px 10px",
                     border: isActive ? "1px solid var(--secondary)" : "1px solid var(--border)",
                     background: isActive ? "var(--secondary)" : "var(--surface)",
-                    color: isActive ? "#fff" : "var(--text)",
+                    color: isActive ? "var(--btn-secondary-text)" : "var(--text)",
                     borderRadius: 8,
                     cursor: "pointer",
                     fontSize: 13,

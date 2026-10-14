@@ -1,6 +1,17 @@
 // Banner for action results (error/success) shown after redirects.
 
 const ERROR_MESSAGES: Record<string, string> = {
+  batch_age_group: "The selected batch belongs to a different age group. Choose a matching batch or leave it unassigned.",
+  invalid_filters: "Choose valid dates, with the from date on or before the through date.",
+  invalid_email: "Enter a valid email address.",
+  invalid_dob: "Enter a valid date of birth that is not in the future.",
+  age_group_required: "Choose an age group for the player.",
+  age_group_no_match: "No age group matches this date of birth. Ask an admin or club manager to review the eligibility rules.",
+  age_group_overlap: "Age-group birth-date ranges overlap. Use non-overlapping ranges before enabling automatic assignment.",
+  age_group_rule: "Each eligibility rule needs a valid start and end date, with the start on or before the end.",
+  invalid_roster: "One or more players are outside this session's roster. Refresh and try again.",
+  photo_invalid: "The photo could not be saved. Upload a valid image and try again.",
+  timezone: "Enter a valid IANA timezone, such as Asia/Colombo.",
   duplicate_email: "That email is already in use by another account.",
   duplicate_name: "That name is already in use.",
   no_permission: "You don't have permission to do that.",

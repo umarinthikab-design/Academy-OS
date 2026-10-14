@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getPermissions } from "@/lib/permissions";
+import { parseCalendarDate, hasOverlappingRules } from "@/lib/ageGroupRules";
 import { logActivity } from "@/lib/logActivity";
 
 // Club-wide configuration update. Admin/Club Manager-only (this is academy
@@ -43,30 +44,47 @@ export async function updateAcademySettings(formData: FormData) {
   // existing behavior; compute helpers read this value and apply the offset when
   // interpreting startTime / deadline / "today" filters.
   const timeZone = String(formData.get("timeZone") || "").trim() || "UTC";
-  if (!/^[A-Za-z\/\-]+$/.test(timeZone)) {
-    redirect("/academy-settings?error=timezone");
-  }
+  try { new Intl.DateTimeFormat("en", { timeZone }).format(); } catch { redirect("/academy-settings?error=timezone"); }
 
-  await prisma.academySettings.upsert({
-    where: { id: existing?.id ?? "__none__" },
-    update: {
-      preSessionConfirmationEnabled,
-      confirmationWindowHours,
-      priorityWindowHours,
-      clubManagersCanAuthorDrills,
-      timeZone,
-      academyName,
-      logoUrl,
-    },
-    create: {
-      preSessionConfirmationEnabled,
-      confirmationWindowHours,
-      priorityWindowHours,
-      clubManagersCanAuthorDrills,
-      timeZone: "UTC",
-      academyName,
-      logoUrl,
-    },
+  const autoAssignPlayerAgeGroup = formData.get("autoAssignPlayerAgeGroup") === "on";
+  const ageGroups = await prisma.ageGroup.findMany({ select: { id: true } });
+  const rules = ageGroups.map(group => ({
+    id: group.id,
+    fromRaw: String(formData.get(`dobFrom_${group.id}`) ?? ""),
+    toRaw: String(formData.get(`dobTo_${group.id}`) ?? ""),
+  }));
+  const parsedRules = rules.map(rule => ({ id: rule.id, birthDateFrom: parseCalendarDate(rule.fromRaw), birthDateTo: parseCalendarDate(rule.toRaw) }));
+  if (rules.some((rule, i) => (rule.fromRaw || rule.toRaw) && (!parsedRules[i].birthDateFrom || !parsedRules[i].birthDateTo || parsedRules[i].birthDateFrom! > parsedRules[i].birthDateTo!))) {
+    redirect("/academy-settings?error=age_group_rule");
+  }
+  if (autoAssignPlayerAgeGroup && (!parsedRules.some(r => r.birthDateFrom && r.birthDateTo))) redirect("/academy-settings?error=age_group_rule");
+  if (autoAssignPlayerAgeGroup && hasOverlappingRules(parsedRules)) redirect("/academy-settings?error=age_group_overlap");
+
+  await prisma.$transaction(async tx => {
+    for (const rule of parsedRules) await tx.ageGroup.update({ where: { id: rule.id }, data: { birthDateFrom: rule.birthDateFrom, birthDateTo: rule.birthDateTo } });
+    await tx.academySettings.upsert({
+      where: { id: existing?.id ?? "__none__" },
+      update: {
+        autoAssignPlayerAgeGroup,
+        preSessionConfirmationEnabled,
+        confirmationWindowHours,
+        priorityWindowHours,
+        clubManagersCanAuthorDrills,
+        timeZone,
+        academyName,
+        logoUrl,
+      },
+      create: {
+        autoAssignPlayerAgeGroup,
+        preSessionConfirmationEnabled,
+        confirmationWindowHours,
+        priorityWindowHours,
+        clubManagersCanAuthorDrills,
+        timeZone,
+        academyName,
+        logoUrl,
+      },
+    });
   });
 
   if (perms.userId) await logActivity(perms.userId, "updated_academy_settings", "AcademySettings");
@@ -75,5 +93,6 @@ export async function updateAcademySettings(formData: FormData) {
   revalidatePath("/login");
   revalidatePath("/schedule");
   revalidatePath("/drills");
+  revalidatePath("/squad");
   redirect("/academy-settings?success=Club settings updated.");
 }
