@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
-import type { NavItem } from "@/lib/navItems";
+import { groupNavItems, type NavItem } from "@/lib/navItems";
 
 // Desktop sidebar nav, styled per the Stitch exports: deep pitch background
 // (owned by the aside in layout.tsx), inactive items in primary-fixed-dim,
@@ -24,7 +24,17 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
 
   return (
     <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: compact ? "0 8px" : "0 12px", overflowY: "auto" }}>
-      {items.map((item) => {
+      {groupNavItems(items).map((section, sectionIndex) => (
+        <div key={section.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: sectionIndex === 0 ? 0 : compact ? 0 : 14 }}>
+          {section.label && !compact && (
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "0 14px 6px", color: "var(--sidebar-text)" }}>
+              {section.label}
+            </div>
+          )}
+          {compact && section.label && sectionIndex > 0 && (
+            <div aria-hidden="true" style={{ height: 1, background: "var(--sidebar-border)", margin: "6px 10px" }} />
+          )}
+          {section.items.map((item) => {
         const active = pathname === item.href;
         return (
           <Link
@@ -86,7 +96,9 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
             ) : null}
           </Link>
         );
-      })}
+          })}
+        </div>
+      ))}
     </nav>
   );
 }

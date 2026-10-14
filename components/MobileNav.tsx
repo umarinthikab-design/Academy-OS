@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { Avatar } from "@/components/ui/Avatar";
 import { roleLabel } from "@/lib/roleLabel";
-import type { NavItem } from "@/lib/navItems";
+import { groupNavItems, type NavItem } from "@/lib/navItems";
 
 // Mobile drawer nav. Same items as the desktop sidebar (resolved server-side
 // from permissions), rendered as a slide-in panel from the left.
@@ -30,6 +30,8 @@ export function MobileNav({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const sections = groupNavItems(items);
+  const hasHeadings = sections.some((s) => s.label);
 
   return (
     <>
@@ -149,10 +151,19 @@ export function MobileNav({
             </div>
 
             <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: "0 12px" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "4px 10px 8px" }}>
-                Menu
-              </div>
-              {items.map((item) => {
+              {!hasHeadings && (
+                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "4px 10px 8px" }}>
+                  Menu
+                </div>
+              )}
+              {sections.map((section, sectionIndex) => (
+                <div key={section.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: sectionIndex === 0 ? 0 : 10 }}>
+                  {section.label && (
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "6px 10px 6px" }}>
+                      {section.label}
+                    </div>
+                  )}
+                  {section.items.map((item) => {
                 const active = pathname === item.href;
                 return (
                   <Link className="mobile-nav-hover"
@@ -196,7 +207,9 @@ export function MobileNav({
                     ) : null}
                   </Link>
                 );
-              })}
+                  })}
+                </div>
+              ))}
             </nav>
 
             <div style={{ padding: "14px 20px 0", borderTop: "1px solid var(--sidebar-border)", marginTop: 12 }}>

@@ -74,3 +74,29 @@ export function getNavItems(perms: Permissions, requestsBadge = 0, registrations
 
   return items;
 }
+
+// ---- Grouping ----
+// Items keep the order and permission filtering from getNavItems; this only
+// buckets them under headings. Headings are skipped for short lists (parents),
+// and a group with no visible items never appears.
+
+export type NavSection = { label: string | null; items: NavItem[] };
+
+const NAV_GROUPS: { label: string; hrefs: string[] }[] = [
+  { label: "Overview", hrefs: ["/", "/broadcasts", "/requests"] },
+  { label: "Training", hrefs: ["/schedule", "/sessions", "/attendance", "/drills"] },
+  { label: "People", hrefs: ["/squad", "/coaches", "/registrations"] },
+  { label: "Organisation", hrefs: ["/batches", "/age-groups", "/locations"] },
+  { label: "System", hrefs: ["/academy-settings", "/activity", "/settings"] },
+];
+
+export function groupNavItems(items: NavItem[]): NavSection[] {
+  if (items.length < 5) return [{ label: null, items }];
+  const sections: NavSection[] = NAV_GROUPS.map((g) => ({ label: g.label, items: [] as NavItem[] }));
+  const fallback = sections[sections.length - 1];
+  for (const item of items) {
+    const idx = NAV_GROUPS.findIndex((g) => g.hrefs.includes(item.href));
+    (idx === -1 ? fallback : sections[idx]).items.push(item);
+  }
+  return sections.filter((s) => s.items.length > 0);
+}
