@@ -28,6 +28,11 @@ const ERROR_MESSAGES: Record<string, string> = {
   category_in_use: "This category is still assigned to a drill, so it can't be deleted.",
   skill_in_use: "This skill still has ratings recorded for a player, so it can't be deleted.",
   priority_window: "The priority window must be shorter than the confirmation window.",
+  password_too_short: "New password must be at least 8 characters.",
+  password_mismatch: "New password and confirmation don't match.",
+  wrong_password: "Current password is incorrect.",
+  invalid_position: "That position isn't valid for this player.",
+  not_assistant: "Only assistant coaches can be promoted to head coach.",
 };
 
 export function StatusBanner({ error, success }: { error?: string; success?: string }) {

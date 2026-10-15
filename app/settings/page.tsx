@@ -14,13 +14,6 @@ import { NotificationToggle } from "@/components/NotificationToggle";
 import { PhotoUpload } from "@/components/ui/PhotoUpload";
 import { PasswordField } from "@/components/ui/PasswordField";
 
-const ERROR_MESSAGES: Record<string, string> = {
-  missing_fields: "Please fill in all required fields.",
-  password_too_short: "New password must be at least 8 characters.",
-  password_mismatch: "New password and confirmation don't match.",
-  wrong_password: "Current password is incorrect.",
-};
-
 export default async function SettingsPage({
   searchParams,
 }: {
@@ -48,7 +41,7 @@ export default async function SettingsPage({
     <>
       <PageHeader title="Settings" subtitle="Manage your personal preferences and account security." />
 
-      <StatusBanner error={p.error ? ERROR_MESSAGES[p.error] ?? p.error : undefined} success={p.success} />
+      <StatusBanner error={p.error} success={p.success} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 900 }}>
         <SettingsSection title="Profile">
