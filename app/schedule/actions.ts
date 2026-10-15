@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { notifyUser } from "@/lib/notifications";
+import { sessionStartAt } from "@/lib/academyTime";
 
 // Pushes an in-app notification (and push if subscribed) to every coach
 // whose userId we can look up from their Coach row. Best-effort: a
@@ -280,7 +281,7 @@ export async function attachSessionPlan(scheduledSessionId: string, formData: Fo
   });
   if (!scheduledSession) redirect("/schedule");
 
-  const endTime = sessionEnd(scheduledSession);
+  const endTime = await sessionEnd(scheduledSession);
   if (new Date() > new Date(endTime.getTime() + 72 * 60 * 60 * 1000)) {
     redirect("/schedule?error=attach_window_closed");
   }
@@ -314,7 +315,7 @@ export async function detachSessionPlan(scheduledSessionId: string) {
   });
   if (!scheduledSession || !scheduledSession.sessionId) redirect("/schedule");
 
-  const endTime = sessionEnd(scheduledSession);
+  const endTime = await sessionEnd(scheduledSession);
   if (new Date() > new Date(endTime.getTime() + 72 * 60 * 60 * 1000)) {
     redirect("/schedule?error=attach_window_closed");
   }
@@ -329,6 +330,7 @@ export async function detachSessionPlan(scheduledSessionId: string) {
   redirect("/schedule?success=Session plan removed.");
 }
 
-function sessionEnd(s: { date: Date; startTime: string; durationMinutes: number; timeZone?: string }): Date {
-  return sessionEnd(s);
+async function sessionEnd(s: { date: Date; startTime: string; durationMinutes: number }): Promise<Date> {
+  const start = await sessionStartAt(s);
+  return new Date(start.getTime() + s.durationMinutes * 60 * 1000);
 }

@@ -8,12 +8,10 @@
 
 import { prisma } from "./prisma";
 import type { Permissions } from "./permissions";
+import { sessionStartInstant } from "./time";
 
-export function sessionStart(session: { date: Date; startTime: string }): Date {
-  const [h, m] = session.startTime.split(":").map(Number);
-  const start = new Date(session.date);
-  start.setHours(h, m, 0, 0);
-  return start;
+export function sessionStart(session: { date: Date; startTime: string }, timeZone: string): Date {
+  return sessionStartInstant(session.date, session.startTime, timeZone);
 }
 
 // The confirmation/priority window edges, shared by every reader of these
@@ -85,7 +83,7 @@ export async function getMyConfirmations(perms: Permissions): Promise<MyConfirma
       ageGroupName: r.scheduledSession.ageGroup.name,
       locationName: r.scheduledSession.location.name,
     },
-    priority: sessionStart(r.scheduledSession) <= priorityEnd,
+    priority: sessionStart(r.scheduledSession, settings.timeZone || "UTC") <= priorityEnd,
   }));
 }
 
@@ -212,7 +210,7 @@ export async function getConfirmationsNeedingReminder(): Promise<ReminderTarget[
   return rows.map((r) => ({
     confirmationId: r.id,
     userId: r.coach.userId,
-    priority: sessionStart(r.scheduledSession) <= priorityEnd,
+    priority: sessionStart(r.scheduledSession, settings.timeZone || "UTC") <= priorityEnd,
     session: {
       id: r.scheduledSession.id,
       date: r.scheduledSession.date,

@@ -9,6 +9,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
+import { getAcademyTimeZone } from "@/lib/academyTime";
+import { sessionStartInstant, startOfTodayInZone } from "@/lib/time";
 import {
   submitAttendance,
   approveAttendanceRequest,
@@ -26,13 +28,6 @@ function endTime(time: string, durationMinutes: number): string {
   return `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
 }
 
-function sessionStart(date: Date, startTime: string): Date {
-  const [h, m] = startTime.split(":").map(Number);
-  const start = new Date(date);
-  start.setHours(h, m, 0, 0);
-  return start;
-}
-
 export default async function AttendancePage({
   searchParams,
 }: {
@@ -44,14 +39,16 @@ export default async function AttendancePage({
 
   const range = params.range === "term" ? "term" : "month";
   const now = new Date();
+  const tz = await getAcademyTimeZone();
+  const todayLocal = startOfTodayInZone(tz);
   const rangeStart =
     range === "term"
-      ? new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-      : new Date(now.getFullYear(), now.getMonth(), 1);
+      ? new Date(todayLocal.getTime() - 90 * 24 * 60 * 60 * 1000)
+      : new Date(Date.UTC(todayLocal.getUTCFullYear(), todayLocal.getUTCMonth(), 1));
 
   const [sessions, pendingRequests, rosterPlayers] = await Promise.all([
     prisma.scheduledSession.findMany({
-      where: { date: { lte: now }, status: { not: "cancelled" }, resolvedAt: null },
+      where: { date: { lte: todayLocal }, status: { not: "cancelled" }, resolvedAt: null },
       include: {
         ageGroup: true,
         location: true,
@@ -165,7 +162,9 @@ export default async function AttendancePage({
             const requests = requestsBySession.get(s.id);
             const marked = new Set(s.playerAttendance.filter((p) => p.status === "ATTENDED" || p.status === "ABSENT").map((p) => p.playerId));
             const selfCheckIn = s.coachAttendance.find((c) => c.coachId === coachId);
-            const started = coachId ? new Date() >= sessionStart(s.date, s.startTime) : false;
+            const startInstant = sessionStartInstant(s.date, s.startTime, tz);
+            const opened = now >= startInstant;
+            const started = coachId ? opened : false;
 
             return (
               <details key={s.id} className="session-details">
@@ -200,7 +199,7 @@ export default async function AttendancePage({
                       <Icon name="whistle" size={14} style={{ verticalAlign: "-2px", marginRight: 6, color: "var(--secondary)" }} />
                       Coach check-in:{" "}
                       {selfCheckIn?.status === "CHECKED_IN" ? (
-                        <strong style={{ color: "var(--success)" }}>Checked in at {selfCheckIn.confirmedAt?.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) || "—"}</strong>
+                        <strong style={{ color: "var(--success)" }}>Checked in at {selfCheckIn.confirmedAt?.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", timeZone: tz }) || "—"}</strong>
                       ) : selfCheckIn?.status === "ABSENT" ? (
                         <strong style={{ color: "var(--error)" }}>Marked absent</strong>
                       ) : (
@@ -267,7 +266,12 @@ export default async function AttendancePage({
                 )}
 
                 {/* Marking form */}
-                {canMark(s) && players.length > 0 && (
+                {canMark(s) && players.length > 0 && !opened && (
+                  <div style={{ marginTop: 16, padding: "10px 12px", background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 13, color: "var(--text-muted)" }}>
+                    Attendance opens when the session starts at {s.startTime}.
+                  </div>
+                )}
+                {canMark(s) && players.length > 0 && opened && (
                   <form action={submitAttendance} style={{ marginTop: 16 }}>
                     <input type="hidden" name="scheduledSessionId" value={s.id} />
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

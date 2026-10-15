@@ -9,18 +9,14 @@ import { logActivity } from "@/lib/logActivity";
 import { notifyApprovers } from "@/lib/notifyApprovers";
 import { notifyUser } from "@/lib/notifications";
 import { safeEqual } from "@/lib/safeEqual";
-import { sessionStartInstant } from "@/lib/time";
+import { sessionStartAt } from "@/lib/academyTime";
 import { PlayerAttendanceStatus, CoachAttendanceStatus } from "@prisma/client";
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
-// Timezone-aware session start.
-// Reads the academy's timeZone from AcademySettings; falls back to UTC.
-async function sessionStart(
-  session: { date: Date; startTime: string; timeZone?: string }
-): Promise<Date> {
-  const timeZone = session.timeZone || "UTC";
-  return sessionStartInstant(session.date, session.startTime, timeZone);
+// Session start in the academy time zone (Club Settings).
+async function sessionStart(session: { date: Date; startTime: string }): Promise<Date> {
+  return sessionStartAt(session);
 }
 
 // Timezone-aware session deadline: 6 hours before session start.
@@ -58,6 +54,7 @@ export async function submitAttendance(formData: FormData) {
   });
   if (!session) redirect("/attendance");
   if (session.resolvedAt) redirect("/attendance?error=already_resolved");
+  if (new Date() < await sessionStart(session)) redirect("/attendance?error=attendance_not_open");
 
   const roster = await prisma.player.findMany({ where: sessionRosterWhere(session), select: { id: true } });
   const validIds = new Set(roster.map(player => player.id));

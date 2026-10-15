@@ -11,12 +11,11 @@ import { CoachDashboardClient } from "./CoachDashboardClient";
 import type { DashboardScope } from "@/lib/assignments";
 import type { Permissions } from "@/lib/permissions";
 import { BroadcastsSection } from "./BroadcastsSection";
+import { getAcademyTimeZone } from "@/lib/academyTime";
+import { sessionStartInstant, startOfTodayInZone } from "@/lib/time";
 
-function sessionStart(date: Date, startTime: string): Date {
-  const [h, m] = startTime.split(":").map(Number);
-  const d = new Date(date);
-  d.setHours(h, m, 0, 0);
-  return d;
+function sessionStart(date: Date, startTime: string, timeZone: string): Date {
+  return sessionStartInstant(date, startTime, timeZone);
 }
 
 export async function CoachDashboard({
@@ -33,8 +32,8 @@ export async function CoachDashboard({
   academyName: string;
 }) {
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
+  const tz = await getAcademyTimeZone();
+  const todayStart = startOfTodayInZone(tz);
 
   const activeTeam = scope.teams.find((t) => t.id === team) ?? null;
 
@@ -108,9 +107,9 @@ export async function CoachDashboard({
   const attendanceRate = monthAttendance.length > 0 ? Math.round((attended / monthAttendance.length) * 100) : 0;
 
   const todaysSessions = mySessions.filter(
-    (s) => sessionStart(s.date, s.startTime) >= todayStart && s.date < new Date(todayStart.getTime() + 86400000)
+    (s) => sessionStart(s.date, s.startTime, tz) >= todayStart && s.date < new Date(todayStart.getTime() + 86400000)
   );
-  const nextSession = mySessions.find((s) => sessionStart(s.date, s.startTime) > now) ?? todaysSessions[0] ?? null;
+  const nextSession = mySessions.find((s) => sessionStart(s.date, s.startTime, tz) > now) ?? todaysSessions[0] ?? null;
   const priority = todaysSessions[0] ?? nextSession;
 
   const cardStyle: React.CSSProperties = {

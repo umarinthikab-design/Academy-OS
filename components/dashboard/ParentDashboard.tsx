@@ -10,11 +10,11 @@ import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { DashboardScope } from "@/lib/assignments";
 import { BroadcastsSection } from "./BroadcastsSection";
+import { todayStartAt } from "@/lib/academyTime";
 
 export async function ParentDashboard({ scope, userName, academyName }: { scope: DashboardScope; userName: string; academyName: string }) {
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = await todayStartAt();
 
   const children = await prisma.player.findMany({
     where: { id: { in: scope.parentPlayerIds } },

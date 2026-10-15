@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { parseCalendarDate } from "@/lib/ageGroupRules";
-import { startOfTodayInZone } from "@/lib/time";
+import { sessionStartInstant, startOfTodayInZone } from "@/lib/time";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
 import { createScheduledSession, deleteScheduledSession, updateScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
@@ -83,9 +83,7 @@ export default async function SchedulePage({
 
   const SIXTY_TWO_MS = 72 * 60 * 60 * 1000;
   const inAttachWindow = (s: (typeof sessions)[number]) => {
-    const [h, m] = s.startTime.split(":").map(Number);
-    const start = new Date(s.date);
-    start.setHours(h, m, 0, 0);
+    const start = sessionStartInstant(s.date, s.startTime, settings?.timeZone ?? "UTC");
     const end = new Date(start.getTime() + s.durationMinutes * 60 * 1000);
     return new Date().getTime() <= end.getTime() + SIXTY_TWO_MS;
   };

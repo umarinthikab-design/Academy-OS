@@ -20,6 +20,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   missing_fields: "Please fill in all required fields.",
   already_resolved: "This session's attendance is already finalized.",
   not_started: "This session hasn't started yet - you can't check in early.",
+  attendance_not_open: "Attendance can be marked once the session has started.",
   already_shared: "This session plan is already shared or has a share request in flight.",
   attach_window_closed: "The 72-hour window to attach or edit a session plan has closed.",
   account_archived: "This account has been deactivated - contact your administrator.",

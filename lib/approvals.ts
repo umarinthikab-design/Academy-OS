@@ -19,6 +19,7 @@ import { notifyUser } from "./notifications";
 import { PlayerAttendanceStatus } from "@prisma/client";
 import type { Permissions } from "./permissions";
 import type { RequestType } from "@prisma/client";
+import { sessionStartAt } from "./academyTime";
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 
@@ -38,15 +39,9 @@ export function requestCategory(type: RequestType): string {
   return cat?.label ?? type;
 }
 
-function sessionStart(session: { date: Date; startTime: string }): Date {
-  const [h, m] = session.startTime.split(":").map(Number);
-  const start = new Date(session.date);
-  start.setHours(h, m, 0, 0);
-  return start;
-}
-
-function sessionDeadline(session: { date: Date; startTime: string }): Date {
-  return new Date(sessionStart(session).getTime() - SIX_HOURS_MS);
+// Deadline = 6 hours before the session starts, in the academy time zone.
+async function sessionDeadline(session: { date: Date; startTime: string }): Promise<Date> {
+  return new Date((await sessionStartAt(session)).getTime() - SIX_HOURS_MS);
 }
 
 export type InboxRequest = {
@@ -356,7 +351,7 @@ export async function applyDecision(
   if (request.type === "ATTENDANCE_CONFIRM" && session) {
     if (approve) {
       const payload = request.payload as { statuses?: { playerId: string; status: string }[] };
-      const deadline = sessionDeadline(session);
+      const deadline = await sessionDeadline(session);
       for (const { playerId, status: s } of payload.statuses ?? []) {
         await prisma.playerAttendance.upsert({
           where: { playerId_scheduledSessionId: { playerId, scheduledSessionId: session.id } },

@@ -15,6 +15,7 @@ import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { Permissions } from "@/lib/permissions";
 import { BroadcastsSection } from "./BroadcastsSection";
+import { todayStartAt } from "@/lib/academyTime";
 
 // Small fixed palette for the Club Overview age-group card accents. Assigned
 // by index so it's deterministic with no extra configuration.
@@ -22,8 +23,7 @@ const AGE_GROUP_COLORS = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed",
 
 export async function AdminDashboard({ perms, userName, academyName }: { perms: Permissions; userName: string; academyName: string }) {
   const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = await todayStartAt();
 
   const [playerCount, coachCount, squadCount, locationCount, todaysSessions, upcomingSessions, monthAttendance, recentLogs, ageGroups] =
     await Promise.all([
