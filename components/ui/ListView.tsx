@@ -20,7 +20,7 @@ export function ListView({ storageKey, children }: { storageKey: string; childre
         <Button type="button" size="sm" variant={view === "tiles" ? "approval" : "outline"} aria-pressed={view === "tiles"} onClick={() => choose("tiles")}>Tiles</Button>
         <Button type="button" size="sm" variant={view === "list" ? "approval" : "outline"} aria-pressed={view === "list"} onClick={() => choose("list")}>List</Button>
       </div>
-      <div className={view === "tiles" ? "compact-grid" : undefined} style={view === "list" ? { display: "flex", flexDirection: "column", gap: 10 } : undefined}>{children}</div>
+      <div className={view === "tiles" ? "compact-grid" : "list-stack"} style={view === "list" ? { display: "flex", flexDirection: "column", gap: 10 } : undefined}>{children}</div>
     </div>
   );
 }

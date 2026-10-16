@@ -106,8 +106,7 @@ export function PlayerRatingCard({
               type="button"
               onClick={() => onSkillClick(skillName, n)}
               style={{
-                width: 32,
-                height: 20,
+                flex: 1, minWidth: 0, height: 20,
                 border: "none",
                 borderRadius: 4,
                 cursor: "pointer",
@@ -119,8 +118,7 @@ export function PlayerRatingCard({
             <div
               key={n}
               style={{
-                width: 32,
-                height: 20,
+                flex: 1, minWidth: 0, height: 20,
                 borderRadius: 4,
                 background: n <= current ? "var(--turf)" : "var(--border)",
               }}
@@ -194,7 +192,7 @@ export function PlayerRatingCard({
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0 12px" }}>
           {visibleSkills.map((s, i) => skillBar(s.skillName, s.value, visibleSkills.length % 2 === 1 && i === visibleSkills.length - 1))}
           {visibleSkills.length === 0 && <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No skills selected.</div>}
         </div>

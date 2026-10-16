@@ -1,0 +1,528 @@
+﻿gather14
+
+===== components\PlayerRatingCard.tsx =====
+"use client";
+
+import { Button } from "@/components/ui/Button";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { PLAYER_POSITIONS, calculateAge, getSkillBandForAge, type SkillBand } from "@/lib/skills";
+import { updateSkill, updatePlayerPosition, updatePlayerSkills } from "@/app/squad/actions";
+
+type SkillRow = { skillName: string; value: number; active: boolean };
+
+// The rating block on each squad card (and used by the player detail page):
+// position selector, the 1-5 bars for active skills in a 2-column grid, the
+// average rating, and an "edit / customize skills" toggle that shows a
+// checklist of every skill in the taxonomy grouped by age band.
+//
+// This is a client component, so it can't hit the database itself - the
+// skill taxonomy (admin-managed via SkillDefinition) is fetched server-side
+// by the page that renders this card and passed down as `skillBands`.
+export function PlayerRatingCard({
+  playerId,
+  dateOfBirth,
+  position,
+  skills,
+  canEdit,
+  skillBands,
+}: {
+  playerId: string;
+  dateOfBirth: string;
+  position: string;
+  skills: SkillRow[];
+  canEdit: boolean;
+  skillBands: SkillBand[];
+}) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [customizing, setCustomizing] = useState(false);
+  const [draft, setDraft] = useState<string[]>([]);
+
+  const age = calculateAge(new Date(dateOfBirth));
+  const band = getSkillBandForAge(skillBands, age);
+  const allSkillNames = [...new Set(skillBands.flatMap((b) => b.skills))];
+
+  const activeSkills = skills.filter((s) => s.active);
+  // Legacy players (created before the taxonomy) may have no rows for their
+  // age band - fall back to the band's skills so the card is never empty.
+  const visibleSkills =
+    (activeSkills.length > 0 ? activeSkills : band.skills.map((skillName) => ({ skillName, value: 0, active: true })))
+      // Stable display order regardless of DB row order. The skills include
+      // has no ORDER BY, so a skill upsert can silently reshuffle the rows on
+      // refresh; sorting by the taxonomy keeps the bars in a fixed position.
+      // Unknown/legacy skill names go last so they never jump to the front.
+      .slice()
+      .sort((a, b) => {
+        const ia = allSkillNames.indexOf(a.skillName);
+        const ib = allSkillNames.indexOf(b.skillName);
+        if (ia === -1 && ib === -1) return 0;
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+
+  const rated = visibleSkills.filter((s) => s.value > 0);
+  const average = rated.length ? rated.reduce((sum, s) => sum + s.value, 0) / rated.length : 0;
+
+  const openCustomize = () => {
+    setDraft(activeSkills.length > 0 ? activeSkills.map((s) => s.skillName) : band.skills);
+    setCustomizing(true);
+  };
+
+  const saveCustomize = () => {
+    startTransition(async () => {
+      await updatePlayerSkills(playerId, draft);
+      setCustomizing(false);
+      router.refresh();
+    });
+  };
+
+  const toggleDraft = (skillName: string) => {
+    setDraft((prev) => (prev.includes(skillName) ? prev.filter((s) => s !== skillName) : [...prev, skillName]));
+  };
+
+  const onPosition = (value: string) => {
+    startTransition(async () => {
+      await updatePlayerPosition(playerId, value);
+      router.refresh();
+    });
+  };
+
+  const onSkillClick = (skillName: string, value: number) => {
+    startTransition(async () => {
+      await updateSkill(playerId, skillName, value);
+      router.refresh();
+    });
+  };
+
+  const skillBar = (skillName: string, current: number, fullWidth: boolean) => (
+    <div key={skillName} style={fullWidth ? { gridColumn: "1 / -1", marginBottom: 4 } : { marginBottom: 4 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", marginBottom: 2 }}>
+        {skillName} â€” {current}/5
+      </div>
+      <div style={{ display: "flex", gap: 3 }}>
+        {[1, 2, 3, 4, 5].map((n) =>
+          canEdit ? (
+            <button className="ui-hover"
+              key={n}
+              type="button"
+              onClick={() => onSkillClick(skillName, n)}
+              style={{
+                width: 32,
+                height: 20,
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+                background: n <= current ? "var(--turf)" : "var(--border)",
+              }}
+              aria-label={`Set ${skillName} to ${n}`}
+            />
+          ) : (
+            <div
+              key={n}
+              style={{
+                width: 32,
+                height: 20,
+                borderRadius: 4,
+                background: n <= current ? "var(--turf)" : "var(--border)",
+              }}
+            />
+          )
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)" }}>Position</label>
+          {canEdit ? (
+            <select
+              value={position}
+              disabled={pending}
+              onChange={(e) => onPosition(e.target.value)}
+              style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--surface)", color: "var(--text)" }}
+            >
+              {PLAYER_POSITIONS.map((pos) => (
+                <option key={pos} value={pos}>
+                  {pos}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{position}</span>
+          )}
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--pitch)" }}>
+          Average <span style={{ color: "var(--turf)" }}>{average > 0 ? average.toFixed(1) : "â€”"}</span>
+          {average > 0 && <span style={{ color: "var(--text-muted)", fontWeight: 500 }}> / 5</span>}
+        </div>
+        {canEdit && !customizing && (
+          <Button variant="outline" size="sm" type="button" onClick={openCustomize} style={{ color: "var(--turf)", borderColor: "var(--turf)" }}>Edit / Customize Skills</Button>
+        )}
+      </div>
+
+      {customizing ? (
+        <div style={{ border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--surface-muted)" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--text)" }}>
+            Select skills to show for this player
+            <span style={{ fontWeight: 500, color: "var(--text-faint)" }}> â€” age band: {band.ageLabel} {band.label}</span>
+          </div>
+          {skillBands.map((b) => (
+            <div key={b.label} style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                {b.ageLabel} Â· {b.label}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {b.skills.map((skillName) => (
+                  <label key={skillName} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer", padding: "3px 8px", borderRadius: 6, background: draft.includes(skillName) ? "var(--turf)" : "var(--surface)", color: draft.includes(skillName) ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>
+                    <input
+                      type="checkbox"
+                      checked={draft.includes(skillName)}
+                      onChange={() => toggleDraft(skillName)}
+                      style={{ display: "none" }}
+                    />
+                    {skillName}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <Button size="sm" type="button" onClick={saveCustomize} disabled={pending}>{pending ? "Saving..." : "Save skills"}</Button>
+            <Button variant="outline" size="sm" type="button" onClick={() => setCustomizing(false)} style={{ color: "var(--text-muted)" }}>Cancel</Button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
+          {visibleSkills.map((s, i) => skillBar(s.skillName, s.value, visibleSkills.length % 2 === 1 && i === visibleSkills.length - 1))}
+          {visibleSkills.length === 0 && <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No skills selected.</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+===== components\ui\EntityHero.tsx =====
+// EntityHero - avatar + name/heading + badge row used on entity cards and
+// pages (squad list, player detail, coaches). Centralizes the alignment fix:
+// Badge pills have 9px horizontal padding, which shoves a badge row's text
+// ~9px right of a flush heading above it. The badge row gets a -9px left
+// margin so the first pill's text lines up with the heading.
+
+import { Avatar } from "./Avatar";
+import Link from "next/link";
+
+export function EntityHero({
+  name,
+  src,
+  size = 42,
+  href,
+  heading,
+  subtitle,
+  badges,
+  actions,
+  badgeRowStyle,
+}: {
+  name: string;
+  src?: string | null;
+  size?: number;
+  href?: string;
+  heading?: React.ReactNode;
+  subtitle?: React.ReactNode;
+  badges?: React.ReactNode;
+  actions?: React.ReactNode;
+  badgeRowStyle?: React.CSSProperties;
+}) {
+  const title =
+    heading ??
+    (href ? (
+      <Link className="text-link" href={href} style={{ fontSize: 16, fontWeight: 800, color: "var(--text-heading)", textDecoration: "none" }}>
+        {name}
+      </Link>
+    ) : (
+      <span style={{ fontSize: 16, fontWeight: 800 }}>{name}</span>
+    ));
+
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, minWidth: 0, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+        <Avatar name={name} src={src} size={size} />
+        <div style={{ minWidth: 0 }}>
+          {title}
+          {badges && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginTop: 3,
+                marginLeft: -9,
+                flexWrap: "wrap",
+                ...badgeRowStyle,
+              }}
+            >
+              {badges}
+            </div>
+          )}
+          {subtitle}
+        </div>
+      </div>
+      {actions && <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>{actions}</div>}
+    </div>
+  );
+}
+
+===== components\dashboard\DashboardHero.tsx =====
+// DashboardHero - the pitch-themed greeting banner used by every role
+// dashboard. Subtitle is role-specific; the markup stays consistent.
+
+import { getAcademyTimeZone } from "@/lib/academyTime";
+import { Icon } from "@/components/ui/Icon";
+
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+export async function DashboardHero({
+  name,
+  subtitle,
+  actions,
+}: {
+  name: string;
+  subtitle: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
+  const academyTz = await getAcademyTimeZone();
+  return (
+    <section
+      style={{
+        borderRadius: "var(--radius-lg)",
+        background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, #155e3b 100%)",
+        color: "#fff",
+        padding: "28px 30px",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "var(--shadow-md)",
+      }}
+    >
+      {/* Subtle pitch markings */}
+      <div style={{ position: "absolute", inset: 0, opacity: 0.08, backgroundImage: "repeating-linear-gradient(90deg, transparent 0 90px, rgba(255,255,255,1) 90px 91px)" }} />
+      <div style={{ position: "absolute", right: -40, bottom: -70, width: 260, height: 260, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.18)" }} />
+      <div style={{ position: "absolute", right: 30, bottom: 0, width: 160, height: 160, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.14)" }} />
+
+      <div style={{ position: "relative" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.7, color: "#fff" }}>
+          {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", timeZone: academyTz })}
+        </div>
+        <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 6px", color: "#fff" }}>
+          {greeting()}, {name.split(" ")[0]}.
+        </h1>
+        {subtitle && <p style={{ margin: 0, fontSize: 15, opacity: 0.85, maxWidth: 560, color: "#fff" }}>{subtitle}</p>}
+        {actions && <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>{actions}</div>}
+      </div>
+    </section>
+  );
+}
+
+export { greeting };
+
+===== components\ui\Badge.tsx =====
+// Badge - small status/label pill. `tone` maps to a soft background + strong
+// text pair that stays readable. Used for statuses, categories, and tags.
+
+import type { CSSProperties } from "react";
+
+const TONES: Record<string, { bg: string; fg: string; border?: string }> = {
+  primary: { bg: "var(--success-bg)", fg: "var(--primary)" },
+  green: { bg: "var(--success-bg)", fg: "var(--secondary)" },
+  accent: { bg: "#f4fae3", fg: "#4d7c0f", border: "1px solid #d9f99d" },
+  warning: { bg: "var(--warning-bg)", fg: "#92400e", border: "1px solid #fde68a" },
+  error: { bg: "var(--error-bg)", fg: "#b91c1c" },
+  muted: { bg: "var(--surface-muted)", fg: "var(--text-muted)" },
+  blue: { bg: "var(--info-bg)", fg: "#1d4ed8" },
+};
+
+export function Badge({
+  children,
+  tone = "muted",
+  style,
+}: {
+  children: React.ReactNode;
+  tone?: keyof typeof TONES | string;
+  style?: CSSProperties;
+}) {
+  const t = TONES[tone] ?? TONES.muted;
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        fontSize: 13,
+        fontWeight: 700,
+        lineHeight: 1,
+        padding: "4px 9px",
+        borderRadius: "var(--radius-pill)",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+        ...t,
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+===== components\ui\SessionCard.tsx =====
+// SessionCard - football-event style card for scheduled sessions. Used on the
+// Schedule and Attendance pages. All props are plain data; the page passes in
+// any action forms as `footer` or via `actions`.
+
+import { Icon } from "./Icon";
+
+export function endTime(time: string, durationMinutes: number): string {
+  const [h, m] = time.split(":").map(Number);
+  const total = h * 60 + m + durationMinutes;
+  return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
+export function SessionCard({
+  date,
+  startTime,
+  durationMinutes,
+  ageGroupName,
+  locationName,
+  headCoaches,
+  assistantCoaches,
+  badge,
+  status,
+  actions,
+  footer,
+  onEdit,
+}: {
+  date: Date;
+  startTime: string;
+  durationMinutes: number;
+  ageGroupName: string;
+  locationName: string;
+  headCoaches: string[];
+  assistantCoaches: string[];
+  badge?: React.ReactNode;
+  status?: string;
+  actions?: React.ReactNode;
+  footer?: React.ReactNode;
+  onEdit?: () => void;
+}) {
+  const weekday = date.toLocaleDateString(undefined, { weekday: "long", timeZone: "UTC" });
+  const dateStr = date.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+
+  return (
+    <div
+      style={{
+        background: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius)",
+        padding: "16px 18px",
+        boxShadow: "var(--shadow-sm)",
+        transition: "box-shadow var(--transition), transform var(--transition)",
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 14, minWidth: 0 }}>
+          <div
+            style={{
+              width: 54,
+              height: 54,
+              borderRadius: 14,
+              background: "var(--primary)",
+              color: "#fff",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>{weekday.slice(0, 3)}</span>
+            <span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.15 }}>{date.getDate()}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.75, lineHeight: 1 }}>{dateStr}</span>
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 15, fontWeight: 800 }}>{ageGroupName}</span>
+              {badge}
+            </div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+              {startTime}â€“{endTime(startTime, durationMinutes)}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)" }}>
+                <Icon name="pin" size={13} style={{ color: "var(--text-faint)" }} /> {locationName}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)" }}>
+                <Icon name="whistle" size={13} style={{ color: "var(--text-faint)" }} />
+                {headCoaches.join(", ") || "â€”"}
+                {assistantCoaches.length > 0 && ` Â· + ${assistantCoaches.length} asst.`}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          {status && (
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                padding: "4px 10px",
+                borderRadius: 20,
+                background: status === "cancelled" ? "var(--error-bg)" : status === "completed" ? "var(--success-bg)" : "var(--surface-muted)",
+                color: status === "cancelled" ? "var(--error)" : status === "completed" ? "var(--success)" : "var(--text-muted)",
+              }}
+            >
+              {status}
+            </span>
+          )}
+          {actions}
+        </div>
+      </div>
+
+      {footer && <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>{footer}</div>}
+    </div>
+  );
+}
+
+===== SCAN: dark backgrounds =====
+\app\attendance\page.tsx:156: const btnPrimary: React.CSSProperties = { padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all var(--transition)", boxShadow: "var(--shadow-sm)" };
+\app\coaches\page.tsx:274: background: "var(--primary)",
+\app\coaches\page.tsx:353: background: "var(--primary)",
+\app\drills\page.tsx:307: background: "var(--primary)",
+\app\login\page.tsx:46: background: "var(--primary-container)",
+\app\login\page.tsx:86: background: "var(--primary-container)",
+\app\schedule\history\page.tsx:42: style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", background: "var(--primary)", color: "#fff", borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: "none" }}
+\app\schedule\page.tsx:92: const smallBtn: React.CSSProperties = { padding: "6px 12px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" };
+\components\dashboard\AdminDashboard.tsx:115: <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--primary)", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+\components\dashboard\AdminDashboard.tsx:167: <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--primary)", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+\components\dashboard\ApprovalInbox.tsx:90: background: "var(--primary)",
+\components\dashboard\CoachDashboard.tsx:390: background: "var(--primary)",
+\components\dashboard\CoachDashboardClient.tsx:92: background: "var(--primary)",
+\components\dashboard\ParentDashboard.tsx:82: <div style={{ width: 48, height: 48, borderRadius: "50%", background: "var(--primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
+\components\ui\Avatar.tsx:38: background: "var(--primary)",
+\components\ui\SessionCard.tsx:61: background: "var(--primary)",
+\components\InstallPrompt.tsx:100: background: "var(--primary)",
+
+===== SCAN: fixed-column grids =====
+\app\attendance\page.tsx:414: <div className="rollup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 16 }}>
+\app\squad\[id]\page.tsx:126: <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+\app\squad\[id]\page.tsx:250: <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 13 }} className="form-grid-2col">
+\components\dashboard\CoachDashboard.tsx:243: gridTemplateColumns: "repeat(2, 1fr)",
+\components\PlayerRatingCard.tsx:197: <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>

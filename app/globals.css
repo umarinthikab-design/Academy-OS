@@ -531,3 +531,28 @@ input::placeholder, textarea::placeholder { color: var(--text-faint); opacity: 1
 @media (max-width: 900px) {
   .squad-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* list-stack */
+/* List view: every row stretches to full width and reads as one line. */
+.list-stack { display: flex; flex-direction: column; gap: 10px; }
+.list-stack > .session-details { align-self: stretch; width: 100%; }
+@media (min-width: 641px) {
+  .list-stack > .session-details > summary {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr) minmax(0, 1.5fr) auto;
+    align-items: center;
+    column-gap: 16px;
+    list-style: none;
+  }
+  .list-stack > .session-details > summary::-webkit-details-marker { display: none; }
+  .list-stack > .session-details > summary > * { margin: 0 !important; min-width: 0; }
+  .list-stack > .session-details > summary::after { content: "\25B8"; color: var(--text-muted); transition: transform var(--transition); }
+  .list-stack > .session-details[open] > summary::after { transform: rotate(90deg); }
+}
+
+/* Mobile top bar: the bar is always dark green, so its text and icons are
+   always light, in both themes. */
+.mobile-topbar,
+.mobile-topbar a,
+.mobile-topbar button { color: #ffffff !important; }
+.mobile-topbar button { position: relative; }

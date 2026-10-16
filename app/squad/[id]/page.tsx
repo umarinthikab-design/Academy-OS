@@ -123,7 +123,7 @@ export default async function PlayerDetailPage({
               <Badge key={b.id} tone="blue">{b.name}</Badge>
             ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 130px), 1fr))", gap: 16, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
             <div>
               <div style={labelCaps}>Position</div>
               <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "var(--font-headline)", color: "var(--text)" }}>{player.position}</div>

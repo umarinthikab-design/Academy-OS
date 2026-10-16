@@ -1,0 +1,2186 @@
+﻿gather13
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\app\globals.css =====
+/* Touchline design system â€” mapped from the Stitch export (touchline/DESIGN.md).
+   Tokens live here; pages/components reference these variables so the whole
+   app shares one visual language. Keep legacy aliases (--pitch, --turf,
+   --chalk, --amber, --clay) so nothing breaks mid-migration. */
+
+:root {
+  /* Brand â€” Deep Pitch Green primary, Live Grass secondary, Chalk/Lime accent */
+  --primary: #00261b;
+  --primary-dark: #00150f;
+  --primary-light: #214f3f;
+  --primary-container: #0b3d2e;
+  --secondary: #006e2d;
+  --accent: #b2f746;
+
+  /* Surfaces â€” Chalk white background, tonal containers (Level 0 â†’ 4) */
+  --bg: #f1fcf6;
+  --surface: #ffffff;
+  --surface-muted: #ebf6f1;
+  --surface-container: #e5f1eb;
+  --surface-high: #dfebe5;
+  --surface-highest: #dae5e0;
+
+  /* Text */
+  --text: #141e1a;
+  --text-muted: #414944;
+  --text-faint: #48505c; /* light theme */
+  --text-heading: var(--primary);
+  --text-brand: var(--primary-container);
+  --btn-primary-bg: var(--primary);
+  --btn-primary-text: #ffffff;
+
+  /* Lines & states â€” "chalk lines" plus yellow/red card status colors */
+  --border: #c0c8c3;
+  --surface-tint: #396756;
+  --primary-fixed-dim: #a0d1bc;
+  --secondary-fixed: #7ffc97;
+  --secondary-fixed-dim: #62df7d;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --error: #ef4444;
+  --error-bg: #fee2e2;
+  --success: #22c55e;
+  --success-bg: #dcfce7;
+  --info-bg: #eff6ff;
+
+  /* Pitch-line watermark strokes (login/hero surfaces only) */
+  --pitch-line: #e2e8f0;
+
+  /* Legacy aliases */
+  --pitch: var(--primary);
+  --turf: var(--secondary);
+  --chalk: var(--bg);
+  --amber: var(--warning);
+  --clay: var(--error);
+
+  /* Typography â€” Archivo Narrow headlines, Inter body/data (next/font) */
+  --font-headline: var(--font-archivo-narrow), "Arial Narrow", sans-serif;
+  --font-body: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  --font-mono-label: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, monospace;
+
+  /* Radius â€” soft-modular: cards 16px, inputs/buttons 8px, badges pill */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Shadows â€” tonal layers first; diffused shadow only for floating UI */
+  --shadow-sm: 0 1px 2px rgba(6, 39, 30, 0.06);
+  --shadow: 0 1px 3px rgba(6, 39, 30, 0.08), 0 1px 2px rgba(6, 39, 30, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(6, 39, 30, 0.12), 0 2px 4px -2px rgba(6, 39, 30, 0.08);
+  --shadow-lg: 0 12px 32px -8px rgba(6, 39, 30, 0.2);
+
+  /* Motion */
+  --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* â”€â”€ Sidebar tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Light-mode defaults under :root; dark-mode overrides under
+   :root[data-theme="dark"]. Active element uses --secondary (dark)
+   or var(--secondary-fixed) (light hover bar). Inactive/inert text
+   uses --text-muted / --primary-fixed-dim. */
+
+/* Light sidebar tokens */
+:root {
+  --sidebar-bg: var(--surface);
+  --sidebar-border: var(--border);
+  --sidebar-text: var(--text-muted);
+  --sidebar-text-strong: var(--text);
+  --sidebar-hover-bg: var(--surface-muted);
+  --sidebar-active-bg: var(--surface-container);
+  --sidebar-active-text: var(--primary-container);
+  --sidebar-active-bar: var(--secondary);
+  --sidebar-logo-bg: var(--surface-container);
+  --sidebar-logo-icon: var(--secondary);
+}
+
+/* Dark sidebar tokens â€” reproduce TODAY's deep-pitch look exactly */
+:root[data-theme="dark"] {
+  --sidebar-bg: var(--primary);
+  --sidebar-border: var(--primary-container);
+  --sidebar-text: var(--primary-fixed-dim);
+  --sidebar-text-strong: var(--text);
+  --sidebar-hover-bg: #053224;
+  --sidebar-active-bg: var(--primary-container);
+  --sidebar-active-text: var(--secondary-fixed);
+  --sidebar-active-bar: var(--secondary-fixed);
+  --sidebar-logo-bg: var(--primary-container);
+  --sidebar-logo-icon: var(--secondary-fixed);
+  --primary: #00261b;
+  --primary-dark: #000f0a;
+  --primary-light: #3b9469;
+  --primary-container: #0b3d2e;
+  --secondary: #62df7d;
+  --accent: #b2f746;
+
+  --bg: #0b1410;
+  --surface: #132019;
+  --surface-muted: #1a2a21;
+  --surface-container: #1e2b24;
+  --surface-high: #24332b;
+  --surface-highest: #2a3b31;
+
+  --text: #e8f3ee;
+  --text-muted: #9fb3a9;
+  --text-faint: #88928f; /* dark theme */
+  --text-heading: var(--text);
+  --text-brand: var(--secondary);
+  --btn-primary-bg: var(--secondary);
+  --btn-primary-text: var(--primary);
+
+  --border: #26362e;
+  --surface-tint: #396756;
+  --primary-fixed-dim: #a0d1bc;
+  --secondary-fixed: #7ffc97;
+  --secondary-fixed-dim: #62df7d;
+  --warning: #fbbf24;
+  --warning-bg: #3a2f14;
+  --error: #f87171;
+  --error-bg: #3b1517;
+  --success: #4ade80;
+  --success-bg: #143324;
+  --info-bg: #14283d;
+
+  --pitch-line: #132019;
+
+  --pitch: var(--primary);
+  --turf: var(--secondary);
+  --chalk: var(--bg);
+  --amber: var(--warning);
+  --clay: var(--error);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px -8px rgba(0, 0, 0, 0.7);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Condensed "scoreboard" headlines (DESIGN.md typography) */
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+a {
+  color: var(--secondary);
+}
+
+/* Technical label style â€” IDs, timestamps, table headers (label-caps) */
+.label-caps {
+  font-family: var(--font-mono-label);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mono-data {
+  font-family: var(--font-mono-label);
+  font-variant-numeric: tabular-nums;
+}
+
+/* â”€â”€ Pitch-line watermark (login + hero surfaces only) â”€â”€â”€â”€â”€â”€
+   1px chalk strokes: halfway line + center circle + penalty-box corner.
+   Stroke color flips with the theme via --pitch-line (light #e2e8f0 /
+   dark #132019), always rendered at low opacity per the design notes. */
+
+.pitch-lines {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.55;
+}
+
+.pitch-lines svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pitch-lines .stroke {
+  stroke: var(--pitch-line);
+  fill: none;
+  stroke-width: 1;
+}
+
+/* â”€â”€ Layout shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+/* Three nav tiers, not two: phones don't have room for a persistent
+   sidebar even a compact one, but tablets do - collapsing straight from
+   the full 256px labeled sidebar to a hidden hamburger drawer at 900px
+   meant most real tablets (iPad portrait is 768-834px) got the phone
+   treatment, hiding navigation behind a tap for no reason other than not
+   having a middle tier. Tablet now gets its own persistent icon-only rail
+   (.tablet-sidebar, see SidebarNav's `compact` prop) instead. */
+
+.desktop-sidebar {
+  display: flex;
+}
+
+.tablet-sidebar {
+  display: none;
+}
+
+.mobile-topbar {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .desktop-sidebar {
+    display: none;
+  }
+  .tablet-sidebar {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .tablet-sidebar {
+    display: none;
+  }
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--primary);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+}
+
+/* â”€â”€ Form helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rollup-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 700px) {
+  .rollup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* â”€â”€ Schedule filters + list bento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Fixed 260px filter rail beside the schedule list on desktop; stacks
+   above the list on narrower tablets and phones rather than squeezing the
+   list into whatever's left. */
+
+.schedule-bento {
+  grid-template-columns: 260px 1fr;
+}
+
+@media (max-width: 820px) {
+  .schedule-bento {
+    grid-template-columns: 1fr;
+  }
+  .schedule-bento > aside {
+    position: static;
+  }
+}
+
+/* â”€â”€ Player detail two-column layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   5:3 split on desktop matching the Stitch 8/4 grid proportion.
+   Stacks vertically on narrow screens. */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 5fr 3fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* â”€â”€ Page headers on narrow screens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Only the page-header (title + actions) centers on mobile; everything else
+   stays left-aligned for readability. Button groups wrap as a centered row
+   underneath the title, not stretched full-width. */
+
+@media (max-width: 600px) {
+  .page-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .page-header-title {
+    text-align: center;
+  }
+  .page-header > div:last-child {
+    justify-content: center;
+  }
+  /* Center each quick-action card's icon + text block as one group (the
+     inner span sizes to content; only the group shifts, never the text). */
+  .quick-action {
+    justify-content: center;
+  }
+}
+
+/* â”€â”€ Activity log rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Single-line with ellipsis on desktop; on narrow screens the action label
+   wraps onto its own line (full text) with actor + timestamp below. */
+
+.activity-row-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-row-meta {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .activity-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .activity-row-main {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .activity-row-meta {
+    text-align: left;
+  }
+}
+
+/* â”€â”€ Focus rings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* Default focus ring for form elements */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
+/* â”€â”€ Button hover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.btn-primary:hover {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+/* â”€â”€ Scrollbars (subtle) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* â”€â”€ Sidebar nav item hover CSS class â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Applied as class="sidebar-nav-item" in SidebarNav.tsx.
+   The :hover state picks up --sidebar-hover-bg from the :root
+   or :root[data-theme="dark"] depending on the current theme. */
+.sidebar-nav-item:hover {
+  background: var(--sidebar-hover-bg);
+}
+
+/* ------------------------------------------------------------------
+   Shared Button (components/ui/Button.tsx) hover / press effects.
+   Colours are set inline by the component, so the hover tint is an
+   overlay image (!important) built from the button's own text colour.
+   Keyboard focus ring is handled by the global :focus-visible rule.
+   ------------------------------------------------------------------ */
+.ui-btn {
+  will-change: transform;
+}
+.ui-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  background-image: linear-gradient(
+    color-mix(in srgb, currentColor 9%, transparent),
+    color-mix(in srgb, currentColor 9%, transparent)
+  ) !important;
+}
+.ui-btn:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+.ui-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-btn,
+  .ui-btn:not(:disabled):hover,
+  .ui-btn:not(:disabled):active {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Text links (View all, Clear, ...). Opt-in via className="text-link".
+   The underline fades in on hover, in the link's own colour. The
+   !important is needed because these links set textDecoration inline.
+   ------------------------------------------------------------------ */
+.text-link {
+  text-decoration-line: underline !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 1.5px !important;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--transition);
+}
+.text-link:hover {
+  text-decoration-color: currentColor !important;
+}
+
+/* Hover coverage: stationary controls preserve existing transforms. */
+.ui-btn { transition: transform var(--transition), box-shadow var(--transition), background-image var(--transition) !important; }
+.ui-hover, .mobile-nav-hover { transition: background-image var(--transition) !important; }
+@media (hover: hover) {
+  .ui-hover:not(:disabled):not([aria-disabled="true"]):hover,
+  .mobile-nav-hover:hover {
+    background-image: linear-gradient(color-mix(in srgb, currentColor 9%, transparent), color-mix(in srgb, currentColor 9%, transparent)) !important;
+  }
+}
+.text-link:focus-visible { text-decoration-color: currentColor !important; }
+@media (prefers-reduced-motion: reduce) {
+  .ui-hover, .mobile-nav-hover, .text-link { transition: none !important; }
+}
+
+/* Readable native controls and button labels in both themes. */
+:root { --btn-approval-bg: #17633f; --btn-approval-text: #ffffff; --btn-secondary-text: #ffffff; color-scheme: light; }
+:root[data-theme="dark"] { --btn-approval-bg: #245b43; --btn-approval-text: #ffffff; --btn-secondary-text: #00261b; color-scheme: dark; }
+button, a.ui-btn, a[role="button"] { text-decoration: none !important; }
+input, select, textarea { color: var(--text); background-color: var(--surface); font: inherit; }
+select option, select optgroup { color: var(--text); background: var(--surface); }
+input::placeholder, textarea::placeholder { color: var(--text-faint); opacity: 1; }
+.filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; padding: 14px; margin-bottom: 20px; background: var(--surface-muted); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
+.filter-bar label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; flex: 1 1 145px; }
+.filter-bar input, .filter-bar select { width: 100%; min-height: 36px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); }
+.compact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.session-details { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; align-self: start; }
+.session-details summary { cursor: pointer; color: var(--text); }
+.session-details[open] { grid-column: 1 / -1; }
+.view-switch { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+
+.squad-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.squad-grid > div { min-width: 0; }
+@media (max-width: 900px) {
+  .squad-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\app\layout.tsx =====
+import "./globals.css";
+import { Inter, Archivo_Narrow } from "next/font/google";
+import { getSession } from "@/lib/getSession";
+import { prisma } from "@/lib/prisma";
+import { getPermissions } from "@/lib/permissions";
+import { getAcademyBranding } from "@/lib/getAcademyBranding";
+import { logout } from "./login/actions";
+import { SidebarNav } from "@/components/SidebarNav";
+import { MobileNav } from "@/components/MobileNav";
+import { Avatar } from "@/components/ui/Avatar";
+import { Icon } from "@/components/ui/Icon";
+import { roleLabel } from "@/lib/roleLabel";
+import { getNavItems } from "@/lib/navItems";
+import { getRequestsBadge } from "@/lib/approvals";
+import { getUnreadCount } from "@/lib/notifications";
+import { RefreshOnFocus } from "@/components/RefreshOnFocus";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import Link from "next/link";
+import type { Metadata, Viewport } from "next";
+
+// Body/data: Inter. Headlines: Archivo Narrow (condensed "scoreboard" feel).
+// Variables feed the --font-body / --font-headline tokens in globals.css.
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const archivoNarrow = Archivo_Narrow({ subsets: ["latin"], variable: "--font-archivo-narrow", display: "swap" });
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { academyName } = await getAcademyBranding();
+  return {
+    title: academyName,
+    description: "Professional football coaching management",
+    applicationName: academyName,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: academyName,
+    },
+    icons: {
+      apple: "/apple-touch-icon.png",
+      icon: [
+        { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+    },
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#00261b" },
+    { media: "(prefers-color-scheme: dark)", color: "#000f0a" },
+  ],
+};
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getSession();
+  const [branding, user, perms] = await Promise.all([
+    getAcademyBranding(),
+    session
+      ? prisma.user.findUnique({ where: { id: session.userId }, select: { photoUrl: true, theme: true, email: true } })
+      : Promise.resolve(null),
+    getPermissions(),
+  ]);
+  const photoUrl = user?.photoUrl ?? null;
+  const theme = user?.theme ?? "light";
+  const currentEmail = user?.email ?? "";
+  const unreadUserId = perms.userId ?? "";
+  const [requestsBadge, registrationsBadge, unreadCount] = await Promise.all([
+    getRequestsBadge(perms),
+    perms.isAdmin || perms.isClubManager
+      ? prisma.pendingRegistration.count({ where: { status: "PENDING" } })
+      : Promise.resolve(0),
+    getUnreadCount(unreadUserId),
+  ]);
+  const navItems = getNavItems(perms, requestsBadge, registrationsBadge, unreadCount);
+
+  // Dev-only convenience switcher. The dynamic import sits behind a
+  // build-time-inlined NODE_ENV check, so in production builds neither the
+  // component nor its hardcoded account credentials reach the client JS.
+  let devSwitcher: React.ReactNode = null;
+  if (session && process.env.NODE_ENV !== "production") {
+    const { DevAccountSwitcher } = await import("@/components/DevAccountSwitcher");
+    devSwitcher = <DevAccountSwitcher currentEmail={currentEmail} />;
+  }
+
+  return (
+    <html lang="en" data-theme={theme} className={`${inter.variable} ${archivoNarrow.variable}`}>
+      <body>
+        <ServiceWorkerRegister />
+        {session ? <InstallPrompt /> : null}
+        {devSwitcher}
+        {session ? (
+          <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            <RefreshOnFocus />
+            <MobileNav
+              userName={session.name}
+              userRole={session.role}
+              photoUrl={photoUrl}
+              logoutAction={logout}
+              items={navItems}
+              academyName={branding.academyName}
+              logoUrl={branding.logoUrl}
+            />
+            <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+              {/* Desktop sidebar â€” the single source of navigation (no top
+                  bar), styled per the Stitch exports: deep pitch background,
+                  primary-container border, profile + sign-out pinned bottom. */}
+              <aside
+                className="desktop-sidebar"
+                style={{
+                  width: 256,
+                  flexShrink: 0,
+                  background: "var(--sidebar-bg)",
+                  color: "var(--sidebar-text)",
+                  flexDirection: "column",
+                  position: "sticky",
+                  top: 0,
+                  height: "100vh",
+                  borderRight: "1px solid var(--sidebar-border)",
+                }}
+              >
+                <div style={{ padding: "24px 16px 24px", display: "flex", alignItems: "center", gap: 12 }}>
+                  {branding.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt=""
+                      style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "contain", background: "var(--sidebar-logo-bg)", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "var(--sidebar-logo-bg)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon name="football" size={20} style={{ color: "var(--sidebar-logo-icon)" }} />
+                    </div>
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontFamily: "var(--font-headline)",
+                        fontSize: 20,
+                        fontWeight: 700,
+                        lineHeight: 1.15,
+                        color: "var(--sidebar-text-strong)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {branding.academyName}
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--sidebar-text)", marginTop: 1 }}>Powered by Touchline</div>
+                  </div>
+                </div>
+
+                <SidebarNav items={navItems} />
+
+                <div style={{ padding: "16px 16px 20px", borderTop: "1px solid var(--sidebar-border)", marginTop: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "0 8px" }}>
+                    <Avatar name={session.name} src={photoUrl} size={36} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--sidebar-text-strong)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{session.name}</div>
+                      <div style={{ fontSize: 13, color: "var(--sidebar-text)" }}>{roleLabel(session.role)}</div>
+                    </div>
+                  </div>
+                  <form action={logout}>
+                    <button className="ui-btn"
+                      type="submit"
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 8,
+                        padding: "9px 10px",
+                        background: "transparent",
+                        color: "var(--sidebar-text)",
+                        border: "1px solid var(--sidebar-border)",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        transition: "background var(--transition), color var(--transition)",
+                      }}
+                    >
+                      <Icon name="logout" size={15} />
+                      Sign out
+                    </button>
+                  </form>
+                </div>
+              </aside>
+
+              {/* Tablet rail â€” persistent but icon-only, between the phone's
+                  hidden hamburger drawer and the desktop's full labeled
+                  sidebar (see .tablet-sidebar in globals.css). Same
+                  SidebarNav component/data as desktop, just `compact`. */}
+              <aside
+                className="tablet-sidebar"
+                style={{
+                  width: 72,
+                  flexShrink: 0,
+                  background: "var(--sidebar-bg)",
+                  color: "var(--sidebar-text)",
+                  flexDirection: "column",
+                  position: "sticky",
+                  top: 0,
+                  height: "100vh",
+                  borderRight: "1px solid var(--sidebar-border)",
+                }}
+              >
+                <div style={{ padding: "20px 0", display: "flex", justifyContent: "center" }}>
+                  {branding.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt={branding.academyName}
+                      title={branding.academyName}
+                      style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "contain", background: "var(--sidebar-logo-bg)", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div
+                      title={branding.academyName}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "50%",
+                        background: "var(--sidebar-logo-bg)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon name="football" size={18} style={{ color: "var(--sidebar-logo-icon)" }} />
+                    </div>
+                  )}
+                </div>
+
+                <SidebarNav items={navItems} compact />
+
+                <div style={{ padding: "12px 8px 16px", borderTop: "1px solid var(--sidebar-border)", marginTop: 12, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                  <Link className="ui-hover" href="/settings" title={`${session.name} Â· ${roleLabel(session.role)}`}>
+                    <Avatar name={session.name} src={photoUrl} size={32} />
+                  </Link>
+                  <form action={logout}>
+                    <button className="ui-btn"
+                      type="submit"
+                      title="Sign out"
+                      aria-label="Sign out"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 8,
+                        background: "transparent",
+                        color: "var(--sidebar-text)",
+                        border: "1px solid var(--sidebar-border)",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        transition: "background var(--transition), color var(--transition)",
+                      }}
+                    >
+                      <Icon name="logout" size={15} />
+                    </button>
+                  </form>
+                </div>
+              </aside>
+
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+                <main style={{ flex: 1, padding: "28px 32px 48px", width: "100%", maxWidth: 1100, margin: "0 auto" }}>{children}</main>
+              </div>
+            </div>
+          </div>
+        ) : (
+          children
+        )}
+      </body>
+    </html>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\components\ui\PageHeader.tsx =====
+// PageHeader - consistent page title + subtitle + actions slot. Gives every
+// page the same top structure so hierarchy stays predictable.
+
+import type { ReactNode } from "react";
+
+export function PageHeader({
+  title,
+  subtitle,
+  actions,
+}: {
+  title: string;
+  subtitle?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <div
+      className="page-header"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        gap: 16,
+        flexWrap: "wrap",
+        marginBottom: 20,
+      }}
+    >
+      <div className="page-header-title" style={{ minWidth: 0 }}>
+        <h1 style={{ fontFamily: "var(--font-headline)", fontSize: 32, fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.01em", color: "var(--text-heading)" }}>{title}</h1>
+        {subtitle && <p style={{ margin: "4px 0 0", fontSize: 14, color: "var(--text-muted)" }}>{subtitle}</p>}
+      </div>
+      {actions && <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{actions}</div>}
+    </div>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\components\ui\SectionHeader.tsx =====
+// SectionHeader - labelled block separator with an optional trailing slot
+// (count badge, action button).
+
+import type { ReactNode } from "react";
+
+export function SectionHeader({
+  title,
+  count,
+  actions,
+  style,
+}: {
+  title: string;
+  count?: number;
+  actions?: ReactNode;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 10,
+        marginBottom: 12,
+        ...style,
+      }}
+    >
+      <h2 style={{ fontSize: 16, fontWeight: 700 }}>
+        {title}
+        {typeof count === "number" && (
+          <span style={{ color: "var(--text-faint)", fontWeight: 600, marginLeft: 6 }}>{count}</span>
+        )}
+      </h2>
+      {actions}
+    </div>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\components\MobileNav.tsx =====
+"use client";
+
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
+import { Avatar } from "@/components/ui/Avatar";
+import { roleLabel } from "@/lib/roleLabel";
+import { groupNavItems, type NavItem } from "@/lib/navItems";
+
+// Mobile drawer nav. Same items as the desktop sidebar (resolved server-side
+// from permissions), rendered as a slide-in panel from the left.
+
+export function MobileNav({
+  userName,
+  userRole,
+  photoUrl,
+  logoutAction,
+  items,
+  academyName,
+  logoUrl,
+}: {
+  userName: string;
+  userRole: string;
+  photoUrl: string | null;
+  logoutAction: () => Promise<void>;
+  items: NavItem[];
+  academyName: string;
+  logoUrl: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const sections = groupNavItems(items);
+  const hasHeadings = sections.some((s) => s.label);
+
+  return (
+    <>
+      <div className="mobile-topbar">
+        <button className="ui-hover"
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
+          style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
+        >
+          <Icon name="menu" size={24} />
+          {items.some((item) => item.badge) && (
+            <span
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "var(--accent)",
+              }}
+            />
+          )}
+        </button>
+        <Link
+          href="/"
+          title={academyName}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            fontWeight: 800,
+            fontSize: 16,
+            color: "var(--sidebar-text-strong)",
+            textDecoration: "none",
+            textAlign: "center",
+            padding: "0 4px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {academyName}
+        </Link>
+        <div style={{ width: 28, flexShrink: 0 }} />
+      </div>
+
+      {open && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex" }}>
+          <div
+            onClick={() => setOpen(false)}
+            style={{ position: "absolute", inset: 0, background: "rgba(6,39,30,0.5)", animation: "fadeIn 150ms ease" }}
+          />
+          <div
+            style={{
+              position: "relative",
+              width: 280,
+              maxWidth: "84vw",
+              background: "var(--sidebar-bg)",
+              color: "var(--sidebar-text-strong)",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              padding: "16px 0",
+              overflowY: "auto",
+              boxShadow: "var(--shadow-lg)",
+            }}
+          >
+            <div style={{ padding: "0 20px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+<div style={{ minWidth: 0 }}>
+                  {logoUrl ? (
+                    <img
+                      src={logoUrl}
+                      alt={academyName}
+                      style={{ maxWidth: 200, maxHeight: 36, objectFit: "contain", display: "block", marginBottom: 4 }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 800,
+                        color: "var(--sidebar-text-strong)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                      }}
+                    >
+                      {academyName}
+                    </div>
+                  )}
+                  {logoUrl && (
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 800,
+                        color: "var(--sidebar-text-strong)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: 200,
+                      }}
+                    >
+                      {academyName}
+                    </div>
+                  )}
+                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.55, marginTop: 2, color: "var(--sidebar-text)" }}>
+                  Powered by Touchline
+                </div>
+              </div>
+              <button className="ui-hover"
+                onClick={() => setOpen(false)}
+                aria-label="Close menu"
+                style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", opacity: 0.8 }}
+              >
+                <Icon name="close" size={22} />
+              </button>
+            </div>
+
+            <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: "0 12px" }}>
+              {!hasHeadings && (
+                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "4px 10px 8px" }}>
+                  Menu
+                </div>
+              )}
+              {sections.map((section, sectionIndex) => (
+                <div key={section.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: sectionIndex === 0 ? 0 : 10 }}>
+                  {section.label && (
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "6px 10px 6px" }}>
+                      {section.label}
+                    </div>
+                  )}
+                  {section.items.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link className="mobile-nav-hover"
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 11,
+                      padding: "11px 10px",
+                      textDecoration: "none",
+                      fontSize: 14,
+                      fontWeight: active || item.badge ? 700 : 500,
+                      borderRadius: 8,
+                      background: active ? "var(--sidebar-active-bg)" : "transparent",
+                      borderRight: active ? "4px solid var(--sidebar-active-bar)" : "4px solid transparent",
+                      color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
+                    }}
+                  >
+                    <Icon name={item.icon} size={18} />
+                    <span style={{ flex: 1, minWidth: 0 }}>{item.label}</span>
+                    {item.badge ? (
+                      <span
+                        style={{
+                          minWidth: 18,
+                          height: 18,
+                          padding: "0 5px",
+                          borderRadius: "var(--radius-pill)",
+                          background: "var(--accent)",
+                          color: "var(--primary-dark)",
+                          fontSize: 13,
+                          fontWeight: 800,
+                          lineHeight: "18px",
+                          textAlign: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+                  })}
+                </div>
+              ))}
+            </nav>
+
+            <div style={{ padding: "14px 20px 0", borderTop: "1px solid var(--sidebar-border)", marginTop: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <Avatar name={userName} src={photoUrl} size={38} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</div>
+                  <div style={{ fontSize: 13, opacity: 0.7 }}>{roleLabel(userRole)}</div>
+                </div>
+              </div>
+              <form action={logoutAction}>
+                <button className="ui-btn"
+                  type="submit"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    padding: "9px 10px",
+                    background: "transparent",
+                    color: "var(--sidebar-text)",
+                    border: "1px solid var(--sidebar-border)",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
+                  <Icon name="logout" size={16} />
+                  Sign out
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }`}</style>
+    </>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\components\SidebarNav.tsx =====
+"use client";
+
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
+import { groupNavItems, type NavItem } from "@/lib/navItems";
+
+// Desktop sidebar nav, styled per the Stitch exports: deep pitch background
+// (owned by the aside in layout.tsx), inactive items in primary-fixed-dim,
+// active item marked by a 4px secondary-fixed right bar on a
+// primary-container surface. Items are resolved server-side
+// (permission-aware) and passed in â€” never hardcoded per screen.
+//
+// `compact` renders the same items as an icon-only rail (label dropped to a
+// title-attribute tooltip, badge collapsed to a dot) for the tablet tier -
+// see .tablet-sidebar in globals.css. Same component, same data, so the
+// two tiers can never drift out of sync with each other.
+
+// Hover state for nav items uses the --sidebar-hover-bg token from globals.css.
+// Inline styles cannot express :hover, so a CSS class is used (see globals.css).
+
+export function SidebarNav({ items, compact = false }: { items: NavItem[]; compact?: boolean }) {
+  const pathname = usePathname();
+
+  return (
+    <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: compact ? "0 8px" : "0 12px", overflowY: "auto" }}>
+      {groupNavItems(items).map((section, sectionIndex) => (
+        <div key={section.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: sectionIndex === 0 ? 0 : compact ? 0 : 14 }}>
+          {section.label && !compact && (
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "0 14px 6px", color: "var(--sidebar-text)" }}>
+              {section.label}
+            </div>
+          )}
+          {compact && section.label && sectionIndex > 0 && (
+            <div aria-hidden="true" style={{ height: 1, background: "var(--sidebar-border)", margin: "6px 10px" }} />
+          )}
+          {section.items.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            title={compact ? item.label : undefined}
+            className="sidebar-nav-item"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: compact ? "center" : "flex-start",
+              gap: 12,
+              padding: compact ? "12px 8px" : "10px 14px",
+              position: "relative",
+              color: active ? "var(--sidebar-active-text)" : "var(--sidebar-text)",
+              textDecoration: "none",
+              fontSize: 13.5,
+              fontWeight: active || item.badge ? 700 : 500,
+              borderRadius: 8,
+              borderRight: active && !compact ? "4px solid var(--sidebar-active-bar)" : "4px solid transparent",
+              background: active ? "var(--sidebar-active-bg)" : "transparent",
+              transition: "background var(--transition), color var(--transition)",
+            }}
+          >
+            <Icon name={item.icon} size={compact ? 20 : 18} />
+            {!compact && <span style={{ flex: 1, minWidth: 0 }}>{item.label}</span>}
+            {item.badge ? (
+              compact ? (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "var(--accent)",
+                  }}
+                />
+              ) : (
+                <span
+                  className="label-caps"
+                  style={{
+                    minWidth: 18,
+                    height: 18,
+                    padding: "0 5px",
+                    borderRadius: "var(--radius-pill)",
+                    background: "var(--accent)",
+                    color: "var(--primary-dark)",
+                    lineHeight: "18px",
+                    textAlign: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {item.badge}
+                </span>
+              )
+            ) : null}
+          </Link>
+        );
+          })}
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\components\SquadNavigation.tsx =====
+"use client";
+
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { safeSquadReturn, SQUAD_RETURN_KEY } from "@/lib/squadReturn";
+
+type SquadPosition = { url: string; playerId: string; y: number; expanded: string[]; restore?: boolean };
+function readPosition(): SquadPosition | null {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(SQUAD_RETURN_KEY) ?? "null");
+    return value && typeof value.url === "string" && typeof value.playerId === "string" && Number.isFinite(value.y) ? value : null;
+  } catch { return null; }
+}
+function writePosition(value: SquadPosition) {
+  try { sessionStorage.setItem(SQUAD_RETURN_KEY, JSON.stringify(value)); } catch { /* Anchor navigation remains available. */ }
+}
+
+export function SquadPlayerLink({ playerId, appearance = "button", children }: { playerId: string; appearance?: "button" | "name"; children: ReactNode }) {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const query = params.toString();
+  const returnTo = safeSquadReturn(`${pathname}${query ? "?" + query : ""}#player-card-${playerId}`);
+  const href = `/squad/${playerId}?returnTo=${encodeURIComponent(returnTo)}`;
+  function remember() {
+    const expanded = Array.from(document.querySelectorAll(".squad-grid > div"))
+      .filter(card => card.querySelector("details[open]")) .map(card => card.id);
+    writePosition({ url: returnTo, playerId, y: window.scrollY, expanded });
+  }
+  return <Link href={href} onClick={remember} className={appearance === "button" ? "ui-btn" : "text-link"}
+    style={appearance === "button" ? { display: "inline-flex", padding: "5px 12px", fontSize: 13, fontWeight: 700, border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-heading)", background: "var(--surface)", textDecoration: "none" } : { fontSize: 16, fontWeight: 800, color: "var(--text-heading)", textDecoration: "none" }}>{children}</Link>;
+}
+
+export function BackToSquad({ playerId, returnTo }: { playerId: string; returnTo: string }) {
+  const [destination, setDestination] = useState(safeSquadReturn(returnTo) === "/squad" ? `/squad#player-card-${playerId}` : safeSquadReturn(returnTo));
+  useEffect(() => {
+    const saved = readPosition();
+    if (saved?.playerId === playerId && returnTo === "/squad") setDestination(safeSquadReturn(saved.url));
+  }, [playerId, returnTo]);
+  function restore() {
+    const saved = readPosition();
+    if (saved?.playerId === playerId) writePosition({ ...saved, restore: true });
+  }
+  return <Link href={destination} scroll={false} onClick={restore} className="ui-btn"
+    style={{ display: "inline-flex", gap: 6, padding: "7px 12px", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text)", background: "var(--surface)", fontWeight: 700, fontSize: 13, textDecoration: "none", marginBottom: 16 }}>â† Back to squad</Link>;
+}
+
+export function SquadScrollRestore() {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  useEffect(() => {
+    const saved = readPosition();
+    const expected = safeSquadReturn(saved?.url).split("#")[0];
+    const actual = pathname + (params.toString() ? "?" + params.toString() : "");
+    if (!saved?.restore || expected !== actual) {
+      if (!saved && window.location.hash.startsWith("#player-card-")) document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView({ block: "start" });
+      return;
+    }
+    for (const id of saved.expanded ?? []) {
+      const details = document.getElementById(id)?.querySelector("details");
+      if (details) details.open = true;
+    }
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo({ top: saved.y, behavior: "instant" });
+      writePosition({ ...saved, restore: false });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname, params]);
+  return null;
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\app\squad\page.tsx =====
+import { SquadPlayerLink, SquadScrollRestore } from "@/components/SquadNavigation";
+import { Button } from "@/components/ui/Button";
+import { prisma } from "@/lib/prisma";
+import { createPlayer, deletePlayer, updatePlayerStatus, promotePlayers, createSkillDefinition, renameSkillDefinition, deleteSkillDefinition } from "./actions";
+import { getPermissions } from "@/lib/permissions";
+import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
+import { StatusBanner } from "@/components/StatusBanner";
+import { PlayerRatingCard } from "@/components/PlayerRatingCard";
+import { calculateAge, SKILL_BAND_META } from "@/lib/skills";
+import { getSkillBands } from "@/lib/skillDefinitions";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EntityHero } from "@/components/ui/EntityHero";
+import { Badge } from "@/components/ui/Badge";
+import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
+import { PlayerStatusSelect } from "@/components/ui/PlayerStatusSelect";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
+import { inputBase } from "@/components/ui/Form";
+import { PhotoUpload } from "@/components/ui/PhotoUpload";
+import { Icon } from "@/components/ui/Icon";
+
+// Filtering is in-memory via URLSearchParams read from searchParams - the
+// Server Component reads them directly, no client state needed. This is the
+// right call at current data volume; move to DB-level where clauses once
+// player counts pass a few hundred.
+export default async function SquadPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string; age?: string; ageGroup?: string; batch?: string; status?: string; dobFrom?: string; dobTo?: string; joinedFrom?: string; joinedTo?: string }>;
+}) {
+  const params = await searchParams;
+  const perms = await getPermissions();
+  const canEdit = perms.isAdmin || perms.canEditSquad;
+  // Managing skill dimensions themselves (add/rename/delete) is a
+  // structural, academy-wide decision - gated to isAdmin/isClubManager only,
+  // not the canEditSquad rule that governs day-to-day rating above.
+  const canManageSkills = perms.isAdmin || perms.isClubManager;
+  const skillBands = await getSkillBands();
+
+  const ageFilter = params.age ? Number(params.age) : null;
+  const batchFilter = params.batch || null;
+  const statusFilter = params.status || null;
+  const dobFrom = params.dobFrom ? new Date(params.dobFrom) : null;
+  const dobTo = params.dobTo ? new Date(params.dobTo) : null;
+  const joinedFrom = params.joinedFrom ? new Date(params.joinedFrom) : null;
+  const joinedTo = params.joinedTo ? new Date(params.joinedTo) : null;
+
+  const players = await prisma.player.findMany({
+    include: { ageGroup: true, skills: true, batches: { include: { ageGroup: true } } },
+    orderBy: { name: "asc" },
+  });
+
+  const filtered = players.filter((p) => {
+    if (ageFilter !== null && calculateAge(p.dateOfBirth) !== ageFilter) return false;
+    if (params.ageGroup && p.ageGroupId !== params.ageGroup && !p.batches.some(b => b.ageGroupId === params.ageGroup)) return false;
+    if (batchFilter && !p.batches.some((b) => b.id === batchFilter)) return false;
+    if (statusFilter && p.status !== statusFilter) return false;
+    if (dobFrom && p.dateOfBirth < dobFrom) return false;
+    if (dobTo && p.dateOfBirth > dobTo) return false;
+    if (joinedFrom && p.dateJoined < joinedFrom) return false;
+    if (joinedTo && p.dateJoined > joinedTo) return false;
+    return true;
+  });
+
+  const settings = await prisma.academySettings.findFirst();
+  const ageGroups = await prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } });
+  const batches = await prisma.batch.findMany({ orderBy: { name: "asc" }, include: { ageGroup: true } });
+
+  // No foreign key from PlayerSkill/PlayerSkillHistory to SkillDefinition
+  // (see the model comment), so "in use" for the manager below is computed
+  // by matching the string value rather than a relation count. Only fetched
+  // when the manager is actually visible.
+  const [skillDefinitions, skillRatingCounts, historyNames] = canManageSkills
+    ? await Promise.all([
+        prisma.skillDefinition.findMany({ orderBy: [{ band: "asc" }, { sortOrder: "asc" }] }),
+        prisma.playerSkill.groupBy({ by: ["skillName"], _count: { _all: true } }),
+        prisma.playerSkillHistory.findMany({ select: { skillName: true }, distinct: ["skillName"] }),
+      ])
+    : [[], [], []];
+  const skillRatingCountByName = new Map(skillRatingCounts.map((s) => [s.skillName, s._count._all]));
+  const skillInUseNames = new Set([...skillRatingCounts.map((s) => s.skillName), ...historyNames.map((h) => h.skillName)]);
+
+  const hasFilters = !!params.ageGroup || !!params.age || !!params.batch || !!params.status || !!params.dobFrom || !!params.dobTo || !!params.joinedFrom || !!params.joinedTo;
+
+  const fieldLabel: React.CSSProperties = { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4, color: "var(--text)" };
+
+  return (
+    <>
+      <PageHeader
+        title="Squad"
+        subtitle={canEdit ? "Add players and rate their skills. Every player gets an age-matched rating sheet." : "View only â€” squad editing is limited to admins and head coaches for now."}
+        actions={
+          canEdit ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              {(perms.isAdmin || perms.isClubManager) && (
+                <a className="text-link"
+                  href="/squad/promote"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: "var(--secondary)", textDecoration: "none" }}
+                >
+                  <Icon name="trendUp" size={15} /> Promote players
+                </a>
+              )}
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-muted)" }}>
+                <Icon name="squad" size={15} /> {filtered.length} {filtered.length === 1 ? "player" : "players"}
+              </span>
+            </span>
+          ) : undefined
+        }
+      />
+
+      <StatusBanner error={params.error} success={params.success} />
+      <SquadScrollRestore />
+
+      {canManageSkills && (
+        <CollapsibleCreate title="Manage skill dimensions" subtitle={`${skillDefinitions.length}`}>
+          <form
+            action={createSkillDefinition}
+            style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}
+          >
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <label style={fieldLabel}>New skill name</label>
+              <input name="name" placeholder="e.g. Heading" required style={inputBase} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Age band</label>
+              <select name="band" required defaultValue={SKILL_BAND_META[0].label} style={inputBase}>
+                {SKILL_BAND_META.map((b) => (
+                  <option key={b.label} value={b.label}>{b.ageLabel} Â· {b.label}</option>
+                ))}
+              </select>
+            </div>
+            <Button>Add Skill</Button>
+          </form>
+
+          {SKILL_BAND_META.map((bandMeta) => {
+            const bandSkills = skillDefinitions.filter((s) => s.band === bandMeta.label);
+            return (
+              <div key={bandMeta.label} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>
+                  {bandMeta.ageLabel} Â· {bandMeta.label}
+                </div>
+                {bandSkills.length === 0 ? (
+                  <p style={{ color: "var(--text-faint)", fontSize: 13 }}>No skills yet.</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {bandSkills.map((s) => {
+                      const inUse = skillInUseNames.has(s.name);
+                      const ratingCount = skillRatingCountByName.get(s.name) ?? 0;
+                      return (
+                        <div
+                          key={s.id}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 12px",
+                            background: "var(--surface-muted)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontWeight: 700, fontSize: 13 }}>{s.name}</span>
+                            <Badge tone={inUse ? "warning" : "muted"}>
+                              {inUse ? `In use Â· ${ratingCount} player${ratingCount === 1 ? "" : "s"}` : "Not in use"}
+                            </Badge>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <details>
+                              <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none", listStyle: "none" }}>Rename</summary>
+                              <form action={renameSkillDefinition.bind(null, s.id)} style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                                <input name="name" defaultValue={s.name} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", width: 180 }} />
+                                <Button size="sm">Save</Button>
+                              </form>
+                            </details>
+                            {!inUse && (
+                              <ConfirmDeleteButton
+                                action={deleteSkillDefinition.bind(null, s.id)}
+                                confirmMessage={`Remove "${s.name}"? This can't be undone.`}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </CollapsibleCreate>
+      )}
+
+      {canEdit && (
+        <CollapsibleCreate title="Add a player">
+          <form action={createPlayer}>
+            <div className="form-grid-2col" style={{ gap: 12 }}>
+              <div>
+                <label style={fieldLabel}>Name</label>
+                <input name="name" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Date of birth</label>
+                <input name="dateOfBirth" type="date" required style={inputBase} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Gender</label>
+                <select name="gender" required defaultValue="" style={inputBase}>
+                  <option value="" disabled>Select gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                </select>
+              </div>
+              <div>
+                <label style={fieldLabel}>Age group</label>
+                {settings?.autoAssignPlayerAgeGroup ? (
+                  <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Assigned automatically from the club's date-of-birth rules.</p>
+                ) : (
+                  <select name="ageGroupId" defaultValue="" required style={inputBase}>
+                    <option value="" disabled>Select age group</option>
+                    {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+                  </select>
+                )}
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ ...fieldLabel, marginBottom: 8 }}>Photo (optional)</label>
+                <PhotoUpload name="photoUrl" label="Upload photo" />
+              </div>
+            </div>
+            <Button style={{ marginTop: 14 }}>Add Player</Button>
+          </form>
+        </CollapsibleCreate>
+      )}
+
+      {/* Filter bar - always visible, matches Stitch: filter icon + label on
+          left, batch/status/age controls, Clear action on the right. */}
+      <div
+        style={{
+          background: "var(--surface-muted)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius)",
+          padding: "12px 16px",
+          marginBottom: 20,
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: "auto", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
+          <Icon name="filter" size={16} />
+          Filters
+        </span>
+        <form
+          style={{
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
+          <select name="ageGroup" aria-label="Age group" defaultValue={params.ageGroup ?? ""} style={{ ...inputBase, width: "auto" }}>
+            <option value="">All age groups</option>
+            {ageGroups.map(group => <option key={group.id} value={group.id}>{group.name}</option>)}
+          </select>
+          <select aria-label="Batch" name="batch" defaultValue={params.batch ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+            <option value="">All Batches</option>
+            {batches.map((b) => (
+              <option key={b.id} value={b.id}>{b.name} ({b.ageGroup.name})</option>
+            ))}
+          </select>
+          <select aria-label="Player status" name="status" defaultValue={params.status ?? ""} style={{ padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+            <option value="">Status: All</option>
+            <option value="ACTIVE">Available</option>
+            <option value="INJURED">Injured</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <input aria-label="Player age" name="age" type="number" min={1} defaultValue={params.age ?? ""} placeholder="Age (e.g. 16)" style={{ width: 96, padding: "6px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }} />
+          <Button variant="secondary" size="sm">Filter</Button>
+          <a className="text-link" href="/squad" style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--secondary)", textDecoration: "none" }}>
+            Clear
+          </a>
+        </form>
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon="squad"
+          title={hasFilters ? "No players match the current filters" : "No players yet"}
+          message={hasFilters ? "Try removing a filter to see more results." : "Add your first player above to start building the squad."}
+        />
+      ) : (
+        <div className="squad-grid">
+          {filtered.map((p) => (
+            <div
+              key={p.id}
+              id={`player-card-${p.id}`}
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                borderRadius: "var(--radius)",
+                boxShadow: "var(--shadow-sm)",
+                padding: 16,
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <EntityHero
+                  name={p.name}
+                  heading={<SquadPlayerLink playerId={p.id} appearance="name">{p.name}</SquadPlayerLink>}
+                  src={p.photoUrl}
+                  badges={
+                    <>
+                      <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
+                      <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
+                      {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
+                      {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
+                      {p.ageGroup && <Badge tone="green">{p.ageGroup.name}</Badge>}
+                      {p.batches.map((b) => (
+                        <Badge key={b.id} tone="blue">{b.name}</Badge>
+                      ))}
+                    </>
+                  }
+                  actions={
+                    canEdit ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                        <PlayerStatusSelect
+                          action={updatePlayerStatus.bind(null, p.id)}
+                          status={p.status}
+                        />
+                        <ConfirmDeleteButton
+                          action={deletePlayer.bind(null, p.id)}
+                          confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
+                        />
+                      </div>
+                    ) : undefined
+                  }
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
+                <SquadPlayerLink playerId={p.id}>View player</SquadPlayerLink>
+              </div>
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>Expand skills</summary>
+                <div style={{ marginTop: 10 }}>
+                <PlayerRatingCard
+                  playerId={p.id}
+                  dateOfBirth={p.dateOfBirth.toISOString()}
+                  position={p.position}
+                  skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
+                  canEdit={canEdit}
+                  skillBands={skillBands}
+                />
+                </div>
+              </details>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\components\ui\ListView.tsx =====
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
+import { Button } from "./Button";
+
+// Reusable view preference: storage is read after hydration and scoped per page.
+export function ListView({ storageKey, children }: { storageKey: string; children: ReactNode }) {
+  const [view, setView] = useState<"tiles" | "list">("tiles");
+  useEffect(() => {
+    try { if (localStorage.getItem(storageKey) === "list") setView("list"); } catch { /* Storage may be blocked. */ }
+  }, [storageKey]);
+  function choose(next: "tiles" | "list") {
+    setView(next);
+    try { localStorage.setItem(storageKey, next); } catch { /* Preference still works for this visit. */ }
+  }
+  return (
+    <div>
+      <div className="view-switch" role="group" aria-label="Session display">
+        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>View:</span>
+        <Button type="button" size="sm" variant={view === "tiles" ? "approval" : "outline"} aria-pressed={view === "tiles"} onClick={() => choose("tiles")}>Tiles</Button>
+        <Button type="button" size="sm" variant={view === "list" ? "approval" : "outline"} aria-pressed={view === "list"} onClick={() => choose("list")}>List</Button>
+      </div>
+      <div className={view === "tiles" ? "compact-grid" : undefined} style={view === "list" ? { display: "flex", flexDirection: "column", gap: 10 } : undefined}>{children}</div>
+    </div>
+  );
+}
+
+===== C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\app\attendance\page.tsx =====
+import { playerBelongsToSession } from "@/lib/sessionRoster";
+import { ListView } from "@/components/ui/ListView";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { prisma } from "@/lib/prisma";
+import { getPermissions } from "@/lib/permissions";
+import { StatusBanner } from "@/components/StatusBanner";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Icon } from "@/components/ui/Icon";
+import { getAcademyTimeZone } from "@/lib/academyTime";
+import { getAcademySettings } from "@/lib/confirmations";
+import { sessionStartInstant, startOfTodayInZone } from "@/lib/time";
+import {
+  submitAttendance,
+  approveAttendanceRequest,
+  rejectAttendanceRequest,
+  finalizeAttendance,
+  checkInCoach,
+  overrideCoachAttendance,
+  saveAdvanceRsvp,
+} from "./actions";
+
+function endTime(time: string, durationMinutes: number): string {
+  const [h, m] = time.split(":").map(Number);
+  const total = h * 60 + m + durationMinutes;
+  const eh = Math.floor(total / 60) % 24;
+  const em = total % 60;
+  return `${String(eh).padStart(2, "0")}:${String(em).padStart(2, "0")}`;
+}
+
+export default async function AttendancePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string; range?: string }>;
+}) {
+  const params = await searchParams;
+  const perms = await getPermissions();
+  if (!perms.role || perms.role === "PARENT") redirect("/?error=no_permission");
+
+  const range = params.range === "term" ? "term" : "month";
+  const now = new Date();
+  const tz = await getAcademyTimeZone();
+  const todayLocal = startOfTodayInZone(tz);
+  const rangeStart =
+    range === "term"
+      ? new Date(todayLocal.getTime() - 90 * 24 * 60 * 60 * 1000)
+      : new Date(Date.UTC(todayLocal.getUTCFullYear(), todayLocal.getUTCMonth(), 1));
+
+  const [sessions, pendingRequests, rosterPlayers] = await Promise.all([
+    prisma.scheduledSession.findMany({
+      where: { date: { lte: todayLocal }, status: { not: "cancelled" }, resolvedAt: null },
+      include: {
+        ageGroup: true,
+        location: true,
+        headCoaches: { include: { user: true } },
+        assistantCoaches: { include: { user: true } },
+        playerAttendance: true,
+        coachAttendance: true,
+        batch: true,
+      },
+      orderBy: [{ date: "desc" }, { startTime: "desc" }],
+    }),
+    prisma.approvalRequest.findMany({
+      where: { type: "ATTENDANCE_CONFIRM", status: "PENDING" },
+      include: { requestedBy: { include: { user: true } } },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.player.findMany({ include: { batches: { select: { id: true, ageGroupId: true } } }, orderBy: { name: "asc" } }),
+  ]);
+
+  // Advance player RSVP (optional): upcoming sessions the coach can pre-mark.
+  const academySettings = await getAcademySettings();
+  const rsvpEnabled = academySettings.playerAdvanceRsvpEnabled;
+  const rsvpWindowEnd = new Date(now.getTime() + academySettings.confirmationWindowHours * 60 * 60 * 1000);
+  const upcomingRaw =
+    rsvpEnabled && (perms.isAdmin || perms.coachId)
+      ? await prisma.scheduledSession.findMany({
+          where: {
+            date: { gte: todayLocal },
+            status: "scheduled",
+            resolvedAt: null,
+            ...(perms.isAdmin
+              ? {}
+              : { OR: [{ headCoaches: { some: { id: perms.coachId! } } }, { assistantCoaches: { some: { id: perms.coachId! } } }] }),
+          },
+          include: { ageGroup: true, location: true, batch: true, playerAttendance: true },
+          orderBy: [{ date: "asc" }, { startTime: "asc" }],
+          take: 40,
+        })
+      : [];
+  const upcoming = upcomingRaw.filter((s) => {
+    const st = sessionStartInstant(s.date, s.startTime, tz);
+    return st > now && st <= rsvpWindowEnd;
+  });
+
+  const requestsBySession = new Map<string, (typeof pendingRequests)[number]>();
+  for (const r of pendingRequests) {
+    const payload = r.payload as { scheduledSessionId?: string };
+    if (payload.scheduledSessionId) {
+      requestsBySession.set(payload.scheduledSessionId, r);
+    }
+  }
+
+  function playersForSession(s: (typeof sessions)[number]) {
+    return rosterPlayers.filter(player => playerBelongsToSession(player, s));
+  }
+
+  const isAdmin = perms.isAdmin;
+  const coachId = perms.coachId;
+  const isAssigned = (s: (typeof sessions)[number]) =>
+    !!coachId && (s.headCoaches.some((c) => c.id === coachId) || s.assistantCoaches.some((c) => c.id === coachId));
+  const isHeadOfSession = (s: (typeof sessions)[number]) => !!coachId && s.headCoaches.some((c) => c.id === coachId);
+  const canMark = (s: (typeof sessions)[number]) => isAdmin || isAssigned(s);
+  const canFinalize = (s: (typeof sessions)[number]) => isAdmin || (perms.canApproveRequests && isHeadOfSession(s));
+  const canApprove = (s: (typeof sessions)[number], r: (typeof pendingRequests)[number]) => {
+    if (r.requestedById === coachId) return false; // never approve your own proposal
+    if (isAdmin) return true;
+    if (r.requestedBy.designation === "HEAD") return false; // a head's proposal is admin-only
+    return perms.canApproveRequests && isHeadOfSession(s);
+  };
+
+  // â”€â”€ Rollup data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const attendanceRows = await prisma.playerAttendance.findMany({
+    where: {
+      status: { in: ["ATTENDED", "ABSENT"] },
+      scheduledSession: { date: { gte: rangeStart } },
+    },
+    include: { player: true, scheduledSession: { include: { batch: true, ageGroup: true } } },
+    orderBy: { player: { name: "asc" } },
+  });
+
+  const playerMisses = new Map<string, { name: string; attended: number; absent: number }>();
+  const batchStats = new Map<string, { name: string; attended: number; absent: number }>();
+  for (const row of attendanceRows) {
+    const miss = playerMisses.get(row.playerId) ?? { name: row.player.name, attended: 0, absent: 0 };
+    if (row.status === "ATTENDED") miss.attended++;
+    else miss.absent++;
+    playerMisses.set(row.playerId, miss);
+
+    if (row.scheduledSession.batch) {
+      const stat = batchStats.get(row.scheduledSession.batchId!) ?? {
+        name: row.scheduledSession.batch.name,
+        attended: 0,
+        absent: 0,
+      };
+      if (row.status === "ATTENDED") stat.attended++;
+      else stat.absent++;
+      batchStats.set(row.scheduledSession.batchId!, stat);
+    }
+  }
+  const playerMissList = [...playerMisses.values()].sort((a, b) => b.absent - a.absent);
+  const batchStatList = [...batchStats.values()].sort((a, b) => b.name.localeCompare(a.name));
+
+  const btnPrimary: React.CSSProperties = { padding: "9px 18px", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all var(--transition)", boxShadow: "var(--shadow-sm)" };
+  const btnOutline: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--secondary)", background: "var(--surface)", color: "var(--secondary)", cursor: "pointer", fontWeight: 700, fontSize: 13 };
+  const btnDanger: React.CSSProperties = { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--error)", background: "var(--surface)", color: "var(--error)", cursor: "pointer", fontWeight: 700, fontSize: 13 };
+  const faceSize = 44;
+
+  return (
+    <>
+      <PageHeader title="Attendance" subtitle="Mark who showed up, review finalization, and track rates." />
+
+      <StatusBanner error={params.error} success={params.success} />
+
+      {rsvpEnabled && upcoming.length > 0 && (
+        <section style={{ marginBottom: 36 }}>
+          <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)", marginBottom: 4 }}>
+            Upcoming sessions
+          </h3>
+          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 18px" }}>
+            Mark who is coming ahead of time. This is a heads-up only - attendance is still recorded after the session.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {upcoming.map((s) => {
+              const players = rosterPlayers.filter((pl) => playerBelongsToSession(pl, s));
+              const answers = new Map(s.playerAttendance.map((x) => [x.playerId, x.status]));
+              const attending = players.filter((pl) => answers.get(pl.id) === "ATTENDING").length;
+              const notAttending = players.filter((pl) => answers.get(pl.id) === "NOT_ATTENDING").length;
+              return (
+                <details key={s.id} className="session-details">
+                  <summary>
+                    <strong style={{ display: "block", fontSize: 15 }}>{s.batch?.name || s.ageGroup.name}</strong>
+                    <span style={{ display: "block", fontSize: 13 }}>
+                      {s.date.toLocaleDateString(undefined, { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })} {"\u00b7"} {s.startTime} {"\u00b7"} {s.location.name}
+                    </span>
+                    <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                      {attending} attending {"\u00b7"} {notAttending} not attending {"\u00b7"} {players.length - attending - notAttending} no answer
+                    </span>
+                  </summary>
+                  {players.length === 0 ? (
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 12 }}>No players on this session's roster.</p>
+                  ) : (
+                    <form action={saveAdvanceRsvp} style={{ marginTop: 14 }}>
+                      <input type="hidden" name="scheduledSessionId" value={s.id} />
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {players.map((pl) => {
+                          const current = answers.get(pl.id);
+                          return (
+                            <div key={pl.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px" }}>
+                              <input type="hidden" name="playerId" value={pl.id} />
+                              <div style={{ minWidth: 0, flex: 1, fontSize: 14, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pl.name}</div>
+                              <select name="status" defaultValue={current === "ATTENDING" || current === "NOT_ATTENDING" ? current : ""} style={{ padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--surface)" }}>
+                                <option value="">{"\u2014"}</option>
+                                <option value="ATTENDING">Attending</option>
+                                <option value="NOT_ATTENDING">Not attending</option>
+                              </select>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <Button full style={{ marginTop: 14, padding: "12px 18px", fontSize: 14 }}>Save advance attendance</Button>
+                    </form>
+                  )}
+                </details>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+        <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)" }}>
+          Needs review
+        </h3>
+        <span style={{ fontSize: 13, color: "var(--text-faint)" }}>({sessions.length})</span>
+      </div>
+      <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 18px" }}>
+        Past sessions whose attendance hasn't been finalized yet.
+      </p>
+
+      {sessions.length === 0 ? (
+        <div style={{ marginBottom: 36 }}>
+          <EmptyState
+            icon="attendance"
+            title="All caught up"
+            message="No sessions need attendance review right now."
+          />
+        </div>
+      ) : (
+        <ListView storageKey="touchline-attendance-view">
+          {sessions.map((s) => {
+            const players = playersForSession(s);
+            const requests = requestsBySession.get(s.id);
+            const marked = new Set(s.playerAttendance.filter((p) => p.status === "ATTENDED" || p.status === "ABSENT").map((p) => p.playerId));
+            const selfCheckIn = s.coachAttendance.find((c) => c.coachId === coachId);
+            const startInstant = sessionStartInstant(s.date, s.startTime, tz);
+            const opened = now >= startInstant;
+            const started = coachId ? opened : false;
+
+            return (
+              <details key={s.id} className="session-details">
+                <summary>
+                  <strong style={{ display: "block", fontSize: 15 }}>{s.batch?.name || s.ageGroup.name}</strong>
+                  <span style={{ display: "block", fontSize: 13 }}>{s.date.toLocaleDateString(undefined, { timeZone: "UTC", month: "short", day: "numeric" })} Â· {s.startTime} Â· {s.location.name}</span>
+                  <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{marked.size}/{players.length} marked{requests ? " Â· Pending proposal" : ""} Â· Expand to review</span>
+                </summary>
+                <div style={{ marginTop: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
+                    <strong style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2 }}>
+                      {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", timeZone: "UTC" })} Â· {s.startTime}â€“{endTime(s.startTime, s.durationMinutes)}
+                    </strong>
+                    <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
+                      {s.ageGroup.name} Â· {s.location.name} Â· Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "â€”"}
+                      {s.assistantCoaches.length > 0 && <> Â· Assistant: {s.assistantCoaches.map((c) => c.user.name).join(", ")}</>}
+                    </div>
+                  </div>
+                  {canFinalize(s) && (
+                    <form action={finalizeAttendance.bind(null, s.id)}>
+                      <Button variant="outline" size="sm">Finalize</Button>
+                    </form>
+                  )}
+                </div>
+
+                {/* Coach self check-in */}
+                {isAssigned(s) && started && (
+                  <div style={{ marginTop: 14, padding: "10px 12px", background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 13, color: "var(--text)" }}>
+                      <Icon name="whistle" size={14} style={{ verticalAlign: "-2px", marginRight: 6, color: "var(--secondary)" }} />
+                      Coach check-in:{" "}
+                      {selfCheckIn?.status === "CHECKED_IN" ? (
+                        <strong style={{ color: "var(--success)" }}>Checked in at {selfCheckIn.confirmedAt?.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", timeZone: tz }) || "â€”"}</strong>
+                      ) : selfCheckIn?.status === "ABSENT" ? (
+                        <strong style={{ color: "var(--error)" }}>Marked absent</strong>
+                      ) : (
+                        "Not yet checked in"
+                      )}
+                    </span>
+                    {selfCheckIn?.status !== "CHECKED_IN" && (
+                      <form action={checkInCoach.bind(null, s.id)}>
+                        <Button size="sm">Check in</Button>
+                      </form>
+                    )}
+                  </div>
+                )}
+
+                {/* Admin override for coach attendance */}
+                {isAdmin && (
+                  <details style={{ marginTop: 12, fontSize: 13, background: "var(--surface-muted)", borderRadius: 8, padding: "8px 12px", border: "1px solid var(--border)" }}>
+                    <summary style={{ color: "var(--text-muted)", cursor: "pointer", fontWeight: 700 }}>Admin â€” override coach attendance</summary>
+                    <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+                      {[...s.headCoaches, ...s.assistantCoaches].map((c) => (
+                        <form
+                          key={c.id}
+                          action={overrideCoachAttendance.bind(null, s.id, c.id)}
+                          style={{ display: "flex", gap: 6, alignItems: "center", background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, padding: "6px 8px" }}
+                        >
+                          <span>{c.user.name}</span>
+                          <select name="status" defaultValue={s.coachAttendance.find((ca) => ca.coachId === c.id)?.status ?? "NOT_YET"} style={{ border: "1px solid var(--border)", borderRadius: 5, fontSize: 13 }}>
+                            <option value="NOT_YET">Not yet</option>
+                            <option value="CHECKED_IN">Checked in</option>
+                            <option value="ABSENT">Absent</option>
+                          </select>
+                          <Button variant="outline" size="sm">Set</Button>
+                        </form>
+                      ))}
+                    </div>
+                  </details>
+                )}
+
+                {/* Pending request needing this user's action */}
+                {requests && canApprove(s, requests) && (
+                  <div style={{ marginTop: 12, padding: "12px 14px", background: "var(--warning-bg)", border: "1px solid #fde68a", borderRadius: 8 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "#92400e", marginBottom: 6 }}>
+                      Pending proposal from {requests.requestedBy.user.name}
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text)", marginBottom: 8 }}>
+                      {(requests.payload as { statuses?: { playerId: string; status: string }[] }).statuses?.map((p) => {
+                        const player = players.find((pl) => pl.id === p.playerId);
+                        return (
+                          <span key={p.playerId} style={{ marginRight: 10, display: "inline-block" }}>
+                            {player?.name || "?"}: <strong>{p.status === "ATTENDED" ? "Attended" : "Absent"}</strong>
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <form action={approveAttendanceRequest.bind(null, requests.id)}>
+                        <Button variant="approval" size="sm">Approve</Button>
+                      </form>
+                      <form action={rejectAttendanceRequest.bind(null, requests.id)}>
+                        <Button variant="danger" size="sm">Reject</Button>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* Marking form */}
+                {canMark(s) && players.length > 0 && !opened && (
+                  <div style={{ marginTop: 16, padding: "10px 12px", background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 13, color: "var(--text-muted)" }}>
+                    Attendance opens when the session starts at {s.startTime}.
+                  </div>
+                )}
+                {canMark(s) && players.length > 0 && opened && (
+                  <form action={submitAttendance} style={{ marginTop: 16 }}>
+                    <input type="hidden" name="scheduledSessionId" value={s.id} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {players.map((p) => (
+                        <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px" }}>
+                          <input type="hidden" name="playerId" value={p.id} />
+                          <div style={{ width: faceSize, height: faceSize, borderRadius: 8, background: "var(--surface-high)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", flexShrink: 0 }}>
+                            <Icon name="user" size={20} />
+                          </div>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                              {p.status !== "ACTIVE" && (
+                                <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
+                              )}
+                              {marked.has(p.id) && <span style={{ fontSize: 13, color: "var(--success)", fontWeight: 700 }}>âœ“ recorded</span>}
+                            </div>
+                          </div>
+                          <select name="status" defaultValue="" style={{ padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--surface)" }}>
+                            <option value="">â€”</option>
+                            <option value="ATTENDED">Attended</option>
+                            <option value="ABSENT">Absent</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                    <Button full style={{ marginTop: 14, padding: "12px 18px", fontSize: 14 }}>
+                      {isAdmin ? "Record attendance" : "Submit for approval"}
+                    </Button>
+                    <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>
+                      {isAdmin
+                        ? "Records directly â€” no approval needed."
+                        : "Your marking goes to " + (isHeadOfSession(s) ? "an administrator for approval." : "the session's head coach for approval.")}
+                    </p>
+                  </form>
+                )}
+                </div>
+              </details>
+            );
+          })}
+        </ListView>
+      )}
+
+      {/* â”€â”€ Rollup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div style={{ marginTop: 36, paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)", margin: 0 }}>Rollup</h3>
+          <form style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select name="range" defaultValue={range} style={{ padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", fontSize: 13 }}>
+              <option value="month">This month</option>
+              <option value="term">Last 90 days</option>
+            </select>
+            <Button variant="outline" size="sm">Apply</Button>
+          </form>
+        </div>
+
+        <div className="rollup-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginTop: 16 }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+            <div className="label-caps" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Misses by player</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {playerMissList.map((p) => (
+                <div key={p.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
+                  <span>{p.name}</span>
+                  <span style={{ fontWeight: 700, color: p.absent > 0 ? "var(--error)" : "var(--success)" }}>
+                    {p.absent} absent / {p.attended + p.absent}
+                  </span>
+                </div>
+              ))}
+              {playerMissList.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No attendance recorded in this window.</span>}
+            </div>
+          </div>
+
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: 16 }}>
+            <div className="label-caps" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 10 }}>Attendance rate by batch</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {batchStatList.map((b) => {
+                const rate = b.attended + b.absent > 0 ? Math.round((b.attended / (b.attended + b.absent)) * 100) : 0;
+                return (
+                  <div key={b.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
+                    <span>{b.name}</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 700 }}>{rate}%</span>
+                      <span style={{ fontSize: 13, color: "var(--text-faint)" }}>({b.attended}/{b.attended + b.absent})</span>
+                    </span>
+                  </div>
+                );
+              })}
+              {batchStatList.length === 0 && <span style={{ fontSize: 13, color: "var(--text-faint)" }}>No attendance recorded in this window.</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -240,7 +240,7 @@ color: "var(--text-heading)",
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(2, 1fr)",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                     gap: 8,
                     marginTop: 12,
                     paddingTop: 12,
