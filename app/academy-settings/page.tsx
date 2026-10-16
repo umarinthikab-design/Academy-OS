@@ -109,6 +109,31 @@ export default async function AcademySettingsPage({
             />
           </div>
 
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              paddingBottom: 16,
+              borderBottom: "1px solid var(--border)",
+              marginBottom: 16,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Advance player attendance (RSVP)</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                When on, coaches can mark each player Attending or Not attending before a session. Attendance is still recorded after the session as usual. Off by default.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              name="playerAdvanceRsvpEnabled"
+              defaultChecked={settings.playerAdvanceRsvpEnabled}
+              style={{ width: 20, height: 20, flexShrink: 0, accentColor: "var(--secondary)" }}
+            />
+          </div>
+
           {perms.isAdmin && (
             <div
               style={{

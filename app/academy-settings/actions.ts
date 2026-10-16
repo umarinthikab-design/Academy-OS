@@ -52,6 +52,7 @@ export async function updateAcademySettings(formData: FormData) {
   try { new Intl.DateTimeFormat("en", { timeZone }).format(); } catch { redirect("/academy-settings?error=timezone"); }
 
   const autoAssignPlayerAgeGroup = formData.get("autoAssignPlayerAgeGroup") === "on";
+  const playerAdvanceRsvpEnabled = formData.get("playerAdvanceRsvpEnabled") === "on";
   const ageGroups = await prisma.ageGroup.findMany({ select: { id: true } });
   const rules = ageGroups.map(group => ({
     id: group.id,
@@ -71,6 +72,7 @@ export async function updateAcademySettings(formData: FormData) {
       where: { id: existing?.id ?? "__none__" },
       update: {
         autoAssignPlayerAgeGroup,
+        playerAdvanceRsvpEnabled,
         preSessionConfirmationEnabled,
         confirmationWindowHours,
         priorityWindowHours,
@@ -82,6 +84,7 @@ export async function updateAcademySettings(formData: FormData) {
       },
       create: {
         autoAssignPlayerAgeGroup,
+        playerAdvanceRsvpEnabled,
         preSessionConfirmationEnabled,
         confirmationWindowHours,
         priorityWindowHours,
@@ -101,5 +104,6 @@ export async function updateAcademySettings(formData: FormData) {
   revalidatePath("/schedule");
   revalidatePath("/drills");
   revalidatePath("/squad");
+  revalidatePath("/attendance");
   redirect("/academy-settings?success=Club settings updated.");
 }

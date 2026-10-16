@@ -10,6 +10,7 @@ import { notifyApprovers } from "@/lib/notifyApprovers";
 import { notifyUser } from "@/lib/notifications";
 import { safeEqual } from "@/lib/safeEqual";
 import { sessionStartAt } from "@/lib/academyTime";
+import { getAcademySettings } from "@/lib/confirmations";
 import { PlayerAttendanceStatus, CoachAttendanceStatus } from "@prisma/client";
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
@@ -348,6 +349,69 @@ export async function overrideCoachAttendance(scheduledSessionId: string, coachI
   if (perms.userId) await logActivity(perms.userId, "overrode_coach_attendance", "ScheduledSession", scheduledSessionId, coachId);
   revalidatePath("/attendance");
   redirect("/attendance?success=Coach attendance updated.");
+}
+
+// ── Advance player RSVP (optional, switched on in Club Settings) ─────
+// A heads-up before the session: coaches mark each player Attending or Not
+// attending. It writes directly (no approval chain) because it is not the
+// attendance record - the post-session ATTENDED / ABSENT marking replaces it.
+export async function saveAdvanceRsvp(formData: FormData) {
+  const perms = await getPermissions();
+  if (!perms.role || perms.role === "PARENT") redirect("/attendance?error=no_permission");
+
+  const settings = await getAcademySettings();
+  if (!settings.playerAdvanceRsvpEnabled) redirect("/attendance?error=rsvp_disabled");
+
+  const scheduledSessionId = formData.get("scheduledSessionId") as string;
+  const playerIds = formData.getAll("playerId") as string[];
+  const statuses = formData.getAll("status") as string[];
+  if (!scheduledSessionId || playerIds.length === 0) redirect("/attendance?error=missing_fields");
+
+  const session = await prisma.scheduledSession.findUnique({
+    where: { id: scheduledSessionId },
+    include: { headCoaches: true, assistantCoaches: true },
+  });
+  if (!session) redirect("/attendance");
+  if (session.status !== "scheduled" || session.resolvedAt) redirect("/attendance?error=rsvp_closed");
+  if (new Date() >= (await sessionStart(session))) redirect("/attendance?error=rsvp_closed");
+
+  const assigned = [...session.headCoaches, ...session.assistantCoaches].some((c) => c.id === perms.coachId);
+  if (!perms.isAdmin && !assigned) redirect("/attendance?error=no_permission");
+
+  const roster = await prisma.player.findMany({ where: sessionRosterWhere(session), select: { id: true } });
+  const validIds = new Set(roster.map((player) => player.id));
+  if (
+    playerIds.length !== statuses.length ||
+    new Set(playerIds).size !== playerIds.length ||
+    playerIds.some((id) => !validIds.has(id)) ||
+    statuses.some((status) => !["", "ATTENDING", "NOT_ATTENDING"].includes(status))
+  ) redirect("/attendance?error=invalid_roster");
+
+  const deadline = await sessionDeadline(session);
+  let saved = 0;
+  for (let i = 0; i < playerIds.length; i++) {
+    const playerId = playerIds[i];
+    const status = statuses[i];
+    const key = { playerId_scheduledSessionId: { playerId, scheduledSessionId } };
+    const existing = await prisma.playerAttendance.findUnique({ where: key });
+    // Never touch a player who is already marked Attended / Absent.
+    if (existing && (existing.status === "ATTENDED" || existing.status === "ABSENT")) continue;
+    if (status === "") {
+      if (existing) await prisma.playerAttendance.delete({ where: key });
+      continue;
+    }
+    await prisma.playerAttendance.upsert({
+      where: key,
+      update: { status: status as PlayerAttendanceStatus, confirmedAt: new Date() },
+      create: { playerId, scheduledSessionId, status: status as PlayerAttendanceStatus, deadline, confirmedAt: new Date() },
+    });
+    saved++;
+  }
+
+  if (perms.userId) await logActivity(perms.userId, "recorded_advance_rsvp", "ScheduledSession", scheduledSessionId, saved + " players");
+  revalidatePath("/attendance");
+  revalidatePath("/");
+  redirect("/attendance?success=Advance attendance saved.");
 }
 
 export { sessionEnd };

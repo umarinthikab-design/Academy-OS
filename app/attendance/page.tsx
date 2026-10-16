@@ -10,6 +10,7 @@ import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { getAcademyTimeZone } from "@/lib/academyTime";
+import { getAcademySettings } from "@/lib/confirmations";
 import { sessionStartInstant, startOfTodayInZone } from "@/lib/time";
 import {
   submitAttendance,
@@ -18,6 +19,7 @@ import {
   finalizeAttendance,
   checkInCoach,
   overrideCoachAttendance,
+  saveAdvanceRsvp,
 } from "./actions";
 
 function endTime(time: string, durationMinutes: number): string {
@@ -67,6 +69,31 @@ export default async function AttendancePage({
     }),
     prisma.player.findMany({ include: { batches: { select: { id: true, ageGroupId: true } } }, orderBy: { name: "asc" } }),
   ]);
+
+  // Advance player RSVP (optional): upcoming sessions the coach can pre-mark.
+  const academySettings = await getAcademySettings();
+  const rsvpEnabled = academySettings.playerAdvanceRsvpEnabled;
+  const rsvpWindowEnd = new Date(now.getTime() + academySettings.confirmationWindowHours * 60 * 60 * 1000);
+  const upcomingRaw =
+    rsvpEnabled && (perms.isAdmin || perms.coachId)
+      ? await prisma.scheduledSession.findMany({
+          where: {
+            date: { gte: todayLocal },
+            status: "scheduled",
+            resolvedAt: null,
+            ...(perms.isAdmin
+              ? {}
+              : { OR: [{ headCoaches: { some: { id: perms.coachId! } } }, { assistantCoaches: { some: { id: perms.coachId! } } }] }),
+          },
+          include: { ageGroup: true, location: true, batch: true, playerAttendance: true },
+          orderBy: [{ date: "asc" }, { startTime: "asc" }],
+          take: 40,
+        })
+      : [];
+  const upcoming = upcomingRaw.filter((s) => {
+    const st = sessionStartInstant(s.date, s.startTime, tz);
+    return st > now && st <= rsvpWindowEnd;
+  });
 
   const requestsBySession = new Map<string, (typeof pendingRequests)[number]>();
   for (const r of pendingRequests) {
@@ -136,6 +163,62 @@ export default async function AttendancePage({
       <PageHeader title="Attendance" subtitle="Mark who showed up, review finalization, and track rates." />
 
       <StatusBanner error={params.error} success={params.success} />
+
+      {rsvpEnabled && upcoming.length > 0 && (
+        <section style={{ marginBottom: 36 }}>
+          <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)", marginBottom: 4 }}>
+            Upcoming sessions
+          </h3>
+          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 18px" }}>
+            Mark who is coming ahead of time. This is a heads-up only - attendance is still recorded after the session.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {upcoming.map((s) => {
+              const players = rosterPlayers.filter((pl) => playerBelongsToSession(pl, s));
+              const answers = new Map(s.playerAttendance.map((x) => [x.playerId, x.status]));
+              const attending = players.filter((pl) => answers.get(pl.id) === "ATTENDING").length;
+              const notAttending = players.filter((pl) => answers.get(pl.id) === "NOT_ATTENDING").length;
+              return (
+                <details key={s.id} className="session-details">
+                  <summary>
+                    <strong style={{ display: "block", fontSize: 15 }}>{s.batch?.name || s.ageGroup.name}</strong>
+                    <span style={{ display: "block", fontSize: 13 }}>
+                      {s.date.toLocaleDateString(undefined, { timeZone: "UTC", weekday: "short", month: "short", day: "numeric" })} {"\u00b7"} {s.startTime} {"\u00b7"} {s.location.name}
+                    </span>
+                    <span style={{ display: "block", fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                      {attending} attending {"\u00b7"} {notAttending} not attending {"\u00b7"} {players.length - attending - notAttending} no answer
+                    </span>
+                  </summary>
+                  {players.length === 0 ? (
+                    <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 12 }}>No players on this session's roster.</p>
+                  ) : (
+                    <form action={saveAdvanceRsvp} style={{ marginTop: 14 }}>
+                      <input type="hidden" name="scheduledSessionId" value={s.id} />
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {players.map((pl) => {
+                          const current = answers.get(pl.id);
+                          return (
+                            <div key={pl.id} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--surface-muted)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px" }}>
+                              <input type="hidden" name="playerId" value={pl.id} />
+                              <div style={{ minWidth: 0, flex: 1, fontSize: 14, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pl.name}</div>
+                              <select name="status" defaultValue={current === "ATTENDING" || current === "NOT_ATTENDING" ? current : ""} style={{ padding: "6px 8px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--surface)" }}>
+                                <option value="">{"\u2014"}</option>
+                                <option value="ATTENDING">Attending</option>
+                                <option value="NOT_ATTENDING">Not attending</option>
+                              </select>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <Button full style={{ marginTop: 14, padding: "12px 18px", fontSize: 14 }}>Save advance attendance</Button>
+                    </form>
+                  )}
+                </details>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
         <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 24, fontWeight: 600, color: "var(--text-heading)" }}>

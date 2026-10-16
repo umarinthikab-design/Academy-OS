@@ -623,6 +623,7 @@ model AcademySettings {
   // academyName wherever a logo is absent.
   logoUrl     String?
   coachConfirmationDeadlineHours Int @default(24)
+  playerAdvanceRsvpEnabled Boolean @default(false)
 }
 
 // ── Approvals & accountability ──────────────────────────

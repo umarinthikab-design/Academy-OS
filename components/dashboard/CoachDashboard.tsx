@@ -83,7 +83,7 @@ export async function CoachDashboard({
         headCoaches: { include: { user: true } },
         assistantCoaches: { include: { user: true } },
         session: { select: { name: true } },
-        _count: { select: { playerAttendance: true } },
+        _count: { select: { playerAttendance: { where: { status: { in: ["ATTENDING", "ATTENDED"] } } } } },
       },
       orderBy: [{ date: "asc" }, { startTime: "asc" }],
       take: 10,
