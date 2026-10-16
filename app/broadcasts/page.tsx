@@ -1,3 +1,4 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { getUnreadCount, getInbox } from "@/lib/notifications";
 import { getPermissions } from "@/lib/permissions";
 import { markNotificationRead, markAllNotificationsRead } from "./actions";
@@ -15,17 +16,18 @@ const CATEGORY_ICONS: Record<string, string> = {
   ANNOUNCEMENT: "alert",
 };
 
-function formatDate(d: Date) {
+function formatDate(d: Date, tz: string) {
   return new Date(d).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: tz,
   });
 }
 
 export default async function BroadcastsPage() {
   const perms = await getPermissions();
+  const academyTz = await getAcademyTimeZone();
   const userId = perms.userId ?? "";
   const [unread, items] = await Promise.all([getUnreadCount(userId), getInbox(userId)]);
   const canSend = perms.canSendNotifications;
@@ -132,7 +134,7 @@ export default async function BroadcastsPage() {
                     {item.body}
                   </p>
                   <div style={{ marginTop: 6, display: "flex", gap: 12, alignItems: "center", fontSize: 13, color: "var(--text-muted)" }}>
-                    <span>{formatDate(item.createdAt)}</span>
+                    <span>{formatDate(item.createdAt, academyTz)}</span>
                     {item.link && (
                       <a className="text-link" href={item.link} style={{ color: "var(--text-brand)", fontWeight: 600, textDecoration: "underline" }}>
                         View details

@@ -1,3 +1,4 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
@@ -14,19 +15,19 @@ import { inputBase } from "@/components/ui/Form";
 // toDateInputValue - .toISOString().slice(0,10) reads back the UTC calendar
 // date, which is one day early for any timezone behind UTC.
 function toDateInputValue(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
 
-function formatDate(d: Date) {
+function formatDate(d: Date, tz: string) {
   return new Date(d).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
 
-    timeZone: "UTC",
+    timeZone: tz,
   });
 }
 
@@ -54,6 +55,7 @@ export default async function RegistrationsPage({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const params = await searchParams;
+  const academyTz = await getAcademyTimeZone();
   const perms = await getPermissions();
   if (!(perms.isAdmin || perms.isClubManager)) redirect("/?error=no_permission");
 
@@ -107,7 +109,7 @@ export default async function RegistrationsPage({
                       {r.playerName || "Unmapped submission"}
                     </div>
                     <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                      Submitted {formatDate(r.createdAt)}
+                      Submitted {formatDate(r.createdAt, academyTz)}
                     </div>
                   </div>
                   {incomplete && <Badge tone="warning">Incomplete</Badge>}

@@ -1,13 +1,14 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import BroadcastsCard from "./BroadcastsCard";
 import { getPermissions } from "@/lib/permissions";
 import { getInbox, getUnreadCount } from "@/lib/notifications";
 
-function formatDate(d: Date) {
+function formatDate(d: Date, tz: string) {
   return new Date(d).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: tz,
   });
 }
 
@@ -16,6 +17,7 @@ function formatDate(d: Date) {
 // without affecting anyone else (read state is stored per recipient).
 export async function BroadcastsSection() {
   const perms = await getPermissions();
+  const academyTz = await getAcademyTimeZone();
   const userId = perms.userId ?? "";
   if (!userId) return null;
 
@@ -29,7 +31,7 @@ export async function BroadcastsSection() {
       id: item.id,
       title: item.title,
       body: item.body,
-      date: formatDate(item.createdAt),
+      date: formatDate(item.createdAt, academyTz),
       readAt: null,
     }));
 

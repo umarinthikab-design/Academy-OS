@@ -12,7 +12,9 @@ function endTime(time: string, durationMinutes: number): string {
 }
 
 function csvCell(value: string | number | Date): string {
-  const raw = value instanceof Date ? value.toLocaleDateString() : String(value);
+  const text = value instanceof Date ? value.toLocaleDateString("en-CA", { timeZone: "UTC" }) : String(value);
+  // A leading = + - @ would run as a formula in Excel, so prefix it with an apostrophe.
+  const raw = /^[=+\-@\t\r]/.test(text) ? "'" + text : text;
   // Escape commas, quotes, and newlines per RFC 4180.
   return `"${raw.replace(/"/g, '""')}"`;
 }
