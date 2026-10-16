@@ -12,6 +12,7 @@ import { getPermissions } from "@/lib/permissions";
 import { applyDecision } from "@/lib/approvals";
 import { logActivity } from "@/lib/logActivity";
 import { notifyUser } from "@/lib/notifications";
+import { getAcademySettings, confirmationDeadline } from "@/lib/confirmations";
 
 export async function approveRequest(requestId: string) {
   const perms = await getPermissions();
@@ -104,7 +105,7 @@ export async function confirmSessionParticipation(
     const headUserIds = row.scheduledSession.headCoaches.filter((c) => c.id !== perms.coachId).map((c) => c.userId);
     const recipientUserIds = [...new Set([...admins.map((u) => u.id), ...headUserIds])];
 
-    const when = `${row.scheduledSession.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${row.scheduledSession.startTime}`;
+    const when = `${row.scheduledSession.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" })} at ${row.scheduledSession.startTime}`;
     await Promise.all(
       recipientUserIds.map((userId) =>
         notifyUser({
@@ -120,5 +121,7 @@ export async function confirmSessionParticipation(
 
   revalidatePath("/");
   revalidatePath("/schedule");
-  redirect(status === "CONFIRMED" ? "/?success=You're confirmed for this session." : "/?success=You declined - the club has been notified.");
+  const settings = await getAcademySettings();
+  const lateNote = new Date() > confirmationDeadline(row.scheduledSession, settings) ? " (after the response deadline)" : "";
+  redirect(status === "CONFIRMED" ? `/?success=You're confirmed for this session${lateNote}.` : `/?success=You declined${lateNote} - the club has been notified.`);
 }

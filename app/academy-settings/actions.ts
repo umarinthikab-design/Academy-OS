@@ -18,6 +18,7 @@ export async function updateAcademySettings(formData: FormData) {
   const preSessionConfirmationEnabled = formData.get("preSessionConfirmationEnabled") === "on";
   const confirmationWindowHours = Math.max(1, Math.min(720, Number(formData.get("confirmationWindowHours")) || 72));
   const priorityWindowHours = Math.max(1, Math.min(720, Number(formData.get("priorityWindowHours")) || 48));
+  const coachConfirmationDeadlineHours = Math.max(1, Math.min(720, Number(formData.get("coachConfirmationDeadlineHours")) || 24));
 
   // Academy branding - name is required with a sane length cap; an empty logo
   // URL clears the logo and falls back to the text name everywhere.
@@ -29,6 +30,10 @@ export async function updateAcademySettings(formData: FormData) {
   // "escalates" threshold can't exceed when the item first appears.
   if (priorityWindowHours >= confirmationWindowHours) {
     redirect("/academy-settings?error=priority_window");
+  }
+
+  if (coachConfirmationDeadlineHours >= confirmationWindowHours) {
+    redirect("/academy-settings?error=deadline_window");
   }
 
   // "Club managers can author drills" is an admin-only decision - the form
@@ -69,6 +74,7 @@ export async function updateAcademySettings(formData: FormData) {
         preSessionConfirmationEnabled,
         confirmationWindowHours,
         priorityWindowHours,
+        coachConfirmationDeadlineHours,
         clubManagersCanAuthorDrills,
         timeZone,
         academyName,
@@ -79,6 +85,7 @@ export async function updateAcademySettings(formData: FormData) {
         preSessionConfirmationEnabled,
         confirmationWindowHours,
         priorityWindowHours,
+        coachConfirmationDeadlineHours,
         clubManagersCanAuthorDrills,
         timeZone,
         academyName,

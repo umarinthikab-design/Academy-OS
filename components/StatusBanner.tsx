@@ -28,7 +28,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   drill_in_use: "This drill is used in a session plan, so it can't be deleted. Archive it instead.",
   category_in_use: "This category is still assigned to a drill, so it can't be deleted.",
   skill_in_use: "This skill still has ratings recorded for a player, so it can't be deleted.",
-  priority_window: "The priority window must be shorter than the confirmation window.",
+  deadline_window: "The response deadline must be shorter than the confirmation window.", priority_window: "The priority window must be shorter than the confirmation window.",
   password_too_short: "New password must be at least 8 characters.",
   password_mismatch: "New password and confirmation don't match.",
   wrong_password: "Current password is incorrect.",

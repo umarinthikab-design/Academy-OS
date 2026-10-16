@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import { redirect } from "next/navigation";
@@ -9,6 +10,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { SettingsSection } from "@/components/ui/SettingsSection";
 import { Field, Input } from "@/components/ui/Form";
 import { LogoUpload } from "@/components/ui/LogoUpload";
+import { AgeRangeCalculator } from "@/components/ui/AgeRangeCalculator";
 
 export default async function AcademySettingsPage({
   searchParams,
@@ -59,16 +61,26 @@ export default async function AcademySettingsPage({
           </label>
           <p style={{ fontSize: 13, color: "var(--text-muted)" }}>When enabled, one inclusive birth-date range must match. Gaps require a rule update; overlapping ranges are rejected. When disabled, staff choose the age group. Existing players are not reassigned when these rules change.</p>
           {ageGroups.length === 0 && <p>Create age groups before configuring assignment.</p>}
-          {ageGroups.map(group => (
-            <div key={group.id} className="form-grid-2col" style={{ marginBottom: 14 }}>
-              <Field label={`${group.name}: born from (inclusive)`}>
-                <Input name={`dobFrom_${group.id}`} type="date" defaultValue={group.birthDateFrom?.toISOString().slice(0, 10) ?? ""} />
-              </Field>
-              <Field label="Born through (inclusive)">
-                <Input name={`dobTo_${group.id}`} type="date" defaultValue={group.birthDateTo?.toISOString().slice(0, 10) ?? ""} />
-              </Field>
+          <details open={settings.autoAssignPlayerAgeGroup} style={{ marginTop: 8 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 14, padding: "6px 0" }}>
+              Birth-date ranges ({ageGroups.length} age groups)
+            </summary>
+            <div style={{ marginTop: 8 }}>
+              <AgeRangeCalculator groups={ageGroups.map(g => ({ id: g.id, name: g.name }))} />
             </div>
-          ))}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(56px, auto) 1fr 1fr", gap: "8px 10px", alignItems: "center", marginTop: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Age group</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Born from</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Born through</div>
+              {ageGroups.map(group => (
+                <Fragment key={group.id}>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>{group.name}</div>
+                  <Input name={`dobFrom_${group.id}`} type="date" aria-label={`${group.name} born from (inclusive)`} defaultValue={group.birthDateFrom?.toISOString().slice(0, 10) ?? ""} />
+                  <Input name={`dobTo_${group.id}`} type="date" aria-label={`${group.name} born through (inclusive)`} defaultValue={group.birthDateTo?.toISOString().slice(0, 10) ?? ""} />
+                </Fragment>
+              ))}
+            </div>
+          </details>
         </SettingsSection>
 
         <SettingsSection title="Session Workflow">
@@ -148,6 +160,20 @@ export default async function AcademySettingsPage({
                 min={1}
                 max={720}
                 defaultValue={settings.priorityWindowHours}
+                required
+              />
+            </Field>
+            <Field
+              label="Coach response deadline (hours before session)"
+              hint="Coaches should confirm or decline at least this many hours before a session. Late answers are still accepted but marked late; unanswered coaches are flagged to admins and head coaches. Must be shorter than the confirmation window."
+            >
+              <Input
+                name="coachConfirmationDeadlineHours"
+                type="number"
+                min={1}
+                max={720}
+                defaultValue={settings.coachConfirmationDeadlineHours}
+
                 required
               />
             </Field>

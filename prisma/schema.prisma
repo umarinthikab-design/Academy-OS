@@ -589,6 +589,7 @@ model SessionCoachConfirmation {
   lastRemindedAt     DateTime?
 
   @@unique([scheduledSessionId, coachId])
+  overdueNotifiedAt DateTime?
 }
 
 // Academy-wide (club-wide) configuration, distinct from the per-user
@@ -621,6 +622,7 @@ model AcademySettings {
   // Player.photoUrl); no upload flow wired up yet. Falls back to the text
   // academyName wherever a logo is absent.
   logoUrl     String?
+  coachConfirmationDeadlineHours Int @default(24)
 }
 
 // ── Approvals & accountability ──────────────────────────
