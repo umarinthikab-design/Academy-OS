@@ -1,13 +1,16 @@
-// DashboardHero - the pitch-themed greeting banner used by every role
+﻿// DashboardHero - the pitch-themed greeting banner used by every role
 // dashboard. Subtitle is role-specific; the markup stays consistent.
 
 import { getAcademyTimeZone } from "@/lib/academyTime";
 import { Icon } from "@/components/ui/Icon";
 
-function greeting(): string {
-  const h = new Date().getHours();
+function greeting(tz?: string): string {
+  // Hour of day in the academy time zone (the server itself runs in UTC).
+  const h = tz
+    ? Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: tz }).format(new Date()))
+    : new Date().getHours();
   if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
+  if (h < 16) return "Good afternoon";
   return "Good evening";
 }
 
@@ -43,7 +46,7 @@ export async function DashboardHero({
           {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", timeZone: academyTz })}
         </div>
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 6px", color: "#fff" }}>
-          {greeting()}, {name.split(" ")[0]}.
+          {greeting(academyTz)}, {name.split(" ")[0]}.
         </h1>
         {subtitle && <p style={{ margin: 0, fontSize: 15, opacity: 0.85, maxWidth: 560, color: "#fff" }}>{subtitle}</p>}
         {actions && <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>{actions}</div>}
@@ -53,3 +56,4 @@ export async function DashboardHero({
 }
 
 export { greeting };
+
