@@ -6,3 +6,5 @@ tsconfig.tsbuildinfo
 
 .vercel
 .env*
+
+gather*.txt
