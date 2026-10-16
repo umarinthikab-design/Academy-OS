@@ -3,6 +3,7 @@
 // feedback conversation, and lets them reply to approver feedback until the
 // request is resolved.
 
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { Button } from "@/components/ui/Button";
 import { getMyRequests, requestCategory } from "@/lib/approvals";
 import type { Permissions } from "@/lib/permissions";
@@ -33,6 +34,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export async function MyRequests({ perms }: { perms: Permissions }) {
+  const academyTz = await getAcademyTimeZone();
   const requests = await getMyRequests(perms);
   // Only coaches submit requests - admins and parents have no coach row.
   if (!perms.coachId) return null;
@@ -69,8 +71,8 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
             <div>
               <h3 style={{ fontFamily: "var(--font-headline)", fontSize: 18, fontWeight: 600, lineHeight: 1.2, color: "var(--text-heading)", margin: 0 }}>{r.detail}</h3>
               <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "4px 0 0" }}>
-                Submitted {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                {r.resolvedAt ? ` · resolved ${r.resolvedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
+                Submitted {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}
+                {r.resolvedAt ? ` · resolved ${r.resolvedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}` : ""}
               </p>
             </div>
 
@@ -92,7 +94,7 @@ export async function MyRequests({ perms }: { perms: Permissions }) {
                         <div key={m.id} style={{ fontSize: 13, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
                           <strong>{m.authorName}:</strong> {m.message}
                           <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
-                            {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: academyTz })}
                           </div>
                         </div>
                       ))}

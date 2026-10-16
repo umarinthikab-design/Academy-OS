@@ -1,0 +1,94 @@
+﻿---- AdminDashboard lines 39-68 ----
+39:       prisma.scheduledSession.findMany({
+40:         where: { date: { gte: todayStart }, status: "scheduled" },
+41:         include: { ageGroup: true, location: true, headCoaches: { include: { user: true } }, assistantCoaches: { include: { user: true } }, session: { select: { name: true } } },
+42:         orderBy: [{ date: "asc" }, { startTime: "asc" }],
+43:         take: 6,
+44:       }),
+45:       prisma.playerAttendance.findMany({
+46:         where: { status: { in: ["ATTENDED", "ABSENT"] }, scheduledSession: { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } } },
+47:         select: { status: true },
+48:       }),
+49:       prisma.activityLog.findMany({ orderBy: { createdAt: "desc" }, take: 6, include: { user: { select: { name: true } } } }),
+50:       prisma.ageGroup.findMany({
+51:         orderBy: { sortOrder: "asc" },
+52:         include: { _count: { select: { batches: true, scheduledSessions: true } } },
+53:       }),
+54:     ]);
+55: 
+56:   const attended = monthAttendance.filter((a) => a.status === "ATTENDED").length;
+57:   const attendanceRate = monthAttendance.length > 0 ? Math.round((attended / monthAttendance.length) * 100) : 0;
+58: 
+59:   return (
+60:     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+61:       <DashboardHero
+62:         name={userName}
+63:         subtitle={
+64:           <span>
+65:             Here's what's happening across {academyName} today — {todaysSessions.length} {todaysSessions.length === 1 ? "session" : "sessions"},{" "}
+66:             {attendanceRate}% attendance this month.
+67:           </span>
+68:         }
+---- CoachDashboard lines 77-121 ----
+77:     prisma.scheduledSession.findMany({
+78:       where: sessionWhere,
+79:       include: {
+80:         ageGroup: true,
+81:         location: true,
+82:         batch: true,
+83:         headCoaches: { include: { user: true } },
+84:         assistantCoaches: { include: { user: true } },
+85:         session: { select: { name: true } },
+86:         _count: { select: { playerAttendance: true } },
+87:       },
+88:       orderBy: [{ date: "asc" }, { startTime: "asc" }],
+89:       take: 10,
+90:     }),
+91:     prisma.player.findMany({
+92:       where: playerWhere,
+93:       select: { id: true, name: true, position: true, photoUrl: true, batches: { select: { ageGroupId: true } } },
+94:       orderBy: { name: "asc" },
+95:     }),
+96:     prisma.playerAttendance.findMany({
+97:       where: {
+98:         status: { in: ["ATTENDED", "ABSENT"] },
+99:         player: playerWhere,
+100:         scheduledSession: { date: { gte: new Date(now.getFullYear(), now.getMonth(), 1) } },
+101:       },
+102:       select: { status: true, scheduledSession: { select: { ageGroupId: true, batchId: true } } },
+103:     }),
+104:   ]);
+105: 
+106:   const attended = monthAttendance.filter((a) => a.status === "ATTENDED").length;
+107:   const attendanceRate = monthAttendance.length > 0 ? Math.round((attended / monthAttendance.length) * 100) : 0;
+108: 
+109:   const todaysSessions = mySessions.filter(
+110:     (s) => sessionStart(s.date, s.startTime, tz) >= todayStart && s.date < new Date(todayStart.getTime() + 86400000)
+111:   );
+112:   const nextSession = mySessions.find((s) => sessionStart(s.date, s.startTime, tz) > now) ?? todaysSessions[0] ?? null;
+113:   const priority = todaysSessions[0] ?? nextSession;
+114: 
+115:   const cardStyle: React.CSSProperties = {
+116:     background: "var(--surface)",
+117:     border: "1px solid var(--border)",
+118:     borderRadius: "var(--radius-lg)",
+119:     padding: 16,
+120:     position: "relative",
+121:     overflow: "hidden",
+---- CoachDashboard lines 255-270 ----
+255:                   </div>
+256:                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+257:                     <Icon name="pin" size={16} style={{ flexShrink: 0 }} />
+258:                     {s.location.name}
+259:                   </div>
+260:                   <div style={{ display: "flex", alignItems: "center", gap: 6, gridColumn: "span 2" }}>
+261:                     <Icon name="users" size={16} style={{ flexShrink: 0 }} />
+262:                     {s._count.playerAttendance} Players Expected
+263:                   </div>
+264:                 </div>
+265:                 <a className="ui-btn"
+266:                   href="/attendance"
+267:                   style={{
+268:                     display: "flex",
+269:                     alignItems: "center",
+270:                     justifyContent: "center",

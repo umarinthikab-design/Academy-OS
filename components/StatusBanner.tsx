@@ -1,3 +1,4 @@
+import { isKnownSuccess } from "@/lib/successMessages";
 // Banner for action results (error/success) shown after redirects.
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -60,6 +61,7 @@ export function StatusBanner({ error, success }: { error?: string; success?: str
     );
   }
   if (success) {
+    const safeSuccess = isKnownSuccess(success) ? success : "Done.";
     return (
       <div
         style={{
@@ -77,7 +79,7 @@ export function StatusBanner({ error, success }: { error?: string; success?: str
         }}
       >
         <span aria-hidden="true">✓</span>
-        {success}
+        {safeSuccess}
       </div>
     );
   }

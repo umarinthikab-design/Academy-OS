@@ -166,7 +166,7 @@ color: "var(--text-heading)",
               <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "4px 0 0" }}>
                 {todaysSessions.includes(priority)
                   ? `Confirm you're coaching today's ${priority.ageGroup.name} session (${priority.startTime}).`
-                  : `Next session: ${priority.ageGroup.name} on ${priority.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${priority.startTime}.`}
+                  : `Next session: ${priority.ageGroup.name} on ${priority.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" })} at ${priority.startTime}.`}
               </p>
             </div>
           </div>
@@ -397,7 +397,7 @@ color: "var(--text-heading)",
                     }}
                   >
                     <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
-                      {s.date.toLocaleDateString(undefined, { month: "short" })}
+                      {s.date.toLocaleDateString(undefined, { month: "short", timeZone: "UTC" })}
                     </span>
                     <span style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.1 }}>{s.date.getDate()}</span>
                   </div>

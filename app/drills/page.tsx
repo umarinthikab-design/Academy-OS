@@ -1,4 +1,6 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { Button } from "@/components/ui/Button";
+import { CardView } from "@/components/ui/CardView";
 import { prisma } from "@/lib/prisma";
 import { createDrill, updateDrill, addFeedback, approveDrill, rejectDrill, archiveDrill, reactivateDrill, deleteDrill, createDrillCategory, renameDrillCategory, deleteDrillCategory } from "./actions";
 import { getPermissions } from "@/lib/permissions";
@@ -18,6 +20,7 @@ export default async function DrillsPage({
 }: {
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
+  const academyTz = await getAcademyTimeZone();
   const params = await searchParams;
   const perms = await getPermissions();
   const canCreate = perms.canAuthorDrills;
@@ -267,7 +270,7 @@ export default async function DrillsPage({
           message="Approved suggestions will appear here and become available in session plans."
         />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
+        <CardView storageKey="touchline-drills-view" defaultView="tiles" minTile={260} label="Drill display">
           {approved.map((d) => (
             <div key={d.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden", boxShadow: "var(--shadow-sm)", display: "flex", flexDirection: "column" }}>
               <div style={{ position: "relative", height: 128, background: "var(--surface-muted)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -364,7 +367,7 @@ export default async function DrillsPage({
               </div>
             </div>
           ))}
-        </div>
+        </CardView>
       )}
 
       {canManage && archivedDrills.length > 0 && (
@@ -384,7 +387,7 @@ export default async function DrillsPage({
                       <Badge tone="muted">Archived</Badge>
                     </div>
                     <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
-                      {d.category.name} · {d.duration}m · archived {d.archivedAt!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      {d.category.name} · {d.duration}m · archived {d.archivedAt!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: academyTz })}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>

@@ -1,3 +1,4 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { BackToSquad } from "@/components/SquadNavigation";
 import { safeSquadReturn } from "@/lib/squadReturn";
 import { PlayerPhotoForm } from "@/components/PlayerPhotoForm";
@@ -24,6 +25,7 @@ export default async function PlayerDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string; success?: string; returnTo?: string }>;
 }) {
+  const academyTz = await getAcademyTimeZone();
   const { id } = await params;
   const p = await searchParams;
   const perms = await getPermissions();
@@ -132,7 +134,7 @@ export default async function PlayerDetailPage({
             </div>
             <div>
               <div style={labelCaps}>Joined</div>
-              <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "var(--font-headline)", color: "var(--text)" }}>{player.dateJoined.toLocaleDateString(undefined, { month: "short", year: "numeric" })}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, fontFamily: "var(--font-headline)", color: "var(--text)" }}>{player.dateJoined.toLocaleDateString(undefined, { month: "short", year: "numeric", timeZone: academyTz })}</div>
             </div>
           </div>
           {canEdit && (
@@ -162,7 +164,7 @@ export default async function PlayerDetailPage({
                 <strong style={{ color: "var(--text)" }}>{skillName}</strong>
                 {history.length > 1 && (
                   <span>
-                    {" "}· Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`).join(" → ")}
+                    {" "}· Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}`).join(" → ")}
                   </span>
                 )}
               </div>
@@ -177,7 +179,7 @@ export default async function PlayerDetailPage({
               <div key={n.id} style={{ fontSize: 13, padding: "8px 10px", background: "var(--surface-muted)", borderRadius: "var(--radius-sm)", borderLeft: "3px solid var(--secondary)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <span style={{ ...labelCaps, fontSize: 13 }}>{n.coach.user.name}</span>
-                  <span style={{ fontSize: 13, color: "var(--text-faint)" }}>{n.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-faint)" }}>{n.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}</span>
                 </div>
                 <div>{n.content}</div>
               </div>
@@ -219,7 +221,7 @@ export default async function PlayerDetailPage({
             return (
               <div key={att.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
                 <div>
-                  <strong>{s.date.toLocaleDateString()}</strong>
+                  <strong>{s.date.toLocaleDateString(undefined, { timeZone: "UTC" })}</strong>
                   <span style={{ color: "var(--text-muted)" }}> · {s.ageGroup.name} · {s.location.name}</span>
                   {s.session && <span style={{ color: "var(--secondary)" }}> · Plan: {s.session.name}</span>}
                 </div>

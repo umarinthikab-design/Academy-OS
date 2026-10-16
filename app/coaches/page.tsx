@@ -1,5 +1,7 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { inputBase } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";
+import { CardView } from "@/components/ui/CardView";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createCoach, deleteCoach, updateCoachPermission, revokeSessions, promoteCoach, resetCoachPassword, archiveCoach, reactivateCoach, archiveStaffMember, reactivateStaffMember } from "./actions";
@@ -30,6 +32,7 @@ export default async function CoachesPage({
 }: {
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
+  const academyTz = await getAcademyTimeZone();
   const params = await searchParams;
   const perms = await getPermissions();
   const canManageStaff = perms.isAdmin || perms.isClubManager;
@@ -110,18 +113,14 @@ export default async function CoachesPage({
         />
       ) : (
         <>
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <CardView storageKey="touchline-coaches-view" defaultView="list" minTile={380} label="Coach display">
               {active.length === 0 && (
                 <EmptyState icon="coaches" title="No active coaches" message="Archived coaches are listed below." />
               )}
               {active.map((c, idx) => (
                 <div
                   key={c.id}
-                  style={{
-                    padding: 14,
-                    ...(idx > 0 ? { borderTop: "1px solid var(--border)" } : {}),
-                  }}
+                  style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}
                 >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <EntityHero
@@ -231,8 +230,7 @@ export default async function CoachesPage({
                 )}
               </div>
             ))}
-          </div>
-          </div>
+          </CardView>
 
           {archived.length > 0 && (
             <details style={{ marginTop: 28, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: 14 }}>
@@ -259,7 +257,7 @@ export default async function CoachesPage({
                         }
                         subtitle={
                           <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
-                            Archived {c.user.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                            Archived {c.user.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: academyTz })}
                             {c.primaryFocus.length > 0 && ` · Focus: ${c.primaryFocus.map((a) => a.name).join(", ")}`}
                           </div>
                         }
@@ -340,7 +338,7 @@ export default async function CoachesPage({
                             }
                             subtitle={
                               <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
-                                Archived {s.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                                Archived {s.archivedAt?.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: academyTz })}
                               </div>
                             }
                             actions={

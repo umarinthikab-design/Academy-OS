@@ -261,7 +261,7 @@ export default async function AttendancePage({
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 3 }}>{s.batch?.name || s.ageGroup.name}</div>
                     <strong style={{ fontFamily: "var(--font-headline)", fontSize: 20, fontWeight: 600, color: "var(--text-heading)", lineHeight: 1.2 }}>
-                      {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}
+                      {s.date.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", timeZone: "UTC" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)}
                     </strong>
                     <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 4 }}>
                       {s.ageGroup.name} · {s.location.name} · Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}

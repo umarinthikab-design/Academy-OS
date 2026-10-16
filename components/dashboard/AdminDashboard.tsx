@@ -15,13 +15,14 @@ import { Icon } from "@/components/ui/Icon";
 import { endTime } from "@/components/ui/SessionCard";
 import type { Permissions } from "@/lib/permissions";
 import { BroadcastsSection } from "./BroadcastsSection";
-import { todayStartAt } from "@/lib/academyTime";
+import { todayStartAt, getAcademyTimeZone } from "@/lib/academyTime";
 
 // Small fixed palette for the Club Overview age-group card accents. Assigned
 // by index so it's deterministic with no extra configuration.
 const AGE_GROUP_COLORS = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed", "#0891b2"];
 
 export async function AdminDashboard({ perms, userName, academyName }: { perms: Permissions; userName: string; academyName: string }) {
+  const academyTz = await getAcademyTimeZone();
   const now = new Date();
   const todayStart = await todayStartAt();
 
@@ -165,14 +166,14 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
                 <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--primary)", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", opacity: 0.7, lineHeight: 1 }}>
-                      {s.date.toLocaleDateString(undefined, { month: "short" })}
+                      {s.date.toLocaleDateString(undefined, { month: "short", timeZone: "UTC" })}
                     </span>
                     <span style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.1 }}>{s.date.getDate()}</span>
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{s.ageGroup.name}</div>
                     <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
-                      {s.date.toLocaleDateString(undefined, { weekday: "long" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.location.name}
+                      {s.date.toLocaleDateString(undefined, { weekday: "long", timeZone: "UTC" })} · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.location.name}
                     </div>
                   </div>
                 </div>
@@ -223,7 +224,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
                   <span style={{ color: "var(--text-muted)" }}> · {l.entityType}</span>
                 </div>
                 <div className="activity-row-meta" style={{ textAlign: "right", fontSize: 13, color: "var(--text-faint)" }}>
-                  {l.user.name} · {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {l.user.name} · {l.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: academyTz })}
                 </div>
               </div>
             ))}

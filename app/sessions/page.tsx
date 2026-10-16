@@ -1,3 +1,4 @@
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { prisma } from "@/lib/prisma";
 import { createSession, deleteSession, shareSession, approveSessionShare, rejectSessionShare, reorderSessionDrill } from "./actions";
 import { getPermissions } from "@/lib/permissions";
@@ -19,6 +20,7 @@ export default async function SessionsPage({
 }: {
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
+  const academyTz = await getAcademyTimeZone();
   const params = await searchParams;
   const perms = await getPermissions();
   const canSuggest = perms.canSuggestDrills;
@@ -181,7 +183,7 @@ export default async function SessionsPage({
                               <div key={m.id} style={{ fontSize: 13, background: "var(--surface-muted)", borderRadius: 8, padding: "7px 10px" }}>
                                 <strong>{m.authorName}:</strong> {m.message}
                                 <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
-                                  {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                  {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: academyTz })}
                                 </div>
                               </div>
                             ))}

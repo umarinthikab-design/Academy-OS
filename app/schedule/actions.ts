@@ -27,7 +27,7 @@ async function notifyCoaches(coachIds: string[], title: string, body: string, ur
 }
 
 function formatSessionWhen(date: Date, startTime: string): string {
-  return `${date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${startTime}`;
+  return `${date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" })} at ${startTime}`;
 }
 
 function sameCoachSet(a: string[], b: string[]): boolean {

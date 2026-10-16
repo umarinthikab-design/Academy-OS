@@ -9,6 +9,7 @@
 // conversation. Approvers can leave suggestions/changes feedback on the
 // thread; the requester replies from their "My Requests" section.
 
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { Button } from "@/components/ui/Button";
 import { getApprovalInbox, REQUEST_CATEGORIES, requestCategory } from "@/lib/approvals";
 import type { Permissions } from "@/lib/permissions";
@@ -27,6 +28,7 @@ const TYPE_ICON: Record<string, string> = {
 };
 
 export async function ApprovalInbox({ perms }: { perms: Permissions }) {
+  const academyTz = await getAcademyTimeZone();
   const requests = await getApprovalInbox(perms);
   if (requests.length === 0) return null;
 
@@ -99,7 +101,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                         </span>
                         <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{r.requesterName}</span>
                         <span style={{ fontSize: 13, color: "var(--text-faint)" }}>
-                          · {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          · {r.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}
                         </span>
                       </div>
                       {r.summary ? <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 4 }}>{r.summary}</div> : null}
@@ -137,7 +139,7 @@ export async function ApprovalInbox({ perms }: { perms: Permissions }) {
                               <div key={m.id} style={{ fontSize: 13, background: "var(--surface)", borderRadius: 8, padding: "7px 10px" }}>
                                 <strong>{m.authorName}:</strong> {m.message}
                                 <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
-                                  {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                  {m.createdAt.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: academyTz })}
                                 </div>
                               </div>
                             ))}

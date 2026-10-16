@@ -1,6 +1,7 @@
 // DashboardHero - the pitch-themed greeting banner used by every role
 // dashboard. Subtitle is role-specific; the markup stays consistent.
 
+import { getAcademyTimeZone } from "@/lib/academyTime";
 import { Icon } from "@/components/ui/Icon";
 
 function greeting(): string {
@@ -10,7 +11,7 @@ function greeting(): string {
   return "Good evening";
 }
 
-export function DashboardHero({
+export async function DashboardHero({
   name,
   subtitle,
   actions,
@@ -19,6 +20,7 @@ export function DashboardHero({
   subtitle: React.ReactNode;
   actions?: React.ReactNode;
 }) {
+  const academyTz = await getAcademyTimeZone();
   return (
     <section
       style={{
@@ -38,7 +40,7 @@ export function DashboardHero({
 
       <div style={{ position: "relative" }}>
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.7, color: "#fff" }}>
-          {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+          {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", timeZone: academyTz })}
         </div>
         <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em", margin: "6px 0 6px", color: "#fff" }}>
           {greeting()}, {name.split(" ")[0]}.

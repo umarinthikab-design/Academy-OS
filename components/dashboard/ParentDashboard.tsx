@@ -98,7 +98,7 @@ export async function ParentDashboard({ scope, userName, academyName }: { scope:
                     <div style={{ fontSize: 13 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--secondary)", marginBottom: 4 }}>Next session</div>
                       <div style={{ fontWeight: 700 }}>
-                        {next.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+                        {next.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" })}
                       </div>
                       <div style={{ color: "var(--text-muted)" }}>
                         {next.startTime}–{endTime(next.startTime, next.durationMinutes)}

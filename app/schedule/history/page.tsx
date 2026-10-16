@@ -69,7 +69,7 @@ export default async function SessionHistoryPage() {
               }}
             >
               <div>
-                <strong>{s.date.toLocaleDateString()}</strong> · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.ageGroup.name} · {s.location.name}
+                <strong>{s.date.toLocaleDateString(undefined, { timeZone: "UTC" })}</strong> · {s.startTime}–{endTime(s.startTime, s.durationMinutes)} · {s.ageGroup.name} · {s.location.name}
                 <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
                   Head: {s.headCoaches.map((c) => c.user.name).join(", ") || "—"}
                   {s.assistantCoaches.length > 0 && <> · Assistant: {s.assistantCoaches.map((c) => c.user.name).join(", ")}</>}

@@ -37,8 +37,8 @@ export function SessionCard({
   footer?: React.ReactNode;
   onEdit?: () => void;
 }) {
-  const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
-  const dateStr = date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const weekday = date.toLocaleDateString(undefined, { weekday: "long", timeZone: "UTC" });
+  const dateStr = date.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
 
   return (
     <div

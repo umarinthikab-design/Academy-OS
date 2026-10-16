@@ -116,7 +116,7 @@ export async function getApprovalDetail(requestId: string): Promise<ApprovalDeta
       select: { id: true, name: true },
     });
     const playerMap = new Map(players.map((p) => [p.id, p.name]));
-    const when = session.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    const when = session.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
     base.detail = `${session.ageGroup.name} · ${when} ${session.startTime}`;
     base.content = statuses.map((s) => `${playerMap.get(s.playerId) ?? "Unknown player"} — ${s.status === "ATTENDED" ? "attended" : s.status === "ABSENT" ? "absent" : s.status}`);
     return base;
@@ -192,7 +192,7 @@ export async function getApprovalInbox(perms: Permissions): Promise<(InboxReques
       const payloadStatuses = r.payload as { statuses?: { playerId: string; status: string }[] };
       const attended = payloadStatuses.statuses?.filter((s) => s.status === "ATTENDED").length ?? 0;
       const absent = payloadStatuses.statuses?.filter((s) => s.status === "ABSENT").length ?? 0;
-      const when = session.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      const when = session.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
       inbox.push({
         id: r.id,
         type: "ATTENDANCE_CONFIRM",

@@ -1,0 +1,443 @@
+﻿==== git state ===
+4db90d0 fix: use the academy time zone for session times; attendance opens at session start
+399f8f6 fix: show specific password errors, add missing status codes, test on-secondary contrast
+e21bb51 Improve squad photos and navigation, age groups, filters and attendance
+45fa803 style: uniform settings page layout with shared SettingsSection
+?? gather5.txt
+?? gather6.txt
+
+==== FILE package.json ===
+{
+  "name": "touchline-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && prisma migrate deploy && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "tsx prisma/seed.ts",
+    "seed:demo": "tsx prisma/seedDemo.ts",
+    "check:contrast": "node scripts/check-contrast.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.0",
+    "@vercel/blob": "^2.8.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/web-push": "^3.6.4",
+    "prisma": "^6.2.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
+
+==== FILE vercel.json ===
+{
+  "crons": [
+    {
+      "path": "/api/cron/session-reminders",
+      "schedule": "30 2 * * *"
+    }
+  ]
+}
+
+==== FILE app\academy-settings\actions.ts ===
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { getPermissions } from "@/lib/permissions";
+import { parseCalendarDate, hasOverlappingRules } from "@/lib/ageGroupRules";
+import { logActivity } from "@/lib/logActivity";
+
+// Club-wide configuration update. Admin/Club Manager-only (this is academy
+// policy, not a per-head-coach permission toggle). The singleton row is
+// created lazily by getAcademySettings in lib/confirmations.ts; here we just
+// update it.
+export async function updateAcademySettings(formData: FormData) {
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/academy-settings?error=no_permission");
+
+  const preSessionConfirmationEnabled = formData.get("preSessionConfirmationEnabled") === "on";
+  const confirmationWindowHours = Math.max(1, Math.min(720, Number(formData.get("confirmationWindowHours")) || 72));
+  const priorityWindowHours = Math.max(1, Math.min(720, Number(formData.get("priorityWindowHours")) || 48));
+
+  // Academy branding - name is required with a sane length cap; an empty logo
+  // URL clears the logo and falls back to the text name everywhere.
+  const academyName = String(formData.get("academyName") || "").trim().slice(0, 60) || "My Academy";
+  const logoUrlRaw = formData.get("logoUrl");
+  const logoUrl = typeof logoUrlRaw === "string" && logoUrlRaw.trim() ? logoUrlRaw.trim() : null;
+
+  // Priority window must be narrower than the confirmation window - the
+  // "escalates" threshold can't exceed when the item first appears.
+  if (priorityWindowHours >= confirmationWindowHours) {
+    redirect("/academy-settings?error=priority_window");
+  }
+
+  // "Club managers can author drills" is an admin-only decision - the form
+  // field is hidden from club managers, so when they save we preserve the
+  // current value instead of resetting it to off.
+  const existing = await prisma.academySettings.findFirst();
+  const clubManagersCanAuthorDrills = perms.isAdmin
+    ? formData.get("clubManagersCanAuthorDrills") === "on"
+    : (existing?.clubManagersCanAuthorDrills ?? true);
+
+  // Timezone for wall-clock session time interpretation. IANA timezone string
+  // (e.g. "America/New_York", "Europe/London", "UTC"). Default "UTC" preserves
+  // existing behavior; compute helpers read this value and apply the offset when
+  // interpreting startTime / deadline / "today" filters.
+  const timeZone = String(formData.get("timeZone") || "").trim() || "UTC";
+  try { new Intl.DateTimeFormat("en", { timeZone }).format(); } catch { redirect("/academy-settings?error=timezone"); }
+
+  const autoAssignPlayerAgeGroup = formData.get("autoAssignPlayerAgeGroup") === "on";
+  const ageGroups = await prisma.ageGroup.findMany({ select: { id: true } });
+  const rules = ageGroups.map(group => ({
+    id: group.id,
+    fromRaw: String(formData.get(`dobFrom_${group.id}`) ?? ""),
+    toRaw: String(formData.get(`dobTo_${group.id}`) ?? ""),
+  }));
+  const parsedRules = rules.map(rule => ({ id: rule.id, birthDateFrom: parseCalendarDate(rule.fromRaw), birthDateTo: parseCalendarDate(rule.toRaw) }));
+  if (rules.some((rule, i) => (rule.fromRaw || rule.toRaw) && (!parsedRules[i].birthDateFrom || !parsedRules[i].birthDateTo || parsedRules[i].birthDateFrom! > parsedRules[i].birthDateTo!))) {
+    redirect("/academy-settings?error=age_group_rule");
+  }
+  if (autoAssignPlayerAgeGroup && (!parsedRules.some(r => r.birthDateFrom && r.birthDateTo))) redirect("/academy-settings?error=age_group_rule");
+  if (autoAssignPlayerAgeGroup && hasOverlappingRules(parsedRules)) redirect("/academy-settings?error=age_group_overlap");
+
+  await prisma.$transaction(async tx => {
+    for (const rule of parsedRules) await tx.ageGroup.update({ where: { id: rule.id }, data: { birthDateFrom: rule.birthDateFrom, birthDateTo: rule.birthDateTo } });
+    await tx.academySettings.upsert({
+      where: { id: existing?.id ?? "__none__" },
+      update: {
+        autoAssignPlayerAgeGroup,
+        preSessionConfirmationEnabled,
+        confirmationWindowHours,
+        priorityWindowHours,
+        clubManagersCanAuthorDrills,
+        timeZone,
+        academyName,
+        logoUrl,
+      },
+      create: {
+        autoAssignPlayerAgeGroup,
+        preSessionConfirmationEnabled,
+        confirmationWindowHours,
+        priorityWindowHours,
+        clubManagersCanAuthorDrills,
+        timeZone,
+        academyName,
+        logoUrl,
+      },
+    });
+  });
+
+  if (perms.userId) await logActivity(perms.userId, "updated_academy_settings", "AcademySettings");
+  revalidatePath("/academy-settings");
+  revalidatePath("/");
+  revalidatePath("/login");
+  revalidatePath("/schedule");
+  revalidatePath("/drills");
+  revalidatePath("/squad");
+  redirect("/academy-settings?success=Club settings updated.");
+}
+
+==== FILE app\academy-settings\page.tsx ===
+import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/Button";
+import { redirect } from "next/navigation";
+import { getPermissions } from "@/lib/permissions";
+import { getAcademySettings } from "@/lib/confirmations";
+import { StatusBanner } from "@/components/StatusBanner";
+import { updateAcademySettings } from "./actions";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { SettingsSection } from "@/components/ui/SettingsSection";
+import { Field, Input } from "@/components/ui/Form";
+import { LogoUpload } from "@/components/ui/LogoUpload";
+
+export default async function AcademySettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const params = await searchParams;
+  const perms = await getPermissions();
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/?error=no_permission");
+
+  const settings = await getAcademySettings();
+  const ageGroups = await prisma.ageGroup.findMany({ orderBy: { sortOrder: "asc" } });
+
+  return (
+    <>
+      <PageHeader
+        title="Club Settings"
+        subtitle="Academy-wide configuration - how sessions and confirmations work for the whole club."
+      />
+
+      <StatusBanner error={params.error} success={params.success} />
+
+      <form
+        action={updateAcademySettings}
+        style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 900 }}
+      >
+        <SettingsSection title="Identity &amp; Branding">
+          <div className="form-grid-2col" style={{ gap: 20 }}>
+            <Field
+              label="Academy Name"
+              hint="Displayed as the dominant wordmark across the app."
+            >
+              <Input name="academyName" maxLength={60} defaultValue={settings.academyName} required />
+            </Field>
+            <Field
+              label="Club Logo (optional)"
+              hint="Uploaded at up to 1024px with transparency kept for crisp display. Falls back to the academy name when empty."
+            >
+              <LogoUpload name="logoUrl" current={settings.logoUrl} />
+            </Field>
+          </div>
+        </SettingsSection>
+
+        <SettingsSection title="Player age-group assignment">
+          <label style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
+            <input type="checkbox" name="autoAssignPlayerAgeGroup" defaultChecked={settings.autoAssignPlayerAgeGroup} />
+            Automatically assign new players from their date of birth
+          </label>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>When enabled, one inclusive birth-date range must match. Gaps require a rule update; overlapping ranges are rejected. When disabled, staff choose the age group. Existing players are not reassigned when these rules change.</p>
+          {ageGroups.length === 0 && <p>Create age groups before configuring assignment.</p>}
+          {ageGroups.map(group => (
+            <div key={group.id} className="form-grid-2col" style={{ marginBottom: 14 }}>
+              <Field label={`${group.name}: born from (inclusive)`}>
+                <Input name={`dobFrom_${group.id}`} type="date" defaultValue={group.birthDateFrom?.toISOString().slice(0, 10) ?? ""} />
+              </Field>
+              <Field label="Born through (inclusive)">
+                <Input name={`dobTo_${group.id}`} type="date" defaultValue={group.birthDateTo?.toISOString().slice(0, 10) ?? ""} />
+              </Field>
+            </div>
+          ))}
+        </SettingsSection>
+
+        <SettingsSection title="Session Workflow">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              paddingBottom: 16,
+              borderBottom: "1px solid var(--border)",
+              marginBottom: 16,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Pre-session coach confirmation</div>
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                Coaches RSVP "will I attend" before each session. Self-service - no approval needed.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              name="preSessionConfirmationEnabled"
+              defaultChecked={settings.preSessionConfirmationEnabled}
+              style={{ width: 20, height: 20, flexShrink: 0, accentColor: "var(--secondary)" }}
+            />
+          </div>
+
+          {perms.isAdmin && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+                paddingBottom: 16,
+                borderBottom: "1px solid var(--border)",
+                marginBottom: 16,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>Club managers can author drills</div>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                  When on, club managers can add drills to the library like coaches. They can always edit, archive, and delete drills.
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                name="clubManagersCanAuthorDrills"
+                defaultChecked={settings.clubManagersCanAuthorDrills}
+                style={{ width: 20, height: 20, flexShrink: 0, accentColor: "var(--secondary)" }}
+              />
+            </div>
+          )}
+
+          <div className="form-grid-2col" style={{ gap: 20 }}>
+            <Field
+              label="Confirmation window (hours before session)"
+              hint="How far ahead a session appears in each coach's 'Confirm your upcoming sessions' list."
+            >
+              <Input
+                name="confirmationWindowHours"
+                type="number"
+                min={1}
+                max={720}
+                defaultValue={settings.confirmationWindowHours}
+                required
+              />
+            </Field>
+            <Field
+              label="Priority window (hours before session)"
+              hint="Within this window, an unanswered confirmation escalates to the priority treatment. Must be shorter than the confirmation window."
+            >
+              <Input
+                name="priorityWindowHours"
+                type="number"
+                min={1}
+                max={720}
+                defaultValue={settings.priorityWindowHours}
+                required
+              />
+            </Field>
+            <Field
+              label="Academy timezone"
+              hint="IANA timezone string (e.g. America/New_York, Europe/London, UTC). Affects how wall-clock session times, deadlines, and today filters are interpreted."
+            >
+              <Input
+                name="timeZone"
+                defaultValue={settings.timeZone ?? "UTC"}
+                required
+              />
+            </Field>
+          </div>
+        </SettingsSection>
+
+        <div style={{ fontSize: 13, color: "var(--text-faint)" }}>
+          A coach declining or failing to confirm appears in the "Needs attention" section on admin and head-coach
+          dashboards so the session can be re-staffed in time.
+        </div>
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <Button>Save club settings</Button>
+        </div>
+      </form>
+    </>
+  );
+}
+
+export const dynamic = "force-dynamic";
+
+==== FILE components\dashboard\StaffingAlerts.tsx ===
+// StaffingAlerts - the "someone needs to know" surface for admins and head
+// coaches. Surfaces sessions in the confirmation window where at least one
+// assigned coach is still PENDING or has DECLINED - the session may be
+// short-staffed. Mirrors how ApprovalInbox surfaces pending items; real
+// push/email notifications are out of scope (no provider wired up).
+
+import { getStaffingAlerts } from "@/lib/confirmations";
+import type { Permissions } from "@/lib/permissions";
+import { Badge } from "@/components/ui/Badge";
+import { Icon } from "@/components/ui/Icon";
+import { endTime } from "@/components/ui/SessionCard";
+
+export async function StaffingAlerts({ perms }: { perms: Permissions }) {
+  const alerts = await getStaffingAlerts(perms);
+  if (alerts.length === 0) return null;
+
+  return (
+    <section style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "4px 0", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px" }}>
+        <h2 style={{ fontSize: 17, fontWeight: 700 }}>Needs attention</h2>
+        <Badge tone="error">{alerts.length}</Badge>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {alerts.map((a) => (
+          <div key={a.scheduledSessionId} style={{ padding: "12px 18px", borderTop: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: a.declined.length > 0 ? "var(--error-bg)" : "var(--warning-bg)",
+                  color: a.declined.length > 0 ? "var(--error)" : "#92400e",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="alert" size={18} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 700, fontSize: 14 }}>{a.session.ageGroupName}</span>
+                  {a.declined.length > 0 && <Badge tone="error">Declined</Badge>}
+                  {a.pending.length > 0 && <Badge tone="warning">Awaiting reply</Badge>}
+                </div>
+                <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                  {a.session.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} Â·{" "}
+                  {a.session.startTime}â€“{endTime(a.session.startTime, a.session.durationMinutes)} Â· {a.session.locationName}
+                </div>
+                <div style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 2 }}>
+                  {a.declined.length > 0 && <span>Declined: {a.declined.join(", ")}</span>}
+                  {a.declined.length > 0 && a.pending.length > 0 && <span> Â· </span>}
+                  {a.pending.length > 0 && <span>Awaiting: {a.pending.join(", ")}</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+==== migrations list ===
+20260916111836_add_pending_registration
+20260918120000_add_notifications
+20261006101313_disable_seeded_dev_accounts
+20261010090000_add_timezone_to_academy_settings
+20261013100000_add_coach_can_send_broadcasts
+20261014100000_player_age_group_rules
+
+==== FILE prisma\migrations\20261014100000_player_age_group_rules\migration.sql ===
+-- Additive only: existing player assignments stay nullable. No birth-date rules
+-- are guessed, and automatic assignment remains disabled until configured.
+ALTER TABLE "AcademySettings" ADD COLUMN "autoAssignPlayerAgeGroup" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "AgeGroup" ADD COLUMN "birthDateFrom" DATE, ADD COLUMN "birthDateTo" DATE;
+ALTER TABLE "Player" ADD COLUMN "ageGroupId" TEXT;
+CREATE INDEX "Player_ageGroupId_idx" ON "Player"("ageGroupId");
+ALTER TABLE "Player" ADD CONSTRAINT "Player_ageGroupId_fkey" FOREIGN KEY ("ageGroupId") REFERENCES "AgeGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "AgeGroup" ADD CONSTRAINT "AgeGroup_birth_date_range_check" CHECK (("birthDateFrom" IS NULL AND "birthDateTo" IS NULL) OR ("birthDateFrom" IS NOT NULL AND "birthDateTo" IS NOT NULL AND "birthDateFrom" <= "birthDateTo"));
+
+==== where confirmations are created / used ===
+app/api/cron/session-reminders/route.ts:55:    await prisma.sessionCoachConfirmation.updateMany({
+app/schedule/actions.ts:115:        await prisma.sessionCoachConfirmation.createMany({
+app/schedule/actions.ts:246:  const existing = await prisma.sessionCoachConfirmation.findMany({
+app/schedule/actions.ts:254:    await prisma.sessionCoachConfirmation.createMany({
+app/schedule/actions.ts:262:    await prisma.sessionCoachConfirmation.deleteMany({
+components/dashboard/AdminDashboard.tsx:10:import { StaffingAlerts } from "./StaffingAlerts";
+components/dashboard/AdminDashboard.tsx:89:      <StaffingAlerts perms={perms} />
+components/dashboard/CoachDashboard.tsx:5:import { StaffingAlerts } from "./StaffingAlerts";
+components/dashboard/CoachDashboard.tsx:370:        <StaffingAlerts perms={perms} />
+components/dashboard/SessionConfirmations.tsx:7:import { getMyConfirmations } from "@/lib/confirmations";
+components/dashboard/SessionConfirmations.tsx:15:  const items = await getMyConfirmations(perms);
+components/dashboard/StaffingAlerts.tsx:1:// StaffingAlerts - the "someone needs to know" surface for admins and head
+components/dashboard/StaffingAlerts.tsx:7:import { getStaffingAlerts } from "@/lib/confirmations";
+components/dashboard/StaffingAlerts.tsx:13:export async function StaffingAlerts({ perms }: { perms: Permissions }) {
+components/dashboard/StaffingAlerts.tsx:14:  const alerts = await getStaffingAlerts(perms);
+components/dashboard/actions.ts:80:  const row = await prisma.sessionCoachConfirmation.findUnique({
+components/dashboard/actions.ts:91:  await prisma.sessionCoachConfirmation.update({
+lib/confirmations.ts:54:export async function getMyConfirmations(perms: Permissions): Promise<MyConfirmation[]> {
+lib/confirmations.ts:63:  const rows = await prisma.sessionCoachConfirmation.findMany({
+lib/confirmations.ts:108:export async function getStaffingAlerts(perms: Permissions): Promise<StaffingAlert[]> {
+lib/confirmations.ts:188:// getMyConfirmations/getStaffingAlerts above, just unscoped by coach since
+lib/confirmations.ts:198:  const rows = await prisma.sessionCoachConfirmation.findMany({

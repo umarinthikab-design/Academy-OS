@@ -1,0 +1,336 @@
+﻿==== dashboard/actions.ts 60-130 ===
+
+  if (perms.userId) await logActivity(perms.userId, "added_approval_feedback", "ApprovalRequest", requestId);
+  revalidatePath("/");
+  revalidatePath("/requests");
+  redirect("/requests?success=Feedback sent.");
+}
+
+// Self-service pre-session RSVP. The coach confirms or declines their own
+// attendance row - no approval chain, no admin/head gate. Only the coach who
+// owns the row can act on it. A DECLINED answer is surfaced to admins/heads
+// via the dashboard "Needs attention" section AND an immediate push (the
+// session may now be short-staffed) - event-driven, not the 72h/48h
+// reminder cron, since this can't wait for the next hourly sweep.
+export async function confirmSessionParticipation(
+  confirmationId: string,
+  status: "CONFIRMED" | "DECLINED"
+) {
+  const perms = await getPermissions();
+  if (!perms.coachId) redirect("/?error=no_permission");
+
+  const row = await prisma.sessionCoachConfirmation.findUnique({
+    where: { id: confirmationId },
+    include: {
+      coach: { select: { user: { select: { name: true } } } },
+      scheduledSession: { select: { date: true, startTime: true, ageGroup: { select: { name: true } }, headCoaches: { select: { id: true, userId: true } } } },
+    },
+  });
+  if (!row || row.coachId !== perms.coachId || row.status !== "PENDING") {
+    redirect("/?error=no_permission");
+  }
+
+  await prisma.sessionCoachConfirmation.update({
+    where: { id: confirmationId },
+    data: { status, confirmedAt: new Date() },
+  });
+
+  if (perms.userId) {
+    await logActivity(perms.userId, status === "CONFIRMED" ? "confirmed_session_participation" : "declined_session_participation", "SessionCoachConfirmation", confirmationId, row.scheduledSessionId);
+  }
+
+  if (status === "DECLINED") {
+    const admins = await prisma.user.findMany({ where: { role: { in: ["ADMIN", "CLUB_MANAGER"] }, archivedAt: null }, select: { id: true } });
+    // The session's head coach(es), excluding the coach who just declined
+    // (relevant if a head coach declines their own session).
+    const headUserIds = row.scheduledSession.headCoaches.filter((c) => c.id !== perms.coachId).map((c) => c.userId);
+    const recipientUserIds = [...new Set([...admins.map((u) => u.id), ...headUserIds])];
+
+    const when = `${row.scheduledSession.date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${row.scheduledSession.startTime}`;
+    await Promise.all(
+      recipientUserIds.map((userId) =>
+        notifyUser({
+          userId,
+          title: "Coach declined a session",
+          body: `${row.coach.user.name} declined ${row.scheduledSession.ageGroup.name} on ${when} - may need re-staffing.`,
+          link: "/",
+          category: "ATTENDANCE",
+        })
+      )
+    ).catch(() => {});
+  }
+
+  revalidatePath("/");
+  revalidatePath("/schedule");
+  redirect(status === "CONFIRMED" ? "/?success=You're confirmed for this session." : "/?success=You declined - the club has been notified.");
+}
+==== cron session-reminders ===
+// Vercel Cron target (see vercel.json) - sweeps every still-pending
+// session confirmation inside the reminder window and pushes a notification
+// to whichever coach hasn't answered yet. Nothing here is triggerable by a
+// user action, which is exactly why it has to be time-based/cron rather than
+// event-driven like the drill-suggestion trigger.
+//
+// Runs once daily (Vercel's Hobby plan doesn't allow a tighter cron
+// schedule) - this trades reminder precision for cost. A coach may not be
+// nudged until well into the 72h/48h window rather than within an hour of
+// crossing it, but getConfirmationsNeedingReminder's 6h cooldown still
+// prevents a double-send if the schedule is ever tightened later.
+//
+// Public route by necessity (Vercel Cron can't send a session cookie), so it
+// must verify the request came from Vercel Cron before touching anything -
+// Vercel sends `Authorization: Bearer $CRON_SECRET` on scheduled invocations
+// when CRON_SECRET is set on the project.
+
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getConfirmationsNeedingReminder } from "@/lib/confirmations";
+import { sendPushToUser } from "@/lib/pushNotifications";
+import { safeEqual } from "@/lib/safeEqual";
+
+export const runtime = "nodejs";
+
+export async function GET(request: Request) {
+  const authHeader = request.headers.get("authorization");
+
+  // Fail closed: if CRON_SECRET is not configured, reject the request.
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Also validate using constant-time comparison via safeEqual, in case
+  // the header format is slightly different but the token matches.
+  const headerToken = authHeader?.replace("Bearer ", "") ?? "";
+  if (!safeEqual(headerToken, process.env.CRON_SECRET)) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const targets = await getConfirmationsNeedingReminder();
+
+  let sent = 0;
+  for (const target of targets) {
+    const title = target.priority ? "Confirm your session - priority" : "Confirm your upcoming session";
+    const body = `${target.session.ageGroupName} Â· ${target.session.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })} at ${target.session.startTime} - please confirm or decline.`;
+
+    await sendPushToUser(target.userId, title, body, "/");
+    sent++;
+  }
+
+  // Stamp lastRemindedAt on everything just notified, in one batch, so the
+  // next run (a day from now) skips these until the cooldown passes.
+  if (targets.length > 0) {
+    await prisma.sessionCoachConfirmation.updateMany({
+      where: { id: { in: targets.map((t) => t.confirmationId) } },
+      data: { lastRemindedAt: new Date() },
+    });
+  }
+
+  return NextResponse.json({ ok: true, reminded: sent });
+}
+==== schema models ===
+> C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:49:enum PlayerAttendanceStatus {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:50:  NO_RESPONSE
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:51:  ATTENDING
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:52:  NOT_ATTENDING
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:53:  ATTENDED
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:54:  ABSENT
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:55:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:56:
+> C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:57:enum CoachAttendanceStatus {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:58:  NOT_YET
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:59:  CHECKED_IN
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:60:  ABSENT
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:61:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:62:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:63:enum Gender {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:64:  MALE
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:65:  FEMALE
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:66:  OTHER
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:67:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:68:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:69:enum PlayerStatus {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:70:  ACTIVE
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:71:  INJURED
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:72:  SUSPENDED
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:73:  INACTIVE
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:74:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:75:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:76:enum RegistrationStatus {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:77:  PENDING
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:78:  APPROVED
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:79:  REJECTED
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:80:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:81:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:82:// Self-service pre-session RSVP. This is separate from CoachAttendance
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:83:// ("did you attend" - checked in after the session) - this answers "will you
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:84:// attend" ahead of time, with no approval chain.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:85:enum CoachConfirmationStatus {
+> C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:547:model PlayerAttendance {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:548:  id                 String                  @id @default(cuid())
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:549:  playerId           String
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:550:  player             Player                  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:551:  scheduledSessionId String
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:552:  scheduledSession   ScheduledSession        @relation(fields: [scheduledSessionId], references: [id], onDelete: Cascade)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:553:  status             PlayerAttendanceStatus  @default(NO_RESPONSE)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:554:  deadline           DateTime // 6 hours before session start
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:555:  confirmedAt        DateTime?
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:556:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:557:  @@unique([playerId, scheduledSessionId])
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:558:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:559:
+> C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:560:model CoachAttendance {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:561:  id                 String                 @id @default(cuid())
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:562:  coachId            String
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:563:  coach              Coach                  @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:564:  scheduledSessionId String
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:565:  scheduledSession   ScheduledSession       @relation(fields: [scheduledSessionId], references: [id], onDelete: Cascade)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:566:  status             CoachAttendanceStatus  @default(NOT_YET)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:567:  method             String? // "self" | "admin_override"
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:568:  confirmedAt        DateTime?
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:569:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:570:  @@unique([coachId, scheduledSessionId])
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:571:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:572:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:573:// Self-service pre-session RSVP: one row per assigned coach per session.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:574:// Created PENDING when the session is scheduled; the coach confirms or
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:575:// declines from their dashboard. Distinct from CoachAttendance (post-session
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:576:// check-in) - this is "will you attend", ahead of time, no approval chain.
+> C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:577:model SessionCoachConfirmation {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:578:  id                 String                   @id @default(cuid())
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:579:  scheduledSessionId String
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:580:  scheduledSession   ScheduledSession         @relation(fields: [scheduledSessionId], references: [id], onDelete: Cascade)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:581:  coachId            String
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:582:  coach              Coach                    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:583:  status             CoachConfirmationStatus  @default(PENDING)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:584:  confirmedAt        DateTime?
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:585:  createdAt          DateTime                 @default(now())
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:586:  // Last time a push reminder was sent for this specific still-pending
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:587:  // confirmation. Lets the reminder cron (hourly) skip anyone it already
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:588:  // nudged recently instead of re-notifying every single run.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:589:  lastRemindedAt     DateTime?
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:590:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:591:  @@unique([scheduledSessionId, coachId])
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:592:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:593:
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:594:// Academy-wide (club-wide) configuration, distinct from the per-user
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:595:// app/settings page. A singleton row - only one should exist, enforced in
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:596:// the update action (Prisma has no clean "exactly one row" constraint).
+> C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:597:model AcademySettings {
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:598:  autoAssignPlayerAgeGroup Boolean @default(false)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:599:  id                            String  @id @default(cuid())
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:600:  // Master switch for the pre-session confirmation feature.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:601:  preSessionConfirmationEnabled Boolean @default(true)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:602:  // Whether club managers can author drills into the library like coaches.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:603:  // Controlled by the admin on the Club Settings page.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:604:  clubManagersCanAuthorDrills   Boolean @default(true)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:605:  // When a session's start is this many hours away it appears in the
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:606:  // "Confirm your upcoming sessions" section.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:607:  confirmationWindowHours       Int     @default(72)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:608:  // Within this many hours of start, an unanswered confirmation escalates
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:609:  // to the "priority" treatment.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:610:  priorityWindowHours           Int     @default(48)
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:611:  // Academy timezone for wall-clock time interpretation. Stored as an IANA
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:612:  // string (e.g. "America/New_York", "Europe/London"). Default "UTC" so
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:613:  // existing data is unaffected; compute helpers read this value and apply
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:614:  // the offset when interpreting startTime / deadline / "today" filters.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:615:  timeZone String @default("UTC")
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:616:  // Academy name shown prominently across the app (login screen, sidebar,
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:617:  // mobile top bar, dashboard welcome). The "system name" stays Touchline;
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:618:  // this is the club's own branding on top of it.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:619:  academyName String @default("My Academy")
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:620:  // Academy logo - plain URL field for now (same deferred-decision pattern as
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:621:  // Player.photoUrl); no upload flow wired up yet. Falls back to the text
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:622:  // academyName wherever a logo is absent.
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:623:  logoUrl     String?
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:624:}
+  C:\Users\Macktiles\Documents\Proect acadpro\touchline-app\prisma\schema.prisma:625:
+==== window/24h usages ===
+app/academy-settings/actions.ts:19:  const confirmationWindowHours = Math.max(1, Math.min(720, Number(formData.get("confirmationWindowHours")) || 72));
+app/academy-settings/actions.ts:20:  const priorityWindowHours = Math.max(1, Math.min(720, Number(formData.get("priorityWindowHours")) || 48));
+app/academy-settings/actions.ts:30:  if (priorityWindowHours >= confirmationWindowHours) {
+app/academy-settings/actions.ts:70:        confirmationWindowHours,
+app/academy-settings/actions.ts:71:        priorityWindowHours,
+app/academy-settings/actions.ts:80:        confirmationWindowHours,
+app/academy-settings/actions.ts:81:        priorityWindowHours,
+app/academy-settings/page.tsx:133:                name="confirmationWindowHours"
+app/academy-settings/page.tsx:137:                defaultValue={settings.confirmationWindowHours}
+app/academy-settings/page.tsx:146:                name="priorityWindowHours"
+app/academy-settings/page.tsx:150:                defaultValue={settings.priorityWindowHours}
+app/activity/page.tsx:54:    ...(to ? { createdAt: { lte: new Date(to.getTime() + 24 * 60 * 60 * 1000 - 1) } } : {}),
+app/attendance/page.tsx:46:      ? new Date(todayLocal.getTime() - 90 * 24 * 60 * 60 * 1000)
+components/ui/PlayerStatusBadge.tsx:30:  const days = Math.floor((Date.now() - statusUpdatedAt.getTime()) / (24 * 60 * 60 * 1000));
+lib/confirmations.ts:20:function getConfirmationWindows(settings: { confirmationWindowHours: number; priorityWindowHours: number }, now: Date) {
+lib/confirmations.ts:22:    windowEnd: new Date(now.getTime() + settings.confirmationWindowHours * 60 * 60 * 1000),
+lib/confirmations.ts:23:    priorityEnd: new Date(now.getTime() + settings.priorityWindowHours * 60 * 60 * 1000),
+prisma/schema.prisma:607:  confirmationWindowHours       Int     @default(72)
+prisma/schema.prisma:610:  priorityWindowHours           Int     @default(48)
+==== SessionConfirmations.tsx ===
+// SessionConfirmations - "Confirm your upcoming sessions" section on the
+// coach dashboard. Self-service pre-session RSVP: the coach confirms or
+// declines attendance ahead of time (no approval chain). Sessions whose
+// start is within the priority window get a distinct priority badge.
+
+import { Button } from "@/components/ui/Button";
+import { getMyConfirmations } from "@/lib/confirmations";
+import type { Permissions } from "@/lib/permissions";
+import { Badge } from "@/components/ui/Badge";
+import { Icon } from "@/components/ui/Icon";
+import { endTime } from "@/components/ui/SessionCard";
+import { confirmSessionParticipation } from "./actions";
+
+export async function SessionConfirmations({ perms }: { perms: Permissions }) {
+  const items = await getMyConfirmations(perms);
+  if (items.length === 0) return null;
+
+  return (
+    <section style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "4px 0", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px" }}>
+        <h2 style={{ fontSize: 17, fontWeight: 700 }}>Confirm your upcoming sessions</h2>
+        <Badge tone="warning">{items.length} pending</Badge>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {items.map((r) => (
+          <div key={r.id} style={{ padding: "12px 18px", borderTop: "1px solid var(--border)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    background: r.priority ? "var(--error-bg)" : "var(--warning-bg)",
+                    color: r.priority ? "var(--error)" : "#92400e",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon name="calendar" size={18} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 700, fontSize: 14 }}>{r.session.ageGroupName}</span>
+                    {r.priority && <Badge tone="error">Priority</Badge>}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+                    {r.session.date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} Â·{" "}
+                    {r.session.startTime}â€“{endTime(r.session.startTime, r.session.durationMinutes)} Â· {r.session.locationName}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <form action={confirmSessionParticipation.bind(null, r.id, "CONFIRMED")}>
+                  <Button size="sm"><Icon name="check" size={14} /> Confirm</Button>
+                </form>
+                <form action={confirmSessionParticipation.bind(null, r.id, "DECLINED")}>
+                  <Button variant="outline" size="sm" style={{ color: "var(--text-muted)" }}>Can't make it</Button>
+                </form>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
