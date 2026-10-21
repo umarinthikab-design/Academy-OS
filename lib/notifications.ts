@@ -282,3 +282,41 @@ export async function markRead(userId: string, id: string): Promise<void> {
     // Best-effort.
   }
 }
+// Manual broadcasts carry a sender; automatic alerts (overdue responses,
+// approvals, session changes) do not. The dashboard and the Broadcasts page
+// show the two kinds separately.
+export async function getBroadcasts(userId: string, limit = 50): Promise<InboxItem[]> {
+  try {
+    return await prisma.notification.findMany({
+      where: { userId, sentById: { not: null } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getAlerts(userId: string, limit = 50, unreadOnly = false): Promise<InboxItem[]> {
+  try {
+    return await prisma.notification.findMany({
+      where: { userId, sentById: null, ...(unreadOnly ? { readAt: null } : {}) },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getUnreadSplit(userId: string): Promise<{ broadcasts: number; alerts: number }> {
+  try {
+    const [broadcasts, alerts] = await Promise.all([
+      prisma.notification.count({ where: { userId, readAt: null, sentById: { not: null } } }),
+      prisma.notification.count({ where: { userId, readAt: null, sentById: null } }),
+    ]);
+    return { broadcasts, alerts };
+  } catch {
+    return { broadcasts: 0, alerts: 0 };
+  }
+}

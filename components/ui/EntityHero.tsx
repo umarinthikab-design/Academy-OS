@@ -62,7 +62,7 @@ export function EntityHero({
           {subtitle}
         </div>
       </div>
-      {actions && <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>{actions}</div>}
+      {actions && <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", maxWidth: "100%" }}>{actions}</div>}
     </div>
   );
 }

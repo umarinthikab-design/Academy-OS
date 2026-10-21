@@ -90,7 +90,7 @@ export async function AdminDashboard({ perms, userName, academyName }: { perms: 
       <StaffingAlerts perms={perms} />
 
       {/* Stats */}
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 14 }}>
         <StatCard label="Active Players" value={playerCount} icon="squad" tint="pitch" />
         <StatCard label="Coaches" value={coachCount} icon="coaches" tint="green" />
         <StatCard label="Squads (Age Groups)" value={squadCount} icon="batches" tint="blue" />

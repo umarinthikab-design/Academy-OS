@@ -113,7 +113,7 @@ export default async function AttendancePage({
     !!coachId && (s.headCoaches.some((c) => c.id === coachId) || s.assistantCoaches.some((c) => c.id === coachId));
   const isHeadOfSession = (s: (typeof sessions)[number]) => !!coachId && s.headCoaches.some((c) => c.id === coachId);
   const canMark = (s: (typeof sessions)[number]) => isAdmin || isAssigned(s);
-  const canFinalize = (s: (typeof sessions)[number]) => isAdmin || (perms.canApproveRequests && isHeadOfSession(s));
+  const canFinalize = (s: (typeof sessions)[number]) => isAdmin || isHeadOfSession(s);
   const canApprove = (s: (typeof sessions)[number], r: (typeof pendingRequests)[number]) => {
     if (r.requestedById === coachId) return false; // never approve your own proposal
     if (isAdmin) return true;
@@ -382,12 +382,10 @@ export default async function AttendancePage({
                       ))}
                     </div>
                     <Button full style={{ marginTop: 14, padding: "12px 18px", fontSize: 14 }}>
-                      {isAdmin ? "Record attendance" : "Submit for approval"}
+                      {isAdmin || isHeadOfSession(s) ? "Record attendance" : "Submit for approval"}
                     </Button>
                     <p style={{ fontSize: 13, color: "var(--text-faint)", marginTop: 8 }}>
-                      {isAdmin
-                        ? "Records directly — no approval needed."
-                        : "Your marking goes to " + (isHeadOfSession(s) ? "an administrator for approval." : "the session's head coach for approval.")}
+                      {isAdmin || isHeadOfSession(s) ? "Records directly - no approval needed. The session closes automatically once everyone is marked." : "Your marking goes to the session's head coach for approval."}
                     </p>
                   </form>
                 )}

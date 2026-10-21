@@ -145,7 +145,7 @@ export default async function CoachesPage({
                     }
                     actions={
                       canEdit ? (
-                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                           {canManageStaff && (
                             <>
                               <details>

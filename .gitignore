@@ -8,3 +8,6 @@ tsconfig.tsbuildinfo
 .env*
 
 gather*.txt
+audit/
+mobile-audit.txt
+mobile-audit.cjs

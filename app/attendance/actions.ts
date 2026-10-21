@@ -36,6 +36,27 @@ async function sessionEnd(
 
 // ── Post-session attendance marking ──────────────────────────────────
 
+// Closes a session's attendance automatically once every active roster player
+// is marked Attended/Absent and no proposal is still waiting. Returns true
+// when it closed the session.
+async function autoFinalizeAttendance(session: Parameters<typeof sessionRosterWhere>[0] & { id: string }): Promise<boolean> {
+  const roster = await prisma.player.findMany({ where: sessionRosterWhere(session), select: { id: true, status: true } });
+  const needed = roster.filter((p) => p.status !== "INACTIVE").map((p) => p.id);
+  if (needed.length === 0) return false;
+  const marked = await prisma.playerAttendance.findMany({
+    where: { scheduledSessionId: session.id, status: { in: ["ATTENDED", "ABSENT"] as PlayerAttendanceStatus[] } },
+    select: { playerId: true },
+  });
+  const markedIds = new Set(marked.map((m) => m.playerId));
+  if (needed.some((id) => !markedIds.has(id))) return false;
+  const pending = await prisma.approvalRequest.count({
+    where: { type: "ATTENDANCE_CONFIRM", status: "PENDING", payload: { path: ["scheduledSessionId"], equals: session.id } },
+  });
+  if (pending > 0) return false;
+  await prisma.scheduledSession.update({ where: { id: session.id }, data: { resolvedAt: new Date() } });
+  return true;
+}
+
 // Assistant coaches (and head coaches marking themselves) propose player
 // statuses. The proposal becomes an ApprovalRequest instead of writing
 // PlayerAttendance directly. Admins skip the chain and write straight to
@@ -65,7 +86,7 @@ export async function submitAttendance(formData: FormData) {
     .map((playerId, i) => ({ playerId, status: statuses[i] }))
     .filter((p) => p.status === "ATTENDED" || p.status === "ABSENT");
 
-  if (perms.isAdmin) {
+  if (perms.isAdmin || session.headCoaches.some((c) => c.id === perms.coachId)) {
     for (const { playerId, status } of pairs) {
       await prisma.playerAttendance.upsert({
         where: { playerId_scheduledSessionId: { playerId, scheduledSessionId } },
@@ -81,7 +102,8 @@ export async function submitAttendance(formData: FormData) {
     }
     revalidatePath("/attendance");
     if (perms.userId) await logActivity(perms.userId, "recorded_attendance", "ScheduledSession", scheduledSessionId, `${pairs.length} players`);
-    redirect("/attendance?success=Attendance recorded.");
+    const closed = await autoFinalizeAttendance(session);
+    redirect("/attendance?success=" + encodeURIComponent(closed ? "Attendance recorded and session closed." : "Attendance recorded."));
   }
 
   const isHead = session.headCoaches.some((c) => c.id === perms.coachId);
@@ -216,6 +238,7 @@ export async function approveAttendanceRequest(requestId: string) {
       category: "ATTENDANCE",
     });
   revalidatePath("/attendance");
+  await autoFinalizeAttendance(session);
   redirect("/attendance?success=Attendance approved.");
 }
 
@@ -273,7 +296,7 @@ export async function rejectAttendanceRequest(requestId: string) {
 // session isn't accidentally finalized while a proposal is still in flight.
 export async function finalizeAttendance(scheduledSessionId: string) {
   const perms = await getPermissions();
-  if (!(perms.isAdmin || perms.canApproveRequests)) redirect("/attendance?error=no_permission");
+  if (!perms.isAdmin && !perms.coachId) redirect("/attendance?error=no_permission");
 
   const session = await prisma.scheduledSession.findUnique({
     where: { id: scheduledSessionId },

@@ -4,6 +4,7 @@
 // When you add a new success message in a server action, add it here too.
 
 const KNOWN: ReadonlySet<string> = new Set([
+  "Attendance recorded and session closed.",
   "Session cancelled.",
   "Session reinstated.",
   "Closure day applied.",

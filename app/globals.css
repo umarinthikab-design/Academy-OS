@@ -581,3 +581,30 @@ input::placeholder, textarea::placeholder { color: var(--text-faint); opacity: 1
   .squad-grid[data-view="list"] .sq-main > div > div:first-child > div > a { flex: 0 0 200px; }
   .squad-grid[data-view="list"] .sq-main > div > div:first-child > div > div { margin: 0 !important; }
 }
+
+/* mobile-polish-1 */
+/* The inline align-items on PageHeader beat the phone rule, so short
+   subtitles shrank and sat at the right edge. Force true centering. */
+@media (max-width: 600px) {
+  .page-header { align-items: center !important; }
+  .page-header-title { width: 100%; }
+  .page-header > div:last-child { width: 100%; justify-content: center; }
+}
+/* 16px inputs stop iPhones zooming the page when a field is focused. */
+@media (max-width: 900px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]), select, textarea { font-size: 16px !important; }
+}
+/* Comfortable tap targets on touch screens. */
+@media (pointer: coarse) {
+  .ui-btn, select, input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { min-height: 40px; }
+}
+
+/* mobile-polish-2 */
+@media (max-width: 600px) {
+  details form { flex-wrap: wrap; }
+  details form input, details form select { max-width: 100%; min-width: 0; }
+  .mobile-topbar button { min-width: 44px; min-height: 44px; }
+}
+@media (pointer: coarse) {
+  button.ui-hover { min-height: 36px; }
+}
