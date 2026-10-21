@@ -1,3 +1,4 @@
+import { CardView } from "@/components/ui/CardView";
 import { SquadPlayerLink, SquadScrollRestore } from "@/components/SquadNavigation";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
@@ -292,11 +293,12 @@ export default async function SquadPage({
           message={hasFilters ? "Try removing a filter to see more results." : "Add your first player above to start building the squad."}
         />
       ) : (
-        <div className="squad-grid">
+        <CardView storageKey="touchline-squad-view" defaultView="tiles" className="squad-grid" cssTiles label="Squad display">
           {filtered.map((p) => (
             <div
               key={p.id}
               id={`player-card-${p.id}`}
+              className="sq-card"
               style={{
                 background: "var(--surface)",
                 border: "1px solid var(--border)",
@@ -305,7 +307,7 @@ export default async function SquadPage({
                 padding: 16,
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <div className="sq-main" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <EntityHero
                   name={p.name}
                   heading={<SquadPlayerLink playerId={p.id} appearance="name">{p.name}</SquadPlayerLink>}
@@ -341,10 +343,10 @@ export default async function SquadPage({
                 />
               </div>
 
-              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
+              <div className="sq-view" style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
                 <SquadPlayerLink playerId={p.id}>View player</SquadPlayerLink>
               </div>
-              <details style={{ marginTop: 8 }}>
+              <details className="sq-skills" style={{ marginTop: 8 }}>
                 <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>Expand skills</summary>
                 <div style={{ marginTop: 10 }}>
                 <PlayerRatingCard
@@ -359,7 +361,7 @@ export default async function SquadPage({
               </details>
             </div>
           ))}
-        </div>
+        </CardView>
       )}
     </>
   );

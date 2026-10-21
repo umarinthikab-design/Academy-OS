@@ -273,7 +273,7 @@ async function main() {
   }) => {
     const s = await prisma.scheduledSession.create({
       data: {
-        date: data.date,
+        date: new Date(Date.UTC(data.date.getFullYear(), data.date.getMonth(), data.date.getDate())),
         startTime: data.startTime,
         durationMinutes: data.durationMinutes ?? 60,
         ageGroupId: byName[data.ageGroupName],

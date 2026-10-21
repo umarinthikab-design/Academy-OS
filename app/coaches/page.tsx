@@ -182,11 +182,11 @@ export default async function CoachesPage({
                 </div>
 
                 {canManageStaff && c.designation === "HEAD" && (
-                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: 8 }}>
-                      Permissions
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginLeft: -12 }}>
+                  <details style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
+                    Permissions · {PERMISSION_TOGGLES.filter((t) => c[t.field]).length} of {PERMISSION_TOGGLES.length} on
+                    </summary>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                       {PERMISSION_TOGGLES.map((t) => (
                         <form key={t.field} action={updateCoachPermission.bind(null, c.id, t.field, !c[t.field])}>
                           <button
@@ -207,7 +207,7 @@ export default async function CoachesPage({
                         </form>
                       ))}
                     </div>
-                  </div>
+                  </details>
                 )}
 
                 {canManageStaff && c.designation === "ASSISTANT" && (

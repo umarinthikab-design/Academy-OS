@@ -1,21 +1,27 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "./Button";
 
 // Tiles / list switcher for card collections. Like ListView, but with its own
 // grid so it fits cards of any size. The choice is remembered per page.
+// `className` is applied in both views (data-view says which is active);
+// `cssTiles` lets a stylesheet class lay out the tiles instead of the built-in grid.
 export function CardView({
   storageKey,
   defaultView = "tiles",
   minTile = 280,
   label = "Display",
+  className,
+  cssTiles = false,
   children,
 }: {
   storageKey: string;
   defaultView?: "tiles" | "list";
   minTile?: number;
   label?: string;
+  className?: string;
+  cssTiles?: boolean;
   children: ReactNode;
 }) {
   const [view, setView] = useState<"tiles" | "list">(defaultView);
@@ -37,9 +43,13 @@ export function CardView({
         <Button type="button" size="sm" variant={view === "list" ? "approval" : "outline"} aria-pressed={view === "list"} onClick={() => choose("list")}>List</Button>
       </div>
       <div
+        className={className}
+        data-view={view}
         style={
           view === "tiles"
-            ? { display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${minTile}px, 1fr))`, gap: 16 }
+            ? cssTiles
+              ? undefined
+              : { display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${minTile}px, 1fr))`, gap: 16 }
             : { display: "flex", flexDirection: "column", gap: 12 }
         }
       >
