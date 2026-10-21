@@ -35,6 +35,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   wrong_password: "Current password is incorrect.",
   invalid_position: "That position isn't valid for this player.",
   not_assistant: "Only assistant coaches can be promoted to head coach.",
+  no_sessions: "There are no scheduled sessions on that date.",
+  schedule_conflict: "A selected coach already has a session that overlaps this time on that date.",
+  session_has_records: "This session already has attendance recorded or has been finalized, so it can't be deleted.",
 };
 
 export function StatusBanner({ error, success }: { error?: string; success?: string }) {

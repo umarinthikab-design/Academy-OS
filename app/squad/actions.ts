@@ -71,6 +71,7 @@ export async function createPlayer(formData: FormData) {
 
 export async function updateSkill(playerId: string, skillName: string, value: number) {
   const perms = await getPermissions();
+  if (!Number.isInteger(value) || value < 1 || value > 5) return;
   // No success redirect here on purpose - this fires on every single skill
   // click, and bouncing through a full page reload with a green banner every
   // time would be more annoying than helpful for something this frequent.
@@ -199,7 +200,7 @@ export async function updatePlayerInfo(playerId: string, formData: FormData) {
 
 export async function deletePlayer(id: string) {
   const perms = await getPermissions();
-  if (!(perms.isAdmin || perms.canEditSquad)) redirect("/squad?error=no_permission");
+  if (!perms.isAdmin && !perms.isClubManager) redirect("/squad?error=no_permission");
 
   // PlayerSkill, Note, and PlayerAttendance rows are set to cascade in the
   // schema, and Prisma manages the implicit batch/parent join tables itself,

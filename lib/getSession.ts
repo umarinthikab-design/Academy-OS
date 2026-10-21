@@ -20,9 +20,11 @@ async function getSessionUncached(): Promise<SessionPayload | null> {
   // time, so a mismatch means the session was revoked after the fact.
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    select: { sessionVersion: true, name: true, role: true },
+    select: { sessionVersion: true, name: true, role: true, archivedAt: true },
   });
   if (!user) return null;
+  // An archived account must not keep working on a session issued before it was archived.
+  if (user.archivedAt) redirect("/auth/revoked");
   if (user.sessionVersion !== payload.sessionVersion) {
     // Go via /auth/revoked which DELETES the stale cookie, then bounces to
     // login. Redirecting to /login directly would loop forever: the layout

@@ -329,10 +329,12 @@ export default async function SquadPage({
                           action={updatePlayerStatus.bind(null, p.id)}
                           status={p.status}
                         />
+                        {(perms.isAdmin || perms.isClubManager) && (
                         <ConfirmDeleteButton
                           action={deletePlayer.bind(null, p.id)}
                           confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
                         />
+                      )}
                       </div>
                     ) : undefined
                   }

@@ -24,6 +24,10 @@ export async function POST(request: Request) {
   if (!session) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  // Parents have no upload features in release 1.
+  if (session.role === "PARENT") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
 
   const form = await request.formData();
   const file = form.get("file");

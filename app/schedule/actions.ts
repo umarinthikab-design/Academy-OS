@@ -36,6 +36,27 @@ function sameCoachSet(a: string[], b: string[]): boolean {
   return a.every((id) => setB.has(id));
 }
 
+// True when any of these coaches already has a session that overlaps this
+// time window on one of these calendar dates.
+async function hasConflict(opts: { dates: Date[]; time: string; duration: number; coachIds: string[]; excludeId?: string }): Promise<boolean> {
+  const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const start = toMin(opts.time);
+  const end = start + opts.duration;
+  const others = await prisma.scheduledSession.findMany({
+    where: {
+      date: { in: opts.dates },
+      status: { not: "cancelled" },
+      ...(opts.excludeId ? { id: { not: opts.excludeId } } : {}),
+      OR: [
+        { headCoaches: { some: { id: { in: opts.coachIds } } } },
+        { assistantCoaches: { some: { id: { in: opts.coachIds } } } },
+      ],
+    },
+    select: { startTime: true, durationMinutes: true },
+  });
+  return others.some((o) => { const st = toMin(o.startTime); return start < st + o.durationMinutes && st < end; });
+}
+
 // Only notify when something a coach would actually care about changed -
 // date, time, location, or who's assigned. Editing an unrelated field
 // (duration, age group) doesn't fire this. Notifies the NEW (post-edit)
@@ -72,7 +93,7 @@ export async function createScheduledSession(formData: FormData) {
   const headCoachIds = formData.getAll("headCoaches") as string[];
   const assistantCoachIds = formData.getAll("assistantCoaches") as string[];
   const recurring = formData.get("recurring") === "on";
-  const weeks = recurring ? Math.max(1, Number(formData.get("weeks")) || 1) : 1;
+  const weeks = recurring ? Math.min(52, Math.max(1, Number(formData.get("weeks")) || 1)) : 1;
 
   if (!date || !time || !duration || !ageGroupId || !locationId || headCoachIds.length === 0) {
     redirect("/schedule?error=missing_fields");
@@ -83,12 +104,14 @@ export async function createScheduledSession(formData: FormData) {
   // eventually be edited independently (e.g. different coaches some weeks).
   const recurrenceGroupId = recurring ? randomUUID() : null;
 
-  const baseDate = new Date(date + "T00:00:00");
+  const baseDate = new Date(date + "T00:00:00Z");
   const dates = Array.from({ length: weeks }, (_, i) => {
     const d = new Date(baseDate);
-    d.setDate(d.getDate() + i * 7);
+    d.setUTCDate(d.getUTCDate() + i * 7);
     return d;
   });
+
+  if (await hasConflict({ dates, time, duration, coachIds: [...headCoachIds, ...assistantCoachIds] })) redirect("/schedule?error=schedule_conflict");
 
   for (const d of dates) {
     const session = await prisma.scheduledSession.create({
@@ -148,6 +171,10 @@ export async function deleteScheduledSession(id: string) {
     select: { date: true, startTime: true, headCoaches: { select: { id: true } }, assistantCoaches: { select: { id: true } } },
   });
 
+  const recorded = await prisma.playerAttendance.count({ where: { scheduledSessionId: id, status: { not: "NO_RESPONSE" } } });
+  const resolvedRow = await prisma.scheduledSession.findUnique({ where: { id }, select: { resolvedAt: true } });
+  if (recorded > 0 || resolvedRow?.resolvedAt) redirect("/schedule?error=session_has_records");
+
   // Deletes only this one instance, not the whole recurring series.
   // Deleting an entire recurring series at once isn't built yet.
   await prisma.scheduledSession.delete({ where: { id } });
@@ -197,7 +224,7 @@ export async function updateScheduledSession(scheduledSessionId: string, formDat
 
   const coachIds = [...headCoachIds, ...assistantCoachIds];
   const data = {
-    date: new Date(date + "T00:00:00"),
+    date: new Date(date + "T00:00:00Z"),
     startTime: time,
     durationMinutes: duration,
     ageGroupId,
@@ -205,6 +232,8 @@ export async function updateScheduledSession(scheduledSessionId: string, formDat
     headCoaches: { set: headCoachIds.map((id) => ({ id })) },
     assistantCoaches: { set: assistantCoachIds.map((id) => ({ id })) },
   };
+
+  if (scope === "this" && (await hasConflict({ dates: [data.date], time, duration, coachIds, excludeId: scheduledSessionId }))) redirect("/schedule?error=schedule_conflict");
 
   if (scope === "all_future" && session.recurrenceGroupId) {
     // This instance and every later instance in the series move together. If
@@ -333,4 +362,65 @@ export async function detachSessionPlan(scheduledSessionId: string) {
 async function sessionEnd(s: { date: Date; startTime: string; durationMinutes: number }): Promise<Date> {
   const start = await sessionStartAt(s);
   return new Date(start.getTime() + s.durationMinutes * 60 * 1000);
+}
+
+// Cancel (not delete): the session stays on record, coaches are told, and it
+// drops out of attendance, reminders and dashboards.
+export async function cancelScheduledSession(id: string) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSchedule)) redirect("/schedule?error=no_permission");
+
+  const s = await prisma.scheduledSession.findUnique({
+    where: { id },
+    select: { date: true, startTime: true, resolvedAt: true, headCoaches: { select: { id: true } }, assistantCoaches: { select: { id: true } } },
+  });
+  if (!s) redirect("/schedule");
+  if (s.resolvedAt) redirect("/schedule?error=session_has_records");
+
+  await prisma.scheduledSession.update({ where: { id }, data: { status: "cancelled" } });
+  if (perms.userId) await logActivity(perms.userId, "cancelled_scheduled_session", "ScheduledSession", id);
+  await notifyCoaches(
+    [...s.headCoaches.map((c) => c.id), ...s.assistantCoaches.map((c) => c.id)],
+    "Session cancelled",
+    "A session you were assigned to on " + formatSessionWhen(s.date, s.startTime) + " was cancelled.",
+    "/schedule"
+  );
+  revalidatePath("/schedule");
+  redirect("/schedule?success=" + encodeURIComponent("Session cancelled."));
+}
+
+export async function reinstateScheduledSession(id: string) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSchedule)) redirect("/schedule?error=no_permission");
+  await prisma.scheduledSession.updateMany({ where: { id, status: "cancelled" }, data: { status: "scheduled" } });
+  if (perms.userId) await logActivity(perms.userId, "reinstated_scheduled_session", "ScheduledSession", id);
+  revalidatePath("/schedule");
+  redirect("/schedule?success=" + encodeURIComponent("Session reinstated."));
+}
+
+// Closure day (Poya, public holiday, bad weather): cancels every scheduled,
+// not-yet-finalized session on one calendar date and tells the coaches.
+export async function closeDay(formData: FormData) {
+  const perms = await getPermissions();
+  if (!(perms.isAdmin || perms.canEditSchedule)) redirect("/schedule?error=no_permission");
+
+  const date = String(formData.get("date") || "");
+  const reason = String(formData.get("reason") || "").trim().slice(0, 100);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) redirect("/schedule?error=missing_fields");
+  const day = new Date(date + "T00:00:00Z");
+  if (Number.isNaN(day.getTime())) redirect("/schedule?error=missing_fields");
+
+  const sessions = await prisma.scheduledSession.findMany({
+    where: { date: day, status: "scheduled", resolvedAt: null },
+    select: { id: true, headCoaches: { select: { id: true } }, assistantCoaches: { select: { id: true } } },
+  });
+  if (sessions.length === 0) redirect("/schedule?error=no_sessions");
+
+  await prisma.scheduledSession.updateMany({ where: { id: { in: sessions.map((x) => x.id) } }, data: { status: "cancelled" } });
+  const coachIds = Array.from(new Set(sessions.flatMap((x) => [...x.headCoaches.map((c) => c.id), ...x.assistantCoaches.map((c) => c.id)])));
+  const label = day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+  if (perms.userId) await logActivity(perms.userId, "closed_day", "ScheduledSession", undefined, date + " (" + sessions.length + " sessions)" + (reason ? " - " + reason : ""));
+  await notifyCoaches(coachIds, "Training cancelled", "All sessions on " + label + " are cancelled." + (reason ? " Reason: " + reason : ""), "/schedule");
+  revalidatePath("/schedule");
+  redirect("/schedule?success=" + encodeURIComponent("Closure day applied."));
 }

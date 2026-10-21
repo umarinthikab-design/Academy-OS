@@ -24,6 +24,9 @@ export async function GET() {
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
+  if (session.role === "PARENT") {
+    return new Response("Forbidden", { status: 403 });
+  }
 
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);

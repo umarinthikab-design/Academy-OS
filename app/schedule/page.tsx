@@ -3,7 +3,7 @@ import { parseCalendarDate } from "@/lib/ageGroupRules";
 import { sessionStartInstant, startOfTodayInZone } from "@/lib/time";
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
-import { createScheduledSession, deleteScheduledSession, updateScheduledSession, attachSessionPlan, detachSessionPlan } from "./actions";
+import { createScheduledSession, deleteScheduledSession, updateScheduledSession, attachSessionPlan, detachSessionPlan, cancelScheduledSession, reinstateScheduledSession, closeDay } from "./actions";
 import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
@@ -25,9 +25,9 @@ import { Icon } from "@/components/ui/Icon";
 // date. Extracting the date via local getters (matching how it was built)
 // round-trips correctly regardless of server timezone.
 function toDateInputValue(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
 
@@ -200,6 +200,27 @@ export default async function SchedulePage({
         </div>
       )}
 
+      {canEdit && (
+        <div style={{ marginBottom: 24 }}>
+          <CollapsibleCreate title="Closure day (holiday, Poya, bad weather)">
+            <form action={closeDay}>
+              <div className="form-grid-2col" style={{ gap: 12 }}>
+                <div>
+                  <label style={fieldLabel}>Date</label>
+                  <input name="date" type="date" required style={inputBase} />
+                </div>
+                <div>
+                  <label style={fieldLabel}>Reason (optional)</label>
+                  <input name="reason" type="text" maxLength={100} placeholder="e.g. Poya day" style={inputBase} />
+                </div>
+              </div>
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "10px 0 0" }}>Cancels every scheduled session on that date and notifies the coaches. Cancelled sessions stay on record and can be reinstated.</p>
+              <Button style={{ marginTop: 14 }}>Cancel all sessions that day</Button>
+            </form>
+          </CollapsibleCreate>
+        </div>
+      )}
+
       <form method="get" className="filter-bar" aria-label="Filter schedule">
         <label>From date<input name="from" type="date" defaultValue={params.from ?? ""} /></label>
         <label>Through date<input name="to" type="date" defaultValue={params.to ?? ""} /></label>
@@ -245,9 +266,12 @@ export default async function SchedulePage({
                     locationName={s.location.name}
                     headCoaches={s.headCoaches.map((c) => c.user.name)}
                     assistantCoaches={s.assistantCoaches.map((c) => c.user.name)}
-                    badge={s.recurring ? <Badge tone="accent">Weekly</Badge> : undefined}
+                    badge={s.status === "cancelled" ? <Badge tone="error">Cancelled</Badge> : s.recurring ? <Badge tone="accent">Weekly</Badge> : undefined}
                     actions={
                       canEdit ? (
+                      s.status === "cancelled" ? (
+                      <form action={reinstateScheduledSession.bind(null, s.id)}><Button variant="outline" size="sm">Reinstate</Button></form>
+                      ) : (
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <details style={{ position: "relative" }}>
                             <summary
@@ -347,11 +371,13 @@ export default async function SchedulePage({
                               </form>
                             </div>
                           </details>
+                          <form action={cancelScheduledSession.bind(null, s.id)}><Button variant="outline" size="sm">Cancel</Button></form>
                           <ConfirmDeleteButton
                             action={deleteScheduledSession.bind(null, s.id)}
                             confirmMessage="Remove this session? This can't be undone."
                           />
                         </div>
+                      )
                       ) : undefined
                     }
                     footer={
