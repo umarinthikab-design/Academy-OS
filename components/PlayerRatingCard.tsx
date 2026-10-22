@@ -8,14 +8,10 @@ import { updateSkill, updatePlayerPosition, updatePlayerSkills } from "@/app/squ
 
 type SkillRow = { skillName: string; value: number; active: boolean };
 
-// The rating block on each squad card (and used by the player detail page):
-// position selector, the 1-5 bars for active skills in a 2-column grid, the
-// average rating, and an "edit / customize skills" toggle that shows a
-// checklist of every skill in the taxonomy grouped by age band.
-//
-// This is a client component, so it can't hit the database itself - the
-// skill taxonomy (admin-managed via SkillDefinition) is fetched server-side
-// by the page that renders this card and passed down as `skillBands`.
+// The skills block used on the squad cards and the player detail page: position,
+// average, one row per active skill with a 5-segment bar, and an "Edit skills"
+// toggle that shows a checklist of every skill grouped by age band.
+// Layout and colours live in the pr-* classes in globals.css.
 export function PlayerRatingCard({
   playerId,
   dateOfBirth,
@@ -41,14 +37,11 @@ export function PlayerRatingCard({
   const allSkillNames = [...new Set(skillBands.flatMap((b) => b.skills))];
 
   const activeSkills = skills.filter((s) => s.active);
-  // Legacy players (created before the taxonomy) may have no rows for their
-  // age band - fall back to the band's skills so the card is never empty.
+  // Legacy players may have no rows for their age band - fall back to the
+  // band's skills so the card is never empty.
   const visibleSkills =
     (activeSkills.length > 0 ? activeSkills : band.skills.map((skillName) => ({ skillName, value: 0, active: true })))
-      // Stable display order regardless of DB row order. The skills include
-      // has no ORDER BY, so a skill upsert can silently reshuffle the rows on
-      // refresh; sorting by the taxonomy keeps the bars in a fixed position.
-      // Unknown/legacy skill names go last so they never jump to the front.
+      // Stable display order regardless of DB row order; unknown names last.
       .slice()
       .sort((a, b) => {
         const ia = allSkillNames.indexOf(a.skillName);
@@ -93,36 +86,24 @@ export function PlayerRatingCard({
     });
   };
 
-  const skillBar = (skillName: string, current: number, fullWidth: boolean) => (
-    <div key={skillName} style={fullWidth ? { gridColumn: "1 / -1", marginBottom: 4 } : { marginBottom: 4 }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", marginBottom: 2 }}>
-        {skillName} — {current}/5
+  const skillRow = (skillName: string, current: number) => (
+    <div key={skillName} className="pr-skill" data-lv={current}>
+      <div className="pr-skill-head">
+        <span className="pr-skill-name">{skillName}</span>
+        <span className="pr-skill-score">{current}/5</span>
       </div>
-      <div style={{ display: "flex", gap: 3 }}>
+      <div className="pr-bar">
         {[1, 2, 3, 4, 5].map((n) =>
           canEdit ? (
-            <button className="ui-hover"
+            <button
               key={n}
               type="button"
+              className={`pr-seg${n <= current ? " on" : ""}`}
               onClick={() => onSkillClick(skillName, n)}
-              style={{
-                flex: 1, minWidth: 0, height: 20,
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer",
-                background: n <= current ? "var(--turf)" : "var(--border)",
-              }}
               aria-label={`Set ${skillName} to ${n}`}
             />
           ) : (
-            <div
-              key={n}
-              style={{
-                flex: 1, minWidth: 0, height: 20,
-                borderRadius: 4,
-                background: n <= current ? "var(--turf)" : "var(--border)",
-              }}
-            />
+            <div key={n} className={`pr-seg${n <= current ? " on" : ""}`} />
           )
         )}
       </div>
@@ -130,17 +111,12 @@ export function PlayerRatingCard({
   );
 
   return (
-    <div style={{ marginTop: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, rowGap: 10, flexWrap: "wrap", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)" }}>Position</label>
+    <div className="pr-card">
+      <div className="pr-top">
+        <div className="pr-pos">
+          <label>Position</label>
           {canEdit ? (
-            <select
-              value={position}
-              disabled={pending}
-              onChange={(e) => onPosition(e.target.value)}
-              style={{ padding: 6, border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--surface)", color: "var(--text)" }}
-            >
+            <select value={position} disabled={pending} onChange={(e) => onPosition(e.target.value)}>
               {PLAYER_POSITIONS.map((pos) => (
                 <option key={pos} value={pos}>
                   {pos}
@@ -148,53 +124,49 @@ export function PlayerRatingCard({
               ))}
             </select>
           ) : (
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>{position}</span>
+            <span className="pr-pos-val">{position}</span>
           )}
         </div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--pitch)" }}>
-          Average <span style={{ color: "var(--turf)" }}>{average > 0 ? average.toFixed(1) : "—"}</span>
-          {average > 0 && <span style={{ color: "var(--text-muted)", fontWeight: 500 }}> / 5</span>}
+        <div className="pr-avg">
+          Avg <b>{average > 0 ? average.toFixed(1) : "—"}</b>
+          {average > 0 && <span>/ 5</span>}
         </div>
-        {canEdit && !customizing && (
-          <Button variant="outline" size="sm" type="button" onClick={openCustomize} style={{ color: "var(--turf)", borderColor: "var(--turf)" }}>Edit / Customize Skills</Button>
-        )}
       </div>
 
       {customizing ? (
-        <div style={{ border: "1px solid var(--border)", borderRadius: 8, padding: 10, background: "var(--surface-muted)" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: "var(--text)" }}>
+        <div className="pr-edit">
+          <div className="pr-edit-title">
             Select skills to show for this player
-            <span style={{ fontWeight: 500, color: "var(--text-faint)" }}> — age band: {band.ageLabel} {band.label}</span>
+            <span> — age band: {band.ageLabel} {band.label}</span>
           </div>
           {skillBands.map((b) => (
-            <div key={b.label} style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
-                {b.ageLabel} · {b.label}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            <div key={b.label}>
+              <div className="pr-band-label">{b.ageLabel} · {b.label}</div>
+              <div className="pr-chips">
                 {b.skills.map((skillName) => (
-                  <label key={skillName} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer", padding: "8px 12px", borderRadius: 6, background: draft.includes(skillName) ? "var(--turf)" : "var(--surface)", color: draft.includes(skillName) ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>
-                    <input
-                      type="checkbox"
-                      checked={draft.includes(skillName)}
-                      onChange={() => toggleDraft(skillName)}
-                      style={{ display: "none" }}
-                    />
+                  <label key={skillName} className="pr-chip" data-on={draft.includes(skillName) ? "1" : "0"}>
+                    <input type="checkbox" checked={draft.includes(skillName)} onChange={() => toggleDraft(skillName)} />
                     {skillName}
                   </label>
                 ))}
               </div>
             </div>
           ))}
-          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <div className="pr-edit-actions">
             <Button size="sm" type="button" onClick={saveCustomize} disabled={pending}>{pending ? "Saving..." : "Save skills"}</Button>
             <Button variant="outline" size="sm" type="button" onClick={() => setCustomizing(false)} style={{ color: "var(--text-muted)" }}>Cancel</Button>
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0 12px" }}>
-          {visibleSkills.map((s, i) => skillBar(s.skillName, s.value, visibleSkills.length % 2 === 1 && i === visibleSkills.length - 1))}
-          {visibleSkills.length === 0 && <div style={{ fontSize: 13, color: "var(--text-faint)" }}>No skills selected.</div>}
+        <div className="pr-grid">
+          {visibleSkills.map((s) => skillRow(s.skillName, s.value))}
+          {visibleSkills.length === 0 && <div className="pr-empty">No skills selected.</div>}
+        </div>
+      )}
+
+      {canEdit && !customizing && (
+        <div className="pr-foot">
+          <Button variant="outline" size="sm" type="button" onClick={openCustomize} style={{ color: "var(--turf)", borderColor: "var(--turf)" }}>Edit skills</Button>
         </div>
       )}
     </div>

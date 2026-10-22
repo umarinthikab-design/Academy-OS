@@ -158,18 +158,18 @@ export default async function PlayerDetailPage({
             canEdit={canEdit}
             skillBands={skillBands}
           />
-          <div style={{ marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-            {skillTrend.map(({ skillName, current, history }) => (
-              <div key={skillName} style={{ marginBottom: 6, fontSize: 13, color: "var(--text-muted)" }}>
-                <strong style={{ color: "var(--text)" }}>{skillName}</strong>
-                {history.length > 1 && (
-                  <span>
-                    {" "}· Trend: {history.map((h) => `${h.value}@${h.recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}`).join(" → ")}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
+          {skillTrend.some((t) => t.history.length > 1) && (
+            <div className="pr-trend">
+              <div className="pr-trend-title">Progress</div>
+              {skillTrend.filter((t) => t.history.length > 1).map(({ skillName, history }) => (
+                <div key={skillName} className="pr-trend-row">
+                  <span className="pr-trend-name">{skillName}</span>
+                  <span className="pr-trend-vals">{history.map((h) => h.value).join(" → ")}</span>
+                  <span className="pr-trend-dates">{history[0].recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })} – {history[history.length - 1].recordedAt.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: academyTz })}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section style={{ ...card, display: "flex", flexDirection: "column" }}>

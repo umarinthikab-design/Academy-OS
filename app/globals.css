@@ -783,3 +783,50 @@ button, input, select, textarea, summary { font-family: inherit; }
   :is(.coach-grid, .squad-grid)[data-view="list"] .cc-drop > summary::after { display: none; }
   :is(.coach-grid, .squad-grid)[data-view="list"] .cc-count { font-size: 11px; padding: 1px 6px; }
 }
+
+/* pr-skills */
+.pr-card { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; text-align: left; width: 100%; }
+.cc-drop .pr-card { margin-top: 0; }
+.pr-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.pr-pos { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.pr-pos label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.pr-pos select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: var(--surface); color: var(--text); min-width: 0; max-width: 100%; }
+.pr-pos-val { font-size: 14px; font-weight: 700; color: var(--text); }
+.pr-avg { font-size: 13px; font-weight: 700; color: var(--text-muted); background: var(--surface-muted); border-radius: 999px; padding: 4px 12px; white-space: nowrap; }
+.pr-avg b { color: var(--secondary); font-size: 15px; }
+.pr-avg span { font-weight: 500; margin-left: 2px; }
+.pr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 20px; }
+.pr-skill-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.pr-skill-name { font-size: 13px; font-weight: 700; color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+.pr-skill-score { font-size: 12px; font-weight: 700; color: var(--text-muted); flex-shrink: 0; }
+.pr-bar { display: flex; gap: 4px; }
+.pr-seg { flex: 1; min-width: 0; height: 12px; border: 0; padding: 0; border-radius: 4px; background: var(--border); }
+button.pr-seg { height: 22px; cursor: pointer; }
+.pr-seg.on { background: #16a34a; }
+.pr-skill[data-lv="1"] .pr-seg.on, .pr-skill[data-lv="2"] .pr-seg.on { background: #f59e0b; }
+.pr-skill[data-lv="3"] .pr-seg.on { background: #84cc16; }
+.pr-empty { font-size: 13px; color: var(--text-faint); }
+.pr-foot { display: flex; }
+.pr-foot > * { width: 100%; }
+.pr-edit { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--surface-muted); display: flex; flex-direction: column; gap: 12px; }
+.pr-edit-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.pr-edit-title span { font-weight: 500; color: var(--text-faint); }
+.pr-band-label { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.pr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pr-chip { display: flex; align-items: center; min-height: 34px; padding: 0 12px; border: 1px solid var(--border); border-radius: 999px; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text); }
+.pr-chip[data-on="1"] { background: var(--secondary); border-color: var(--secondary); color: var(--btn-secondary-text, #fff); }
+.pr-chip input { display: none; }
+.pr-edit-actions { display: flex; gap: 8px; }
+.pr-edit-actions > * { flex: 1; }
+.pr-trend { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.pr-trend-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.pr-trend-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.pr-trend-row:last-child { border-bottom: 0; }
+.pr-trend-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.pr-trend-vals { font-size: 13px; font-weight: 800; color: var(--secondary); text-align: right; }
+.pr-trend-dates { grid-column: 1 / -1; font-size: 12px; color: var(--text-muted); }
+@media (max-width: 600px) {
+  .pr-grid { grid-template-columns: minmax(0, 1fr); }
+  .pr-bar button.pr-seg { height: 28px !important; }
+  .pr-pos select { font-size: 16px !important; }
+}
