@@ -626,7 +626,7 @@ input[name^="emergencyContact"] { flex: 1 1 200px !important; min-width: 0; }
   button[aria-label^="Set "] { height: 32px !important; }
 }
 
-﻿/* mobile-lists-3 */
+/* mobile-lists-3 */
 button, input, select, textarea, summary { font-family: inherit; }
 .sq-actions-mobile { display: none; }
 .sq-sum-m { display: none; }
@@ -684,7 +684,7 @@ button, input, select, textarea, summary { font-family: inherit; }
   .coach-perm-pills button { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 40px; box-sizing: border-box; text-align: center; line-height: 1.25; padding: 6px 8px !important; border-radius: 10px !important; font-size: 13px !important; }
 }
 
-﻿/* mobile-lists-4 */
+/* mobile-lists-4 */
 .coach-focus { display: none; }
 .eh-avatar { display: flex; flex-shrink: 0; }
 .eh-avatar > *:not(img) { color: #fff; }
@@ -720,18 +720,45 @@ button, input, select, textarea, summary { font-family: inherit; }
   .sq-view > * { color: var(--secondary) !important; border-color: var(--secondary) !important; }
 }
 
-/* coach-card-v4 */
+/* coach-card-v5 */
+.coach-card { display: flex; flex-direction: column; gap: 12px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.cc-head { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.cc-id { min-width: 0; }
+.cc-name { font-size: 16px; font-weight: 800; line-height: 1.25; color: var(--text-heading); overflow-wrap: anywhere; }
+.cc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 0 -10px; }
+.cc-focus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cc-focus-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-right: 2px; }
+.cc-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.cc-drop > summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; list-style: none; text-align: center; }
+.cc-drop > summary::-webkit-details-marker { display: none; }
+.cc-drop > summary::after { content: "\25BE"; color: var(--secondary); font-size: 12px; }
+.cc-drop[open] > summary::after { content: "\25B4"; }
+.cc-drop[open] { flex-basis: 100%; }
+.cc-count { background: var(--secondary); color: var(--btn-secondary-text, #fff); border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+.cc-pills { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 10px; }
+.cc-pill { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 40px; padding: 6px 10px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center; cursor: pointer; }
+.cc-pill[data-on="1"] { background: var(--secondary); border-color: var(--secondary); color: var(--btn-secondary-text, #fff); }
+.cc-form, .cc-promote { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.cc-promote p { margin: 0; font-size: 13px; color: var(--text-muted); }
+.cc-promote label { display: flex; align-items: center; gap: 8px; font-size: 13px; min-height: 32px; }
+.cc-form button, .cc-promote button { width: 100%; min-height: 40px; }
+.cc-del { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.cc-del form { margin: 0; }
+.cc-del button { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 40px; padding: 0 16px !important; box-sizing: border-box; border-radius: 10px !important; font-size: 13px !important; }
 @media (max-width: 600px) {
+  .coach-card { padding: 12px; }
+  .cc-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cc-bar > :only-child, .cc-drop[open] { grid-column: 1 / -1; }
+  .cc-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .coach-grid[data-view="tiles"] { grid-template-columns: minmax(0, 1fr) !important; gap: 12px !important; }
+
   .coach-grid[data-view="tiles"] .coach-card { padding: 18px 16px !important; gap: 14px; }
-  .coach-grid[data-view="tiles"] .cc-head { gap: 10px; }
+  .coach-grid[data-view="tiles"] .cc-head { flex-direction: column; text-align: center; gap: 10px; }
   .coach-grid[data-view="tiles"] .eh-avatar > * { width: 76px !important; height: 76px !important; font-size: 30px !important; }
   .coach-grid[data-view="tiles"] .cc-name { font-size: 18px; }
-  .coach-grid[data-view="tiles"] .cc-tags { margin-top: 8px; }
-  .coach-grid[data-view="tiles"] .cc-tags > *:nth-child(n+2) { display: inline-flex !important; }
+  .coach-grid[data-view="tiles"] .cc-tags { justify-content: center; margin: 8px 0 0; }
   .coach-grid[data-view="tiles"] .cc-focus { justify-content: center; }
-  .coach-grid[data-view="tiles"] .cc-focus-label { display: block; flex: 0 0 100%; text-align: center; margin: 0 0 2px; }
-  .coach-grid[data-view="tiles"] .cc-bar, .coach-grid[data-view="tiles"] .cc-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .coach-grid[data-view="tiles"] .cc-focus-label { flex: 0 0 100%; text-align: center; margin: 0 0 2px; }
   .coach-grid[data-view="tiles"] .cc-drop > summary { min-height: 42px; padding: 0 10px; }
   .coach-grid[data-view="list"] .coach-card { padding: 10px 12px !important; gap: 8px; }
   .coach-grid[data-view="list"] .cc-head { gap: 12px; }

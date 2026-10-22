@@ -12,6 +12,7 @@ import { TempPasswordReveal } from "@/components/TempPasswordReveal";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { CoachCreateFields } from "@/components/ui/CoachCreateFields";
@@ -117,125 +118,98 @@ export default async function CoachesPage({
               {active.length === 0 && (
                 <EmptyState icon="coaches" title="No active coaches" message="Archived coaches are listed below." />
               )}
-              {active.map((c, idx) => (
-                <div
-                  key={c.id}
-                  className="coach-card" data-role={c.designation} style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}
-                >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <EntityHero
-                    name={c.user.name}
-                    src={c.user.photoUrl}
-                    size={38}
-                    badges={
-                      <>
-                        <Badge tone={c.designation === "HEAD" ? "green" : "blue"}>
-                          {c.designation === "HEAD" ? "Head Coach" : "Assistant Coach"}
-                        </Badge>
-                        <Badge tone="green">Active</Badge>
-                        {c.gender && <Badge tone="accent">{c.gender === "MALE" ? "Male" : c.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
-                      </>
-                    }
-                    subtitle={
-                      c.primaryFocus.length > 0 ? (
-                        <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
-                          Focus: {c.primaryFocus.map((a) => a.name).join(", ")}
+              {active.map((c) => {
+                const onCount = PERMISSION_TOGGLES.filter((t) => c[t.field]).length;
+                const tone = c.user.name.split("").reduce((n, ch) => n + ch.charCodeAt(0), 0) % 6;
+                return (
+                  <div key={c.id} className="coach-card" data-role={c.designation}>
+                    <div className="cc-head">
+                      <span className={`eh-avatar eh-av-${tone}`}>
+                        <Avatar name={c.user.name} src={c.user.photoUrl} size={44} />
+                      </span>
+                      <div className="cc-id">
+                        <div className="cc-name">{c.user.name}</div>
+                        <div className="cc-tags">
+                          <Badge tone={c.designation === "HEAD" ? "green" : "blue"}>{c.designation === "HEAD" ? "Head Coach" : "Assistant Coach"}</Badge>
+                          <Badge tone="green">Active</Badge>
+                          {c.gender && <Badge tone="accent">{c.gender === "MALE" ? "Male" : c.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                         </div>
-                      ) : undefined
-                    }
-                    actions={
-                      canEdit ? (
-                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          
-                          {inUseByCoach.get(c.id) ? (
-                            <ConfirmDeleteButton
-                              action={archiveCoach.bind(null, c.id)}
-                              label="Archive"
-                              confirmMessage={`Archive ${c.user.name}? They'll be logged out and removed from active scheduling, but their history stays intact.`}
-                            />
-                          ) : (
-                            <ConfirmDeleteButton
-                              action={deleteCoach.bind(null, c.id)}
-                              confirmMessage={`Remove ${c.user.name} from the roster? This can't be undone.`}
-                            />
-                          )}
-                        </div>
-                      ) : undefined
-                    }
-                  />
-                </div>
-
-                {c.primaryFocus.length > 0 && (
-                  <div className="coach-focus">
-                    {c.primaryFocus.map((a) => (<Badge key={a.name} tone="accent">{a.name}</Badge>))}
-                  </div>
-                )}
-
-                {canManageStaff && c.designation === "HEAD" && (
-                  <details className="coach-perms" style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
-                    Permissions · {PERMISSION_TOGGLES.filter((t) => c[t.field]).length} of {PERMISSION_TOGGLES.length} on
-                    </summary>
-                    <div className="coach-perm-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                      {PERMISSION_TOGGLES.map((t) => (
-                        <form key={t.field} action={updateCoachPermission.bind(null, c.id, t.field, !c[t.field])}>
-                          <button
-                            type="submit"
-                            className="ui-btn"
-                            style={{
-                              fontSize: 13,
-                              padding: "5px 12px",
-                              borderRadius: 20,
-                              border: `1px solid ${c[t.field] ? "var(--secondary)" : "var(--border)"}`,
-                              background: c[t.field] ? "var(--secondary)" : "var(--surface)",
-                              color: c[t.field] ? "var(--btn-secondary-text)" : "var(--text)",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {t.label} {c[t.field] ? "✓" : ""}
-                          </button>
-                        </form>
-                      ))}
+                      </div>
                     </div>
-                  </details>
-                )}
 
-                {canManageStaff && (
-                  <details className="coach-account" style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>Account access</summary>
-                    <form action={resetCoachPassword.bind(null, c.id)} style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-                      <label style={{ fontSize: 13 }}>Login email
-                        <input name="email" type="email" required defaultValue={c.user.email} style={inputBase} />
-                      </label>
-                      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Saves the email and resets the password together. Existing sessions are revoked.</span>
-                      <Button variant="outline" size="sm">Save email &amp; reset password</Button>
-                    </form>
-                    <form action={revokeSessions.bind(null, c.id)} style={{ marginTop: 10 }}>
-                      <Button variant="outline" size="sm" title="Invalidate all of this coach's active sessions so they must log in again" style={{ color: "var(--text-muted)" }}>Revoke sessions</Button>
-                    </form>
-                  </details>
-                )}
+                    {c.primaryFocus.length > 0 && (
+                      <div className="cc-focus">
+                        <span className="cc-focus-label">Age groups</span>
+                        {c.primaryFocus.map((a) => (<Badge key={a.name} tone="accent">{a.name}</Badge>))}
+                      </div>
+                    )}
 
-                {canManageStaff && c.designation === "ASSISTANT" && (
-                  <CollapsibleCreate
-                    title="Promote to head coach"
-                    style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)", boxShadow: "none", marginBottom: 0 }}
-                  >
-                    <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "0 0 10px" }}>
-                      Pick which head-coach permissions they should inherit, then promote. Their focus areas are kept.
-                    </p>
-                    <form action={promoteCoach.bind(null, c.id)} style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                      {PERMISSION_TOGGLES.map((t) => (
-                        <label key={t.field} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                          <input type="checkbox" name={t.field} defaultChecked={c[t.field]} /> {t.label}
-                        </label>
-                      ))}
-                      <Button size="sm">Promote to Head Coach</Button>
-                    </form>
-                  </CollapsibleCreate>
-                )}
-              </div>
-            ))}
+                    {(canManageStaff || canEdit) && (
+                      <div className="cc-bar">
+                        {canManageStaff && c.designation === "HEAD" && (
+                          <details className="cc-drop">
+                            <summary>Permissions <span className="cc-count">{onCount}/{PERMISSION_TOGGLES.length}</span></summary>
+
+                            <div className="cc-pills">
+                              {PERMISSION_TOGGLES.map((t) => (
+                                <form key={t.field} action={updateCoachPermission.bind(null, c.id, t.field, !c[t.field])}>
+                                  <button type="submit" className="cc-pill" data-on={c[t.field] ? "1" : "0"}>{t.label}{c[t.field] ? " ✓" : ""}</button>
+                                </form>
+                              ))}
+                            </div>
+                          </details>
+                        )}
+                        {canManageStaff && c.designation === "ASSISTANT" && (
+                          <details className="cc-drop">
+                            <summary>Promote to head</summary>
+                            <form action={promoteCoach.bind(null, c.id)} className="cc-promote">
+                              <p>Pick which head-coach permissions they should inherit, then promote. Their focus areas are kept.</p>
+                              {PERMISSION_TOGGLES.map((t) => (
+                                <label key={t.field}><input type="checkbox" name={t.field} defaultChecked={c[t.field]} /> {t.label}</label>
+                              ))}
+                              <Button size="sm">Promote to Head Coach</Button>
+                            </form>
+                          </details>
+                        )}
+                        {canEdit && (
+                          <details className="cc-drop">
+                            <summary>Account access</summary>
+                            {canManageStaff && (
+                              <>
+                                <form action={resetCoachPassword.bind(null, c.id)} className="cc-form">
+                                  <label style={{ fontSize: 13 }}>Login email
+                                    <input name="email" type="email" required defaultValue={c.user.email} style={inputBase} />
+                                  </label>
+                                  <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Saves the email and resets the password together. Existing sessions are revoked.</span>
+                                  <Button variant="outline" size="sm">Save email &amp; reset password</Button>
+
+                                </form>
+                                <form action={revokeSessions.bind(null, c.id)} className="cc-form">
+                                  <Button variant="outline" size="sm" title="Invalidate all of this coach's active sessions so they must log in again" style={{ color: "var(--text-muted)" }}>Revoke sessions</Button>
+                                </form>
+                              </>
+                            )}
+                            <div className="cc-del">
+                              {inUseByCoach.get(c.id) ? (
+                                <ConfirmDeleteButton
+                                  action={archiveCoach.bind(null, c.id)}
+                                  label="Archive"
+                                  confirmMessage={`Archive ${c.user.name}? They'll be logged out and removed from active scheduling, but their history stays intact.`}
+                                />
+                              ) : (
+                                <ConfirmDeleteButton
+                                  action={deleteCoach.bind(null, c.id)}
+                                  confirmMessage={`Remove ${c.user.name} from the roster? This can't be undone.`}
+                                />
+                              )}
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </CardView>
 
           {archived.length > 0 && (
