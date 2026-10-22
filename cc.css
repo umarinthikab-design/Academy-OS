@@ -1,0 +1,40 @@
+﻿/* coach-card-v3 */
+.coach-card { display: flex; flex-direction: column; gap: 12px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.cc-head { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.cc-id { min-width: 0; }
+.cc-name { font-size: 16px; font-weight: 800; line-height: 1.25; color: var(--text-heading); overflow-wrap: anywhere; }
+.cc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; margin-left: -10px; }
+.cc-focus { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cc-focus-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-right: 2px; }
+.cc-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.cc-drop > summary { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-muted); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; list-style: none; text-align: center; }
+.cc-drop > summary::-webkit-details-marker { display: none; }
+.cc-drop > summary::after { content: "\25BE"; color: var(--secondary); font-size: 12px; }
+.cc-drop[open] > summary::after { content: "\25B4"; }
+.cc-drop[open] { flex-basis: 100%; }
+.cc-count { background: var(--secondary); color: var(--btn-secondary-text, #fff); border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+.cc-pills { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 10px; }
+.cc-pill { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 40px; padding: 6px 10px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 13px; font-weight: 600; line-height: 1.25; text-align: center; cursor: pointer; }
+.cc-pill[data-on="1"] { background: var(--secondary); border-color: var(--secondary); color: var(--btn-secondary-text, #fff); }
+.cc-form, .cc-promote { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.cc-promote p { margin: 0; font-size: 13px; color: var(--text-muted); }
+.cc-promote label { display: flex; align-items: center; gap: 8px; font-size: 13px; min-height: 32px; }
+.cc-form button, .cc-promote button { width: 100%; min-height: 40px; }
+.cc-del { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.cc-del form { margin: 0; }
+.cc-del button { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 40px; padding: 0 16px !important; box-sizing: border-box; border-radius: 10px !important; font-size: 13px !important; }
+@media (max-width: 600px) {
+  .coach-card { padding: 12px; }
+  .cc-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cc-bar > :only-child, .cc-drop[open] { grid-column: 1 / -1; }
+  .cc-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .coach-grid[data-view="tiles"] .coach-card { padding: 10px !important; gap: 8px; }
+
+  .coach-grid[data-view="tiles"] .cc-head { flex-direction: column; text-align: center; gap: 6px; }
+  .coach-grid[data-view="tiles"] .cc-tags { justify-content: center; margin-left: 0; margin-top: 4px; }
+  .coach-grid[data-view="tiles"] .cc-tags > *:nth-child(n+2) { display: none !important; }
+  .coach-grid[data-view="tiles"] .cc-focus { justify-content: center; }
+  .coach-grid[data-view="tiles"] .cc-focus-label { display: none; }
+  .coach-grid[data-view="tiles"] .cc-bar, .coach-grid[data-view="tiles"] .cc-pills { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .coach-grid[data-view="tiles"] .cc-drop > summary { min-height: 38px; padding: 0 8px; }
+}
