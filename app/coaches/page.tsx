@@ -113,14 +113,14 @@ export default async function CoachesPage({
         />
       ) : (
         <>
-          <CardView storageKey="touchline-coaches-view" defaultView="list" minTile={380} label="Coach display">
+          <CardView storageKey="touchline-coaches-view" defaultView="list" minTile={380} className="coach-grid" label="Coach display">
               {active.length === 0 && (
                 <EmptyState icon="coaches" title="No active coaches" message="Archived coaches are listed below." />
               )}
               {active.map((c, idx) => (
                 <div
                   key={c.id}
-                  style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}
+                  className="coach-card" style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}
                 >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <EntityHero

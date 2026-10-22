@@ -347,7 +347,18 @@ export default async function SquadPage({
                 <SquadPlayerLink playerId={p.id}>View player</SquadPlayerLink>
               </div>
               <details className="sq-skills" style={{ marginTop: 8 }}>
-                <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>Expand skills</summary>
+                <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}><span className="sq-sum-d">Expand skills</span><span className="sq-sum-m">More</span></summary>
+              {canEdit && (
+                <div className="sq-actions-mobile">
+                  <PlayerStatusSelect action={updatePlayerStatus.bind(null, p.id)} status={p.status} />
+                  {(perms.isAdmin || perms.isClubManager) && (
+                    <ConfirmDeleteButton
+                      action={deletePlayer.bind(null, p.id)}
+                      confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
+                    />
+                  )}
+                </div>
+              )}
                 <div style={{ marginTop: 10 }}>
                 <PlayerRatingCard
                   playerId={p.id}
