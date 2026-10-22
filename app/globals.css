@@ -683,3 +683,39 @@ button, input, select, textarea, summary { font-family: inherit; }
   .coach-grid[data-view="tiles"] .coach-perm-pills { grid-template-columns: minmax(0, 1fr); }
   .coach-perm-pills button { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 40px; box-sizing: border-box; text-align: center; line-height: 1.25; padding: 6px 8px !important; border-radius: 10px !important; font-size: 13px !important; }
 }
+
+﻿/* mobile-lists-4 */
+.coach-focus { display: none; }
+.eh-avatar { display: flex; flex-shrink: 0; }
+.eh-avatar > *:not(img) { color: #fff; }
+.eh-av-0 > *:not(img) { background: #0f766e !important; }
+.eh-av-1 > *:not(img) { background: #2563eb !important; }
+.eh-av-2 > *:not(img) { background: #7c3aed !important; }
+.eh-av-3 > *:not(img) { background: #d97706 !important; }
+.eh-av-4 > *:not(img) { background: #db2777 !important; }
+.eh-av-5 > *:not(img) { background: #15803d !important; }
+.sq-card[data-status="ACTIVE"] { border-left: 4px solid #16a34a !important; }
+.sq-card[data-status="INJURED"] { border-left: 4px solid #f59e0b !important; }
+.sq-card[data-status="SUSPENDED"] { border-left: 4px solid #ef4444 !important; }
+.sq-card[data-status="INACTIVE"] { border-left: 4px solid #94a3b8 !important; }
+.coach-card[data-role="HEAD"] { border-top: 4px solid #0f766e !important; }
+.coach-card[data-role="ASSISTANT"] { border-top: 4px solid #3b82f6 !important; }
+:root:not([data-theme="dark"]) { --btn-primary-bg: #0a7a3d; }
+@media (max-width: 600px) {
+  .squad-grid[data-view="tiles"], .coach-grid[data-view="tiles"] { align-items: stretch !important; gap: 10px !important; }
+  .squad-grid[data-view="list"], .coach-grid[data-view="list"] { gap: 10px !important; }
+  .squad-grid .sq-card, .coach-grid .coach-card { padding: 12px !important; }
+  .squad-grid[data-view="tiles"] .eh-text > :first-child, .coach-grid[data-view="tiles"] .eh-text > :first-child { display: flex; align-items: center; justify-content: center; min-height: 2.6em; line-height: 1.3; text-align: center; }
+  .squad-grid[data-view="tiles"] .eh-badges, .coach-grid[data-view="tiles"] .eh-badges { min-height: 26px; }
+  .coach-grid[data-view="tiles"] .coach-card > div:first-child { flex: none; }
+  .coach-grid[data-view="tiles"] .coach-card > details:first-of-type { margin-top: auto !important; }
+  .coach-focus { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .coach-grid[data-view="tiles"] .coach-focus { justify-content: center; }
+  .coach-perms, .coach-account { margin-top: 10px !important; padding-top: 10px !important; }
+  .coach-perms summary, .coach-account summary { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; list-style: none; text-align: center; line-height: 1.3; background: var(--surface-container); color: var(--text) !important; border-radius: 10px; padding: 6px 12px; }
+  .coach-account summary::-webkit-details-marker { display: none; }
+  .coach-account summary::before { content: "\25B8"; }
+  .coach-account[open] summary::before { content: "\25BE"; }
+  .coach-perms summary::before, .coach-account summary::before { color: var(--secondary); }
+  .sq-view > * { color: var(--secondary) !important; border-color: var(--secondary) !important; }
+}

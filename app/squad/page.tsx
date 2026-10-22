@@ -298,7 +298,7 @@ export default async function SquadPage({
             <div
               key={p.id}
               id={`player-card-${p.id}`}
-              className="sq-card"
+              className="sq-card" data-status={p.status}
               style={{
                 background: "var(--surface)",
                 border: "1px solid var(--border)",

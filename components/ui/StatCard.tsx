@@ -35,6 +35,7 @@ export function StatCard({
       style={{
         background: "var(--surface)",
         border: "1px solid var(--border)",
+        borderTop: `3px solid ${color}`,
         borderRadius: "var(--radius)",
         padding: 16,
         boxShadow: "var(--shadow-sm)",

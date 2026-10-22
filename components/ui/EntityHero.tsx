@@ -27,6 +27,7 @@ export function EntityHero({
   actions?: React.ReactNode;
   badgeRowStyle?: React.CSSProperties;
 }) {
+  const tone = name.split("").reduce((n, ch) => n + ch.charCodeAt(0), 0) % 6;
   const title =
     heading ??
 
@@ -41,7 +42,7 @@ export function EntityHero({
   return (
     <div className="eh-root" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, minWidth: 0, flexWrap: "wrap" }}>
       <div className="eh-id" style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-        <Avatar name={name} src={src} size={size} />
+        <span className={`eh-avatar eh-av-${tone}`}><Avatar name={name} src={src} size={size} /></span>
         <div className="eh-text" style={{ minWidth: 0 }}>
           {title}
           {badges && (

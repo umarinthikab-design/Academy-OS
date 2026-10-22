@@ -120,7 +120,7 @@ export default async function CoachesPage({
               {active.map((c, idx) => (
                 <div
                   key={c.id}
-                  className="coach-card" style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}
+                  className="coach-card" data-role={c.designation} style={{ padding: 14, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}
                 >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                   <EntityHero
@@ -146,23 +146,7 @@ export default async function CoachesPage({
                     actions={
                       canEdit ? (
                         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          {canManageStaff && (
-                            <>
-                              <details>
-                                <summary className="ui-btn" style={{ cursor: "pointer", padding: "5px 12px", border: "1px solid var(--border)", borderRadius: 8, fontSize: 13 }}>Reset password / email</summary>
-                                <form action={resetCoachPassword.bind(null, c.id)} style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-                                  <label style={{ fontSize: 13 }}>Login email
-                                    <input name="email" type="email" required defaultValue={c.user.email} style={inputBase} />
-                                  </label>
-                                  <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Saves the email and resets the password together. Existing sessions are revoked.</span>
-                                  <Button variant="outline" size="sm">Save email &amp; reset password</Button>
-                                </form>
-                              </details>
-                              <form action={revokeSessions.bind(null, c.id)}>
-                                <Button variant="outline" size="sm" title="Invalidate all of this coach's active sessions so they must log in again" style={{ color: "var(--text-muted)" }}>Revoke sessions</Button>
-                              </form>
-                            </>
-                          )}
+                          
                           {inUseByCoach.get(c.id) ? (
                             <ConfirmDeleteButton
                               action={archiveCoach.bind(null, c.id)}
@@ -180,6 +164,12 @@ export default async function CoachesPage({
                     }
                   />
                 </div>
+
+                {c.primaryFocus.length > 0 && (
+                  <div className="coach-focus">
+                    {c.primaryFocus.map((a) => (<Badge key={a.name} tone="accent">{a.name}</Badge>))}
+                  </div>
+                )}
 
                 {canManageStaff && c.designation === "HEAD" && (
                   <details className="coach-perms" style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
@@ -207,6 +197,22 @@ export default async function CoachesPage({
                         </form>
                       ))}
                     </div>
+                  </details>
+                )}
+
+                {canManageStaff && (
+                  <details className="coach-account" style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>Account access</summary>
+                    <form action={resetCoachPassword.bind(null, c.id)} style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                      <label style={{ fontSize: 13 }}>Login email
+                        <input name="email" type="email" required defaultValue={c.user.email} style={inputBase} />
+                      </label>
+                      <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Saves the email and resets the password together. Existing sessions are revoked.</span>
+                      <Button variant="outline" size="sm">Save email &amp; reset password</Button>
+                    </form>
+                    <form action={revokeSessions.bind(null, c.id)} style={{ marginTop: 10 }}>
+                      <Button variant="outline" size="sm" title="Invalidate all of this coach's active sessions so they must log in again" style={{ color: "var(--text-muted)" }}>Revoke sessions</Button>
+                    </form>
                   </details>
                 )}
 
