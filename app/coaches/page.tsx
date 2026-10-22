@@ -182,11 +182,11 @@ export default async function CoachesPage({
                 </div>
 
                 {canManageStaff && c.designation === "HEAD" && (
-                  <details style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+                  <details className="coach-perms" style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
                     <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)" }}>
                     Permissions · {PERMISSION_TOGGLES.filter((t) => c[t.field]).length} of {PERMISSION_TOGGLES.length} on
                     </summary>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                    <div className="coach-perm-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
                       {PERMISSION_TOGGLES.map((t) => (
                         <form key={t.field} action={updateCoachPermission.bind(null, c.id, t.field, !c[t.field])}>
                           <button
