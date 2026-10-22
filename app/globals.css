@@ -830,3 +830,26 @@ button.pr-seg { height: 22px; cursor: pointer; }
   .pr-bar button.pr-seg { height: 28px !important; }
   .pr-pos select { font-size: 16px !important; }
 }
+
+/* ent-pages-1 */
+.cc-act button { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 40px; padding: 0 16px !important; box-sizing: border-box; border-radius: 10px !important; font-size: 13px !important; }
+.cc-act form { margin: 0; }
+.bt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; align-items: start; }
+.ent-card.bt { border-top: 4px solid #6366f1 !important; }
+.bt-meta { display: flex; flex-direction: column; gap: 6px; }
+.bt-row { display: flex; gap: 10px; font-size: 13px; align-items: baseline; }
+.bt-label { flex: 0 0 78px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.bt-val { min-width: 0; overflow-wrap: anywhere; color: var(--text); }
+.bt-players { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+@media (max-width: 600px) {
+  .bt-grid { grid-template-columns: minmax(0, 1fr); }
+  .dr-actions { width: 100%; display: grid !important; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+  .dr-actions > * { min-width: 0; }
+  .dr-actions form { margin: 0; }
+  .dr-actions button { width: 100%; display: flex !important; align-items: center; justify-content: center; min-height: 40px; box-sizing: border-box; padding: 0 10px !important; font-size: 13px !important; }
+  .sch-actions { width: 100%; display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .sch-actions > *, .sch-actions details { min-width: 0; }
+  .sch-actions form { margin: 0; }
+  .sch-actions summary, .sch-actions button { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 40px; box-sizing: border-box; padding: 0 8px !important; font-size: 13px !important; list-style: none; text-align: center; }
+  .sch-pop { position: fixed !important; left: 12px !important; right: 12px !important; top: auto !important; bottom: 12px !important; width: auto !important; max-width: none !important; max-height: 80vh; overflow: auto; z-index: 70 !important; }
+}

@@ -217,7 +217,7 @@ export default async function DrillsPage({
                   <PhotoStrip urls={d.photos.map((p) => p.url)} />
                 </div>
                 {canApprove && (
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <div className="dr-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                     <form action={approveDrill.bind(null, d.id)}>
                       <Button variant="approval" size="sm" icon="check">Approve</Button>
                     </form>
@@ -297,70 +297,53 @@ export default async function DrillsPage({
                 {d.photos.length > 0 && <PhotoStrip urls={d.photos.map((p) => p.url)} />}
 
                 <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                      <span
-                        style={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: "50%",
-                          background: "var(--primary)",
-                          color: "#fff",
-                          fontSize: 13,
-                          fontWeight: 700,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {((d.createdBy?.user.name ?? "Staff").match(/\b\w/g) ?? []).slice(0, 2).join("").toUpperCase()}
-                      </span>
-                      <span style={{ fontSize: 13, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.createdBy?.user.name ?? "Staff"}</span>
-                    </div>
-                    {canPublishEdit && (
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--secondary)", flexShrink: 0 }}>Edit</span>
-                    )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                    <span style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--primary)", color: "#fff", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      {((d.createdBy?.user.name ?? "Staff").match(/\b\w/g) ?? []).slice(0, 2).join("").toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: 13, color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.createdBy?.user.name ?? "Staff"}</span>
                   </div>
+                  {(canPublishEdit || canManage) && (
+                    <div className="cc-bar" style={{ marginTop: 10 }}>
+                      {canPublishEdit && (
+                        <details className="cc-drop">
+                          <summary>Edit drill</summary>
+                          <form action={updateDrill.bind(null, d.id)} className="cc-form">
+                            <input name="name" defaultValue={d.name} required style={inputBase} />
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <select name="categoryId" defaultValue={d.categoryId} required style={{ ...inputBase, flex: 1 }}>
+                                {categories.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                              </select>
+                              <input name="duration" type="number" defaultValue={d.duration} required style={{ ...inputBase, width: 80 }} />
+                            </div>
+                            <input name="playerRange" defaultValue={d.playerRange ?? ""} placeholder="Player range" style={inputBase} />
+                            <textarea name="description" defaultValue={d.description ?? ""} placeholder="Description" style={{ ...inputBase, minHeight: 64, resize: "vertical" }} />
+                            <div>
+                              <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "var(--text-muted)" }}>Photos</label>
+                              <DrillPhotoUpload name="photoUrls" current={d.photos.map((p) => p.url)} label="Add photos" />
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                              {ageGroups.map((ag) => (
+                                <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                                  <input type="checkbox" name="ageGroups" value={ag.id} defaultChecked={d.ageGroups.some((a) => a.id === ag.id)} /> {ag.name}
+                                </label>
 
-                  {canPublishEdit && (
-                    <details style={{ marginTop: 8, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
-                      <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 700, color: "var(--secondary)", outline: "none" }}>Edit drill</summary>
-                      <form action={updateDrill.bind(null, d.id)} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-                        <input name="name" defaultValue={d.name} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px" }} />
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <select name="categoryId" defaultValue={d.categoryId} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", flex: 1 }}>
-                            {categories.map((c) => (
-                              <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                          </select>
-                          <input name="duration" type="number" defaultValue={d.duration} required style={{ ...inputBase, fontSize: 13, padding: "6px 9px", width: 70 }} />
+                              ))}
+                            </div>
+                            <Button size="sm">Save</Button>
+                          </form>
+                        </details>
+                      )}
+                      {canManage && (
+                        <div className="cc-act">
+                          <ConfirmDeleteButton
+                            action={archiveDrill.bind(null, d.id)}
+                            confirmMessage={`Archive "${d.name}"? It'll leave the library and session-plan picker but stay in the Archived section, fully restorable.`}
+                            label="Archive"
+                            buttonStyle={{ background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", cursor: "pointer", fontWeight: 600 }}
+                          />
                         </div>
-                        <input name="playerRange" defaultValue={d.playerRange ?? ""} placeholder="Player range" style={{ ...inputBase, fontSize: 13, padding: "6px 9px" }} />
-                        <textarea name="description" defaultValue={d.description ?? ""} placeholder="Description" style={{ ...inputBase, fontSize: 13, padding: "6px 9px", minHeight: 54, resize: "vertical" }} />
-                        <div>
-                          <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "var(--text-muted)" }}>Photos</label>
-                          <DrillPhotoUpload name="photoUrls" current={d.photos.map((p) => p.url)} label="Add photos" />
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                          {ageGroups.map((ag) => (
-                            <label key={ag.id} style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}>
-                              <input type="checkbox" name="ageGroups" value={ag.id} defaultChecked={d.ageGroups.some((a) => a.id === ag.id)} /> {ag.name}
-                            </label>
-                          ))}
-                        </div>
-                        <Button size="sm" style={{ alignSelf: "flex-start" }}>Save</Button>
-                      </form>
-                    </details>
-                  )}
-                  {canManage && (
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
-                      <ConfirmDeleteButton
-                        action={archiveDrill.bind(null, d.id)}
-                        confirmMessage={`Archive "${d.name}"? It'll leave the library and session-plan picker but stay in the Archived section, fully restorable.`}
-                        label="Archive"
-                        buttonStyle={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "1px solid var(--border)", color: "var(--text-muted)", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 13, padding: "4px 10px" }}
-                      />
+                      )}
                     </div>
                   )}
                 </div>
@@ -390,7 +373,7 @@ export default async function DrillsPage({
                       {d.category.name} · {d.duration}m · archived {d.archivedAt!.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: academyTz })}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <div className="dr-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <form action={reactivateDrill.bind(null, d.id)}>
                       <Button variant="outline" size="sm" style={{ color: "var(--secondary)", borderColor: "var(--secondary)" }}>Reactivate</Button>
                     </form>

@@ -272,7 +272,7 @@ export default async function SchedulePage({
                       s.status === "cancelled" ? (
                       <form action={reinstateScheduledSession.bind(null, s.id)}><Button variant="outline" size="sm">Reinstate</Button></form>
                       ) : (
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div className="sch-actions" style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <details style={{ position: "relative" }}>
                             <summary
                               style={{
@@ -291,6 +291,7 @@ export default async function SchedulePage({
                               Edit
                             </summary>
                             <div
+                              className="sch-pop"
                               style={{
                                 position: "absolute",
                                 right: 0,

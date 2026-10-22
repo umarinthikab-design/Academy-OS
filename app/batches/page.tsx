@@ -5,6 +5,7 @@ import { getPermissions } from "@/lib/permissions";
 import { ConfirmDeleteButton } from "@/components/ConfirmDeleteButton";
 import { StatusBanner } from "@/components/StatusBanner";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { SearchableMultiSelect } from "@/components/ui/SearchableMultiSelect";
@@ -132,52 +133,42 @@ export default async function BatchesPage({
           message="Create your first batch above to group players and coaches."
         />
       ) : (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)", background: "var(--surface-muted)" }}>
-                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Batch Name</th>
-                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Age Group</th>
-                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>Head Coach</th>
-                  <th style={{ padding: "12px 16px", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", textAlign: "right" }}>Players</th>
-                </tr>
-              </thead>
-              <tbody>
-                {batches.map((b, idx) => (
-                  <tr key={b.id} style={{ borderTop: "1px solid var(--border)", background: idx % 2 === 1 ? "var(--surface-muted)" : "var(--surface)" }}>
-                    <td style={{ padding: "14px 16px" }}>
-                      <div style={{ fontFamily: "var(--font-headline)", fontSize: 16, fontWeight: 600, color: "var(--text-heading)" }}>{b.name}</div>
-                      {b.supportingCoaches.length > 0 && (
-                        <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 3 }}>
-                          Supporting: {b.supportingCoaches.map((c) => c.user.name).join(", ")}
-                        </div>
-                      )}
-                      {canEdit && (
-                        <div style={{ marginTop: 8 }}>
-                          <ConfirmDeleteButton
-                            action={deleteBatch.bind(null, b.id)}
-                            label="Remove"
-                            confirmMessage={`Remove ${b.name}? This can't be undone.`}
-                          />
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: "14px 16px", color: "var(--text-muted)", fontSize: 13 }}>{b.ageGroup.name}</td>
-                    <td style={{ padding: "14px 16px", fontSize: 13 }}>{b.mainCoaches.map((c) => c.user.name).join(", ") || <span style={{ color: "var(--text-faint)" }}>none assigned</span>}</td>
-                    <td style={{ padding: "14px 16px", textAlign: "right", fontSize: 13, color: "var(--text-muted)" }}>
-                      <div>{b.players.length} player{b.players.length === 1 ? "" : "s"}</div>
-                      {b.players.length > 0 && (
-                        <div style={{ marginTop: 2, maxWidth: 200, fontSize: 13, color: "var(--text-faint)" }}>
-                          {b.players.map((p) => p.name).join(", ")}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="bt-grid">
+          {batches.map((b) => (
+            <div key={b.id} className="ent-card bt">
+              <div className="cc-id">
+                <div className="cc-name">{b.name}</div>
+                <div className="cc-tags">
+                  <Badge tone="green">{b.ageGroup.name}</Badge>
+                  <Badge tone="blue">{b.players.length} player{b.players.length === 1 ? "" : "s"}</Badge>
+                </div>
+              </div>
+              <div className="bt-meta">
+                <div className="bt-row"><span className="bt-label">Head coach</span><span className="bt-val">{b.mainCoaches.map((c) => c.user.name).join(", ") || <span style={{ color: "var(--text-faint)" }}>none assigned</span>}</span></div>
+                {b.supportingCoaches.length > 0 && (
+                  <div className="bt-row"><span className="bt-label">Support</span><span className="bt-val">{b.supportingCoaches.map((c) => c.user.name).join(", ")}</span></div>
+                )}
+              </div>
+              {(b.players.length > 0 || canEdit) && (
+                <div className="cc-bar">
+                  {b.players.length > 0 && (
+                    <details className="cc-drop">
+                      <summary>Players <span className="cc-count">{b.players.length}</span></summary>
+                      <div className="bt-players">{b.players.map((p) => (<Badge key={p.id} tone="muted">{p.name}</Badge>))}</div>
+                    </details>
+                  )}
+                  {canEdit && (
+                    <details className="cc-drop">
+                      <summary>Manage</summary>
+                      <div className="cc-del">
+                        <ConfirmDeleteButton action={deleteBatch.bind(null, b.id)} label="Remove" confirmMessage={`Remove ${b.name}? This can't be undone.`} />
+                      </div>
+                    </details>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </>
