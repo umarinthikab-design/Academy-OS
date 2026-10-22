@@ -10,8 +10,8 @@ import { PlayerRatingCard } from "@/components/PlayerRatingCard";
 import { calculateAge, SKILL_BAND_META } from "@/lib/skills";
 import { getSkillBands } from "@/lib/skillDefinitions";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { EntityHero } from "@/components/ui/EntityHero";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { PlayerStatusBadge } from "@/components/ui/PlayerStatusBadge";
 import { PlayerStatusSelect } from "@/components/ui/PlayerStatusSelect";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -294,84 +294,70 @@ export default async function SquadPage({
         />
       ) : (
         <CardView storageKey="touchline-squad-view" defaultView="tiles" className="squad-grid" cssTiles label="Squad display">
-          {filtered.map((p) => (
-            <div
-              key={p.id}
-              id={`player-card-${p.id}`}
-              className="sq-card" data-status={p.status}
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                boxShadow: "var(--shadow-sm)",
-                padding: 16,
-              }}
-            >
-              <div className="sq-main" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <EntityHero
-                  name={p.name}
-                  heading={<SquadPlayerLink playerId={p.id} appearance="name">{p.name}</SquadPlayerLink>}
-                  src={p.photoUrl}
-                  badges={
-                    <>
+          {filtered.map((p) => {
+            const tone = p.name.split("").reduce((n, ch) => n + ch.charCodeAt(0), 0) % 6;
+            return (
+              <div key={p.id} id={`player-card-${p.id}`} className="ent-card" data-status={p.status}>
+                <div className="cc-head">
+                  <span className={`eh-avatar eh-av-${tone}`}>
+                    <Avatar name={p.name} src={p.photoUrl} size={44} />
+                  </span>
+                  <div className="cc-id">
+                    <div className="cc-name"><SquadPlayerLink playerId={p.id} appearance="name">{p.name}</SquadPlayerLink></div>
+                    <div className="cc-tags">
                       <PlayerStatusBadge status={p.status} statusUpdatedAt={p.statusUpdatedAt} />
                       <Badge tone="muted">Age {calculateAge(p.dateOfBirth)}</Badge>
                       {p.gender && <Badge tone="accent">{p.gender === "MALE" ? "Male" : p.gender === "FEMALE" ? "Female" : "Other"}</Badge>}
                       {p.position && p.position !== "Unassigned (Default)" && <Badge tone="green">{p.position}</Badge>}
-                      {p.ageGroup && <Badge tone="green">{p.ageGroup.name}</Badge>}
-                      {p.batches.map((b) => (
-                        <Badge key={b.id} tone="blue">{b.name}</Badge>
-                      ))}
-                    </>
-                  }
-                  actions={
-                    canEdit ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <PlayerStatusSelect
-                          action={updatePlayerStatus.bind(null, p.id)}
-                          status={p.status}
-                        />
-                        {(perms.isAdmin || perms.isClubManager) && (
-                        <ConfirmDeleteButton
-                          action={deletePlayer.bind(null, p.id)}
-                          confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
-                        />
-                      )}
-                      </div>
-                    ) : undefined
-                  }
-                />
-              </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="sq-view" style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
-                <SquadPlayerLink playerId={p.id}>View player</SquadPlayerLink>
-              </div>
-              <details className="sq-skills" style={{ marginTop: 8 }}>
-                <summary style={{ cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}><span className="sq-sum-d">Expand skills</span><span className="sq-sum-m">More</span></summary>
-              {canEdit && (
-                <div className="sq-actions-mobile">
-                  <PlayerStatusSelect action={updatePlayerStatus.bind(null, p.id)} status={p.status} />
-                  {(perms.isAdmin || perms.isClubManager) && (
-                    <ConfirmDeleteButton
-                      action={deletePlayer.bind(null, p.id)}
-                      confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
-                    />
+                {(p.ageGroup || p.batches.length > 0) && (
+                  <div className="cc-focus">
+                    <span className="cc-focus-label">Groups</span>
+                    {p.ageGroup && <Badge tone="green">{p.ageGroup.name}</Badge>}
+                    {p.batches.map((b) => (<Badge key={b.id} tone="blue">{b.name}</Badge>))}
+                  </div>
+                )}
+
+                <div className="cc-bar">
+                  <details className="cc-drop">
+                    <summary>Skills</summary>
+                    <div style={{ marginTop: 10 }}>
+
+                      <PlayerRatingCard
+                        playerId={p.id}
+                        dateOfBirth={p.dateOfBirth.toISOString()}
+                        position={p.position}
+                        skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
+                        canEdit={canEdit}
+                        skillBands={skillBands}
+                      />
+                    </div>
+                  </details>
+                  {canEdit && (
+                    <details className="cc-drop">
+                      <summary>Manage</summary>
+                      <div className="cc-form">
+                        <label style={{ fontSize: 13, fontWeight: 700 }}>Status</label>
+                        <PlayerStatusSelect action={updatePlayerStatus.bind(null, p.id)} status={p.status} />
+                      </div>
+                      {(perms.isAdmin || perms.isClubManager) && (
+                        <div className="cc-del">
+                          <ConfirmDeleteButton
+                            action={deletePlayer.bind(null, p.id)}
+                            confirmMessage={`Remove ${p.name} from the squad? This deletes their skills and notes too and can't be undone.`}
+                          />
+                        </div>
+                      )}
+                    </details>
                   )}
+                  <div className="cc-view"><SquadPlayerLink playerId={p.id}>View player</SquadPlayerLink></div>
                 </div>
-              )}
-                <div style={{ marginTop: 10 }}>
-                <PlayerRatingCard
-                  playerId={p.id}
-                  dateOfBirth={p.dateOfBirth.toISOString()}
-                  position={p.position}
-                  skills={p.skills.map((s) => ({ skillName: s.skillName, value: s.value, active: s.active }))}
-                  canEdit={canEdit}
-                  skillBands={skillBands}
-                />
-                </div>
-              </details>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </CardView>
       )}
     </>
