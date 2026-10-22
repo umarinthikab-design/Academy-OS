@@ -68,10 +68,10 @@ export default async function AcademySettingsPage({
             <div style={{ marginTop: 8 }}>
               <AgeRangeCalculator groups={ageGroups.map(g => ({ id: g.id, name: g.name }))} />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(56px, auto) 1fr 1fr", gap: "8px 10px", alignItems: "center", marginTop: 8 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Age group</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Born from</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Born through</div>
+            <div className="dob-grid" style={{ display: "grid", gridTemplateColumns: "minmax(56px, auto) 1fr 1fr", gap: "8px 10px", alignItems: "center", marginTop: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Age group</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Born from</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: 0.4 }}>Born through</div>
               {ageGroups.map(group => (
                 <Fragment key={group.id}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{group.name}</div>

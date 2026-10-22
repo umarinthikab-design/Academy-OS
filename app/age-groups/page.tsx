@@ -118,7 +118,7 @@ export default async function AgeGroupsPage({
         <CollapsibleCreate title="Manage categories" subtitle={`${categories.length}`}>
           <form
             action={createAgeGroupCategory}
-            style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16 }}
+            style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}
           >
             <div style={{ flex: 1, minWidth: 160 }}>
               <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>New category name</label>

@@ -107,13 +107,13 @@ export default async function PlayerDetailPage({
       <StatusBanner error={p.error} success={p.success} />
 
       {/* Hero card */}
-      <div style={{ ...card, display: "flex", gap: 24, position: "relative", overflow: "hidden", marginBottom: 24 }}>
+      <div className="player-hero" style={{ ...card, display: "flex", gap: 24, position: "relative", overflow: "hidden", marginBottom: 24 }}>
         <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: "var(--secondary)" }} />
         <div style={{ marginLeft: 12, flexShrink: 0 }}>
           <Avatar name={player.name} src={player.photoUrl} size={120} style={{ borderRadius: "var(--radius)" }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 style={{ fontFamily: "var(--font-headline)", fontSize: 32, fontWeight: 600, color: "var(--text-heading)", letterSpacing: "-0.02em", margin: "0 0 8px" }}>{player.name}</h1>
+          <h1 style={{ fontFamily: "var(--font-headline)", fontSize: 32, fontWeight: 600, color: "var(--text-heading)", letterSpacing: "-0.02em", margin: "0 0 8px", overflowWrap: "anywhere" }}>{player.name}</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
             <PlayerStatusBadge status={player.status} statusUpdatedAt={player.statusUpdatedAt} />
             <Badge tone="muted">Age {age}</Badge>
@@ -138,7 +138,7 @@ export default async function PlayerDetailPage({
             </div>
           </div>
           {canEdit && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 700 }}>Status:</span>
               <PlayerStatusSelect action={updatePlayerStatus.bind(null, player.id)} status={player.status} />
             </div>
@@ -208,7 +208,7 @@ export default async function PlayerDetailPage({
             </label>
             <Button size="sm" variant="outline">Save age group</Button>
           </form>
-          <p style={{ color: "var(--text-muted)", fontSize: 12 }}>This updates the player's assigned age group. Existing batch memberships remain unchanged.</p>
+          <p style={{ color: "var(--text-muted)", fontSize: 13 }}>This updates the player's assigned age group. Existing batch memberships remain unchanged.</p>
         </section>
       )}
 
@@ -264,7 +264,7 @@ export default async function PlayerDetailPage({
 
         {canEdit && (
           <form action={updatePlayerInfo.bind(null, player.id)} style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <input name="emergencyContactName" placeholder="Emergency contact name" defaultValue={player.emergencyContactName ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />
               <input name="emergencyContactPhone" placeholder="Emergency contact phone" defaultValue={player.emergencyContactPhone ?? ""} style={{ ...inputBase, flex: 1, fontSize: 13 }} />
             </div>

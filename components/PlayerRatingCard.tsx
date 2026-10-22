@@ -131,7 +131,7 @@ export function PlayerRatingCard({
 
   return (
     <div style={{ marginTop: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, rowGap: 10, flexWrap: "wrap", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <label style={{ fontSize: 13, fontWeight: 700, color: "var(--text-muted)" }}>Position</label>
           {canEdit ? (
@@ -173,7 +173,7 @@ export function PlayerRatingCard({
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {b.skills.map((skillName) => (
-                  <label key={skillName} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer", padding: "3px 8px", borderRadius: 6, background: draft.includes(skillName) ? "var(--turf)" : "var(--surface)", color: draft.includes(skillName) ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>
+                  <label key={skillName} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, cursor: "pointer", padding: "8px 12px", borderRadius: 6, background: draft.includes(skillName) ? "var(--turf)" : "var(--surface)", color: draft.includes(skillName) ? "#fff" : "var(--text)", border: "1px solid var(--border)" }}>
                     <input
                       type="checkbox"
                       checked={draft.includes(skillName)}

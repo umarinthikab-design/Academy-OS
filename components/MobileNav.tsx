@@ -39,7 +39,7 @@ export function MobileNav({
         <button className="ui-hover"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", padding: 4, width: 28, justifyContent: "center" }}
+          style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", padding: 4, width: 44, height: 44, alignItems: "center", justifyContent: "center", position: "relative" }}
         >
           <Icon name="menu" size={24} />
           {items.some((item) => item.badge) && (
@@ -75,7 +75,7 @@ export function MobileNav({
         >
           {academyName}
         </Link>
-        <div style={{ width: 28, flexShrink: 0 }} />
+        <div style={{ width: 44, flexShrink: 0 }} />
       </div>
 
       {open && (
@@ -144,7 +144,7 @@ export function MobileNav({
               <button className="ui-hover"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
-                style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", opacity: 0.8 }}
+                style={{ background: "none", border: "none", color: "var(--sidebar-text)", cursor: "pointer", display: "flex", opacity: 0.8, padding: 8 }}
               >
                 <Icon name="close" size={22} />
               </button>
@@ -229,7 +229,7 @@ export function MobileNav({
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 8,
-                    padding: "9px 10px",
+                    padding: "12px 10px",
                     background: "transparent",
                     color: "var(--sidebar-text)",
                     border: "1px solid var(--sidebar-border)",

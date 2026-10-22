@@ -608,3 +608,20 @@ input::placeholder, textarea::placeholder { color: var(--text-faint); opacity: 1
 @media (pointer: coarse) {
   button.ui-hover { min-height: 36px; }
 }
+
+/* mobile-polish-3 */
+input[name^="emergencyContact"] { flex: 1 1 200px !important; min-width: 0; }
+@media (max-width: 600px) {
+  .player-hero { flex-direction: column; align-items: center; gap: 16px !important; padding: 18px !important; text-align: center; }
+  .player-hero > div:nth-child(2) { margin-left: 0 !important; }
+  .player-hero > div:nth-child(3) { width: 100%; }
+  .player-hero > div:nth-child(3) > div { justify-content: center; }
+  .dob-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+  .dob-grid > div:nth-child(1) { display: none; }
+  .dob-grid > div:nth-child(n+4):nth-child(3n+1) { grid-column: 1 / -1; }
+  .dob-grid input { min-width: 0; width: 100%; }
+  button[aria-label^="Set "] { height: 32px !important; }
+}
+@media (pointer: coarse) {
+  button[aria-label^="Set "] { height: 32px !important; }
+}
