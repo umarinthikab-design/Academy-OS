@@ -280,6 +280,7 @@ export type OverdueTarget = {
     id: string;
     date: Date;
     startTime: string;
+    ageGroupId: string;
     ageGroupName: string;
   };
 };
@@ -320,6 +321,7 @@ export async function getOverdueConfirmationsToNotify(): Promise<OverdueTarget[]
         id: r.scheduledSession.id,
         date: r.scheduledSession.date,
         startTime: r.scheduledSession.startTime,
+        ageGroupId: r.scheduledSession.ageGroupId,
         ageGroupName: r.scheduledSession.ageGroup.name,
       },
     }));

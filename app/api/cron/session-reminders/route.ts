@@ -80,6 +80,8 @@ export async function GET(request: Request) {
       const when = `${first.session.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })} at ${first.session.startTime}`;
       const recipients = new Set<string>([...admins.map((a) => a.id), ...first.headCoachUserIds]);
       for (const g of group) recipients.delete(g.coachUserId);
+      const day = first.session.date.toISOString().slice(0, 10);
+      const link = `/schedule?ageGroup=${first.session.ageGroupId}&from=${day}&to=${day}`;
 
       await Promise.all(
         [...recipients].map((userId) =>
@@ -87,7 +89,7 @@ export async function GET(request: Request) {
             userId,
             title: "Coach response overdue",
             body: `${names} did not respond for ${first.session.ageGroupName} on ${when} - the response deadline has passed.`,
-            link: "/",
+            link,
             category: "ATTENDANCE",
           })
         )
