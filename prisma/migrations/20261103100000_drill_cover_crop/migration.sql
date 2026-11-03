@@ -1,0 +1,1 @@
+ALTER TABLE "Drill" ADD COLUMN "coverCrop" TEXT;

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getPermissions } from "@/lib/permissions";
 import { logActivity } from "@/lib/logActivity";
 import { sanitizePhotoUrl } from "@/lib/photo";
+import { parseCrop } from "@/lib/cover";
 import { notifyUser } from "@/lib/notifications";
 import { notifyApprovers } from "@/lib/notifyApprovers";
 
@@ -97,6 +98,9 @@ export async function updateDrill(drillId: string, formData: FormData) {
 
   if (!name || !categoryId || !duration) redirect("/drills?error=missing_fields");
 
+  const cropRaw = formData.get("coverCrop");
+  const coverCrop = parseCrop(cropRaw) ? String(cropRaw).trim() : null;
+
   await prisma.drill.update({
     where: { id: drillId },
     data: {
@@ -105,6 +109,7 @@ export async function updateDrill(drillId: string, formData: FormData) {
       duration,
       playerRange,
       description,
+      coverCrop,
       ageGroups: { set: ageGroupIds.map((id) => ({ id })) },
       photos: {
         // The edit form round-trips every kept photo (existing + new) as a

@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CollapsibleCreate } from "@/components/ui/CollapsibleCreate";
 import { DrillPhotoUpload } from "@/components/ui/DrillPhotoUpload";
+import { CoverCropper } from "@/components/ui/CoverCropper";
+import { cropImgStyle } from "@/lib/cover";
 import { inputBase } from "@/components/ui/Form";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
@@ -275,7 +277,7 @@ export default async function DrillsPage({
             <div key={d.id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden", boxShadow: "var(--shadow-sm)", display: "flex", flexDirection: "column" }}>
               <div style={{ position: "relative", height: 128, background: "var(--surface-muted)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {d.photos[0] ? (
-                  <img src={d.photos[0].url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={d.photos[0].url} alt="" style={cropImgStyle(d.coverCrop)} />
                 ) : (
                   <Icon name="drills" size={36} style={{ color: "var(--text-faint)" }} />
                 )}
@@ -321,6 +323,7 @@ export default async function DrillsPage({
                             <div>
                               <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6, color: "var(--text-muted)" }}>Photos</label>
                               <DrillPhotoUpload name="photoUrls" current={d.photos.map((p) => p.url)} label="Add photos" />
+                              {d.photos[0] && <CoverCropper src={d.photos[0].url} value={d.coverCrop} />}
                             </div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                               {ageGroups.map((ag) => (

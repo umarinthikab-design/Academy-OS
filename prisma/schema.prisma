@@ -447,6 +447,9 @@ model Drill {
   // (photos, feedback, session plans using them) is untouched.
   archivedAt DateTime?
 
+  // Cover photo crop as "x y zoom" (see lib/cover.ts); null = centred.
+  coverCrop String?
+
   ageGroups AgeGroup[] @relation("DrillAgeGroups")
 
   // Drill photos - one or more per drill (setup diagram, demonstration shots,
