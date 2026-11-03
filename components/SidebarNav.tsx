@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { NavGroupHeader } from "@/components/NavGroupHeader";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { groupNavItems, type NavItem } from "@/lib/navItems";
@@ -21,12 +23,18 @@ import { groupNavItems, type NavItem } from "@/lib/navItems";
 
 export function SidebarNav({ items, compact = false }: { items: NavItem[]; compact?: boolean }) {
   const pathname = usePathname();
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
   return (
     <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, padding: compact ? "0 8px" : "0 12px", overflowY: "auto" }}>
-      {groupNavItems(items).map((section, sectionIndex) => (
+      {groupNavItems(items).map((section, sectionIndex) => {
+        const isOpen = compact || !section.collapsible || (openMap[section.label ?? ""] ?? section.items.some((i) => i.href === pathname));
+        return (
         <div key={section.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: sectionIndex === 0 ? 0 : compact ? 0 : 14 }}>
-          {section.label && !compact && (
+          {section.label && !compact && section.collapsible && (
+            <NavGroupHeader label={section.label} isOpen={isOpen} hasBadge={section.items.some((i) => !!i.badge)} padding="6px 14px" onToggle={() => setOpenMap((p) => ({ ...p, [section.label as string]: !isOpen }))} />
+          )}
+          {section.label && !compact && !section.collapsible && (
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "0 14px 6px", color: "var(--sidebar-text)" }}>
               {section.label}
             </div>
@@ -34,7 +42,7 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
           {compact && section.label && sectionIndex > 0 && (
             <div aria-hidden="true" style={{ height: 1, background: "var(--sidebar-border)", margin: "6px 10px" }} />
           )}
-          {section.items.map((item) => {
+          {isOpen && section.items.map((item) => {
         const active = pathname === item.href;
         return (
           <Link
@@ -98,7 +106,8 @@ export function SidebarNav({ items, compact = false }: { items: NavItem[]; compa
         );
           })}
         </div>
-      ))}
+        );
+      })}
     </nav>
   );
 }

@@ -80,19 +80,19 @@ export function getNavItems(perms: Permissions, requestsBadge = 0, registrations
 // buckets them under headings. Headings are skipped for short lists (parents),
 // and a group with no visible items never appears.
 
-export type NavSection = { label: string | null; items: NavItem[] };
+export type NavSection = { label: string | null; items: NavItem[]; collapsible?: boolean };
 
-const NAV_GROUPS: { label: string; hrefs: string[] }[] = [
+const NAV_GROUPS: { label: string; hrefs: string[]; collapsible?: boolean }[] = [
   { label: "Overview", hrefs: ["/", "/broadcasts", "/requests"] },
   { label: "Training", hrefs: ["/schedule", "/sessions", "/attendance", "/drills"] },
-  { label: "People", hrefs: ["/squad", "/coaches", "/registrations"] },
-  { label: "Organisation", hrefs: ["/batches", "/age-groups", "/locations"] },
-  { label: "System", hrefs: ["/academy-settings", "/activity", "/settings"] },
+  { label: "People", hrefs: ["/squad"] },
+  { label: "Manage", collapsible: true, hrefs: ["/coaches", "/registrations", "/batches", "/age-groups", "/locations"] },
+  { label: "System", collapsible: true, hrefs: ["/academy-settings", "/activity", "/settings"] },
 ];
 
 export function groupNavItems(items: NavItem[]): NavSection[] {
   if (items.length < 5) return [{ label: null, items }];
-  const sections: NavSection[] = NAV_GROUPS.map((g) => ({ label: g.label, items: [] as NavItem[] }));
+  const sections: NavSection[] = NAV_GROUPS.map((g) => ({ label: g.label, items: [] as NavItem[], collapsible: g.collapsible }));
   const fallback = sections[sections.length - 1];
   for (const item of items) {
     const idx = NAV_GROUPS.findIndex((g) => g.hrefs.includes(item.href));

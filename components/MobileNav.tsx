@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { Avatar } from "@/components/ui/Avatar";
+import { NavGroupHeader } from "@/components/NavGroupHeader";
 import { roleLabel } from "@/lib/roleLabel";
 import { groupNavItems, type NavItem } from "@/lib/navItems";
 
@@ -31,6 +32,7 @@ export function MobileNav({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const sections = groupNavItems(items);
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const hasHeadings = sections.some((s) => s.label);
 
   return (
@@ -156,14 +158,19 @@ export function MobileNav({
                   Menu
                 </div>
               )}
-              {sections.map((section, sectionIndex) => (
+              {sections.map((section, sectionIndex) => {
+                const isOpen = !section.collapsible || (openMap[section.label ?? ""] ?? section.items.some((i) => i.href === pathname));
+                return (
                 <div key={section.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: sectionIndex === 0 ? 0 : 10 }}>
-                  {section.label && (
+                  {section.label && section.collapsible && (
+            <NavGroupHeader label={section.label} isOpen={isOpen} hasBadge={section.items.some((i) => !!i.badge)} padding="6px 10px" onToggle={() => setOpenMap((p) => ({ ...p, [section.label as string]: !isOpen }))} />
+          )}
+          {section.label && !section.collapsible && (
                     <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.55, padding: "6px 10px 6px" }}>
                       {section.label}
                     </div>
                   )}
-                  {section.items.map((item) => {
+                  {isOpen && section.items.map((item) => {
                 const active = pathname === item.href;
                 return (
                   <Link className="mobile-nav-hover"
@@ -209,7 +216,8 @@ export function MobileNav({
                 );
                   })}
                 </div>
-              ))}
+                );
+              })}
             </nav>
 
             <div style={{ padding: "14px 20px 0", borderTop: "1px solid var(--sidebar-border)", marginTop: 12 }}>
